@@ -95,13 +95,22 @@ public class MainActivity extends Activity {
         orderButton.setOnClickListener(
                 v -> placeOrder()
         );
-        Button trackingButton = new Button(this);
-trackingButton.setText("TRACK MY ORDER");
-main.addView(trackingButton);
 
-trackingButton.setOnClickListener(
-        v -> showLatestOrder()
-);
+        Button trackingButton = new Button(this);
+        trackingButton.setText("TRACK MY ORDER");
+        main.addView(trackingButton);
+
+        trackingButton.setOnClickListener(
+                v -> showLatestOrder()
+        );
+
+        Button cancelButton = new Button(this);
+        cancelButton.setText("CANCEL MY ORDER");
+        main.addView(cancelButton);
+
+        cancelButton.setOnClickListener(
+                v -> cancelLatestOrder()
+        );
 
         setContentView(main);
 
@@ -167,36 +176,25 @@ trackingButton.setOnClickListener(
                 mirchiQty++;
             }
 
-            updateQty(
-                    qty,
-                    itemNumber
-            );
-
+            updateQty(qty, itemNumber);
             updateTotal();
         });
 
         minus.setOnClickListener(v -> {
 
-            if (itemNumber == 1
-                    && samosaQty > 0) {
+            if (itemNumber == 1 && samosaQty > 0) {
                 samosaQty--;
             }
 
-            if (itemNumber == 2
-                    && kachoriQty > 0) {
+            if (itemNumber == 2 && kachoriQty > 0) {
                 kachoriQty--;
             }
 
-            if (itemNumber == 3
-                    && mirchiQty > 0) {
+            if (itemNumber == 3 && mirchiQty > 0) {
                 mirchiQty--;
             }
 
-            updateQty(
-                    qty,
-                    itemNumber
-            );
-
+            updateQty(qty, itemNumber);
             updateTotal();
         });
 
@@ -244,66 +242,49 @@ trackingButton.setOnClickListener(
         int subtotal = getSubtotal();
 
         if (subtotal == 0) {
-
-            totalText.setText(
-                    "Subtotal: ₹0"
-            );
-
+            totalText.setText("Subtotal: ₹0");
             return;
         }
 
-        int total =
-                subtotal + DELIVERY_FEE;
+        int total = subtotal + DELIVERY_FEE;
 
         totalText.setText(
                 "Subtotal: ₹" + subtotal
-                        + "\nDelivery: ₹"
-                        + DELIVERY_FEE
-                        + "\nTotal: ₹"
-                        + total
+                        + "\nDelivery: ₹" + DELIVERY_FEE
+                        + "\nTotal: ₹" + total
         );
     }
 
     void placeOrder() {
 
         if (auth.getCurrentUser() == null) {
-
             Toast.makeText(
                     this,
                     "Please wait, connecting...",
                     Toast.LENGTH_SHORT
             ).show();
-
             return;
         }
 
         int subtotal = getSubtotal();
 
         if (subtotal < 100) {
-
             Toast.makeText(
                     this,
                     "Minimum order ₹100 hai",
                     Toast.LENGTH_SHORT
             ).show();
-
             return;
         }
 
         String customerName =
-                name.getText()
-                        .toString()
-                        .trim();
+                name.getText().toString().trim();
 
         String customerMobile =
-                mobile.getText()
-                        .toString()
-                        .trim();
+                mobile.getText().toString().trim();
 
         String customerAddress =
-                address.getText()
-                        .toString()
-                        .trim();
+                address.getText().toString().trim();
 
         if (customerName.isEmpty()
                 || customerMobile.isEmpty()
@@ -318,26 +299,14 @@ trackingButton.setOnClickListener(
             return;
         }
 
-        int total =
-                subtotal + DELIVERY_FEE;
+        int total = subtotal + DELIVERY_FEE;
 
         Map<String, Object> items =
                 new HashMap<>();
 
-        items.put(
-                "samosa",
-                samosaQty
-        );
-
-        items.put(
-                "kachori",
-                kachoriQty
-        );
-
-        items.put(
-                "mirchiBada",
-                mirchiQty
-        );
+        items.put("samosa", samosaQty);
+        items.put("kachori", kachoriQty);
+        items.put("mirchiBada", mirchiQty);
 
         Map<String, Object> order =
                 new HashMap<>();
@@ -347,51 +316,15 @@ trackingButton.setOnClickListener(
                 auth.getCurrentUser().getUid()
         );
 
-        order.put(
-                "customerName",
-                customerName
-        );
-
-        order.put(
-                "mobile",
-                customerMobile
-        );
-
-        order.put(
-                "address",
-                customerAddress
-        );
-
-        order.put(
-                "items",
-                items
-        );
-
-        order.put(
-                "subtotal",
-                subtotal
-        );
-
-        order.put(
-                "deliveryFee",
-                DELIVERY_FEE
-        );
-
-        order.put(
-                "total",
-                total
-        );
-
-        order.put(
-                "paymentMethod",
-                "COD"
-        );
-
-        order.put(
-                "status",
-                "PLACED"
-        );
-
+        order.put("customerName", customerName);
+        order.put("mobile", customerMobile);
+        order.put("address", customerAddress);
+        order.put("items", items);
+        order.put("subtotal", subtotal);
+        order.put("deliveryFee", DELIVERY_FEE);
+        order.put("total", total);
+        order.put("paymentMethod", "COD");
+        order.put("status", "PLACED");
         order.put(
                 "createdAt",
                 FieldValue.serverTimestamp()
@@ -403,8 +336,7 @@ trackingButton.setOnClickListener(
                         documentReference -> {
 
                             String orderId =
-                                    documentReference
-                                            .getId();
+                                    documentReference.getId();
 
                             Toast.makeText(
                                     this,
@@ -415,22 +347,14 @@ trackingButton.setOnClickListener(
 
                             String message =
                                     "Samosa King Order\n"
-                                    + "Order ID: "
-                                    + orderId + "\n"
-                                    + "Name: "
-                                    + customerName + "\n"
-                                    + "Mobile: "
-                                    + customerMobile + "\n"
-                                    + "Address: "
-                                    + customerAddress + "\n"
-                                    + "Samosa: "
-                                    + samosaQty + "\n"
-                                    + "Kachori: "
-                                    + kachoriQty + "\n"
-                                    + "Mirchi Bada: "
-                                    + mirchiQty + "\n"
-                                    + "Total: ₹"
-                                    + total + "\n"
+                                    + "Order ID: " + orderId + "\n"
+                                    + "Name: " + customerName + "\n"
+                                    + "Mobile: " + customerMobile + "\n"
+                                    + "Address: " + customerAddress + "\n"
+                                    + "Samosa: " + samosaQty + "\n"
+                                    + "Kachori: " + kachoriQty + "\n"
+                                    + "Mirchi Bada: " + mirchiQty + "\n"
+                                    + "Total: ₹" + total + "\n"
                                     + "Payment: COD";
 
                             try {
@@ -440,9 +364,7 @@ trackingButton.setOnClickListener(
                                                 Intent.ACTION_VIEW,
                                                 Uri.parse(
                                                         "https://wa.me/917891851475?text="
-                                                                + Uri.encode(
-                                                                        message
-                                                                )
+                                                                + Uri.encode(message)
                                                 )
                                         );
 
@@ -459,65 +381,140 @@ trackingButton.setOnClickListener(
                         }
                 )
                 .addOnFailureListener(
-                        e -> {
-
-                            Toast.makeText(
-                                    this,
-                                    "Order save failed: "
-                                            + e.getMessage(),
-                                    Toast.LENGTH_LONG
-                            ).show();
-                        }
+                        e -> Toast.makeText(
+                                this,
+                                "Order save failed: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
                 );
     }
-void showLatestOrder() {
 
-    if (auth.getCurrentUser() == null) {
-        Toast.makeText(
-                this,
-                "Connecting...",
-                Toast.LENGTH_SHORT
-        ).show();
-        return;
-    }
+    void showLatestOrder() {
 
-    db.collection("orders")
-            .whereEqualTo(
-                    "userId",
-                    auth.getCurrentUser().getUid()
-            )
-            .get()
-            .addOnSuccessListener(querySnapshot -> {
+        if (auth.getCurrentUser() == null) {
+            Toast.makeText(
+                    this,
+                    "Connecting...",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
 
-                if (querySnapshot.isEmpty()) {
+        db.collection("orders")
+                .whereEqualTo(
+                        "userId",
+                        auth.getCurrentUser().getUid()
+                )
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+
+                    if (querySnapshot.isEmpty()) {
+                        Toast.makeText(
+                                this,
+                                "No order found",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    com.google.firebase.firestore.DocumentSnapshot order =
+                            querySnapshot.getDocuments()
+                                    .get(querySnapshot.size() - 1);
+
+                    String orderId = order.getId();
+                    String status = order.getString("status");
+
                     Toast.makeText(
                             this,
-                            "No order found",
+                            "Order: " + orderId
+                                    + "\nStatus: " + status,
                             Toast.LENGTH_LONG
                     ).show();
-                    return;
-                }
+                })
+                .addOnFailureListener(
+                        e -> Toast.makeText(
+                                this,
+                                "Tracking failed: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+    }
 
-                com.google.firebase.firestore.DocumentSnapshot order =
-                        querySnapshot.getDocuments()
-                                .get(querySnapshot.size() - 1);
+    void cancelLatestOrder() {
 
-                String orderId = order.getId();
-                String status = order.getString("status");
+        if (auth.getCurrentUser() == null) {
+            Toast.makeText(
+                    this,
+                    "Connecting...",
+                    Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
 
-                Toast.makeText(
-                        this,
-                        "Order: " + orderId
-                                + "\nStatus: " + status,
-                        Toast.LENGTH_LONG
-                ).show();
-            })
-            .addOnFailureListener(e ->
-                    Toast.makeText(
-                            this,
-                            "Tracking failed: "
-                                    + e.getMessage(),
-                            Toast.LENGTH_LONG
-                    ).show()
-            );
-}}
+        db.collection("orders")
+                .whereEqualTo(
+                        "userId",
+                        auth.getCurrentUser().getUid()
+                )
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+
+                    if (querySnapshot.isEmpty()) {
+                        Toast.makeText(
+                                this,
+                                "No order found",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    com.google.firebase.firestore.DocumentSnapshot order =
+                            querySnapshot.getDocuments()
+                                    .get(querySnapshot.size() - 1);
+
+                    String orderId = order.getId();
+                    String status = order.getString("status");
+
+                    if (!"PLACED".equals(status)) {
+                        Toast.makeText(
+                                this,
+                                "Order ab cancel nahi ho sakta",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    db.collection("orders")
+                            .document(orderId)
+                            .update(
+                                    "status",
+                                    "CANCELLED"
+                            )
+                            .addOnSuccessListener(
+                                    unused -> Toast.makeText(
+                                            this,
+                                            "Order cancelled",
+                                            Toast.LENGTH_LONG
+                                    ).show()
+                            )
+                            .addOnFailureListener(
+                                    e -> Toast.makeText(
+                                            this,
+                                            "Cancel failed: "
+                                                    + e.getMessage(),
+                                            Toast.LENGTH_LONG
+                                    ).show()
+                            );
+                })
+                .addOnFailureListener(
+                        e -> Toast.makeText(
+                                this,
+                                "Cancel failed: "
+                                        + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+    }
+}
