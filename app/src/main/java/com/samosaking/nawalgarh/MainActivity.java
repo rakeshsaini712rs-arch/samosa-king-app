@@ -10,12 +10,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
-import android.widget.*;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -30,7 +34,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,29 +44,28 @@ public class MainActivity extends Activity {
 
     private static final String PREFS = "samosa_king";
     private static final String LAST_ORDER_ID = "last_order_id";
+    private static final int DELIVERY_FEE = 30;
 
-    FirebaseAuth auth;
-    FirebaseFirestore db;
-    FusedLocationProviderClient locationClient;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
+    private FusedLocationProviderClient locationClient;
 
-    EditText name;
-    EditText mobile;
-    EditText address;
+    private EditText name;
+    private EditText mobile;
+    private EditText address;
 
-    TextView totalText;
-    TextView statusText;
-    TextView locationText;
+    private TextView totalText;
+    private TextView statusText;
+    private TextView locationText;
 
-    int samosaQty = 0;
-    int kachoriQty = 0;
-    int mirchiQty = 0;
+    private int samosaQty = 0;
+    private int kachoriQty = 0;
+    private int mirchiQty = 0;
 
-    final int DELIVERY_FEE = 30;
+    private ListenerRegistration orderListener;
 
-    ListenerRegistration orderListener;
-
-    Double customerLatitude = null;
-    Double customerLongitude = null;
+    private Double customerLatitude = null;
+    private Double customerLongitude = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,21 +77,24 @@ public class MainActivity extends Activity {
 
         createNotificationChannel();
         requestNotificationPermission();
+        buildScreen();
 
         if (auth.getCurrentUser() == null) {
             auth.signInAnonymously()
-                    .addOnSuccessListener(result -> {
-                        loadLastOrder();
-                    });
+                    .addOnSuccessListener(result -> loadLastOrder())
+                    .addOnFailureListener(e ->
+                            Toast.makeText(
+                                    this,
+                                    "Firebase connection failed: " + e.getMessage(),
+                                    Toast.LENGTH_LONG
+                            ).show()
+                    );
         } else {
             loadLastOrder();
         }
-
-        buildScreen();
     }
 
-    void buildScreen() {
-
+    private void buildScreen() {
         LinearLayout main = new LinearLayout(this);
         main.setOrientation(LinearLayout.VERTICAL);
         main.setPadding(30, 30, 30, 30);
@@ -131,9 +136,7 @@ public class MainActivity extends Activity {
 
         mobile = new EditText(this);
         mobile.setHint("Mobile Number");
-        mobile.setInputType(
-                android.text.InputType.TYPE_CLASS_PHONE
-        );
+        mobile.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
         main.addView(mobile);
 
         address = new EditText(this);
@@ -151,17 +154,12 @@ public class MainActivity extends Activity {
         locationText.setPadding(0, 10, 0, 15);
         main.addView(locationText);
 
-        locationButton.setOnClickListener(
-                v -> getCurrentLocation()
-        );
+        locationButton.setOnClickListener(v -> getCurrentLocation());
 
         Button orderButton = new Button(this);
         orderButton.setText("PLACE COD ORDER");
         main.addView(orderButton);
-
-        orderButton.setOnClickListener(
-                v -> placeOrder()
-        );
+        orderButton.setOnClickListener(v -> placeOrder());
 
         statusText = new TextView(this);
         statusText.setTextSize(18);
@@ -171,121 +169,71 @@ public class MainActivity extends Activity {
         Button trackingButton = new Button(this);
         trackingButton.setText("📦 TRACK MY ORDER");
         main.addView(trackingButton);
-
-        trackingButton.setOnClickListener(
-                v -> startOrderListener()
-        );
+        trackingButton.setOnClickListener(v -> startOrderListener());
 
         Button cancelButton = new Button(this);
         cancelButton.setText("❌ CANCEL MY ORDER");
         main.addView(cancelButton);
-
-        cancelButton.setOnClickListener(
-                v -> cancelLatestOrder()
-        );
+        cancelButton.setOnClickListener(v -> cancelLatestOrder());
 
         Button historyButton = new Button(this);
         historyButton.setText("🧾 ORDER HISTORY");
         main.addView(historyButton);
-
-        historyButton.setOnClickListener(
-                v -> showOrderHistory()
-        );
+        historyButton.setOnClickListener(v -> showOrderHistory());
 
         setContentView(scrollView);
-
         updateTotal();
-        loadLastOrder();
     }
 
-    LinearLayout addItem(
-            String itemName,
-            int price,
-            int itemNumber
-    ) {
-
+    private LinearLayout addItem(String itemName, int price, int itemNumber) {
         LinearLayout row = new LinearLayout(this);
-
-        row.setOrientation(
-                LinearLayout.HORIZONTAL
-        );
-
-        row.setGravity(
-                Gravity.CENTER_VERTICAL
-        );
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView item = new TextView(this);
-
-        item.setText(
-                itemName + "  ₹" + price
-        );
-
+        item.setText(itemName + "  ₹" + price);
         item.setTextSize(18);
 
         Button minus = new Button(this);
         minus.setText("-");
 
         TextView qty = new TextView(this);
-
         qty.setText("0");
         qty.setTextSize(18);
         qty.setGravity(Gravity.CENTER);
-
-        qty.setPadding(
-                20,
-                0,
-                20,
-                0
-        );
+        qty.setPadding(20, 0, 20, 0);
 
         Button plus = new Button(this);
         plus.setText("+");
 
         row.addView(
                 item,
-                new LinearLayout.LayoutParams(
-                        0,
-                        70,
-                        1
-                )
+                new LinearLayout.LayoutParams(0, 70, 1)
         );
-
         row.addView(minus);
         row.addView(qty);
         row.addView(plus);
 
         plus.setOnClickListener(v -> {
-
             if (itemNumber == 1) {
                 samosaQty++;
-            }
-
-            if (itemNumber == 2) {
+            } else if (itemNumber == 2) {
                 kachoriQty++;
-            }
-
-            if (itemNumber == 3) {
+            } else {
                 mirchiQty++;
             }
-
             updateQty(qty, itemNumber);
             updateTotal();
         });
 
         minus.setOnClickListener(v -> {
-
             if (itemNumber == 1 && samosaQty > 0) {
                 samosaQty--;
-            }
-
-            if (itemNumber == 2 && kachoriQty > 0) {
+            } else if (itemNumber == 2 && kachoriQty > 0) {
                 kachoriQty--;
-            }
-
-            if (itemNumber == 3 && mirchiQty > 0) {
+            } else if (itemNumber == 3 && mirchiQty > 0) {
                 mirchiQty--;
             }
-
             updateQty(qty, itemNumber);
             updateTotal();
         });
@@ -293,40 +241,23 @@ public class MainActivity extends Activity {
         return row;
     }
 
-    void updateQty(
-            TextView qty,
-            int itemNumber
-    ) {
-
+    private void updateQty(TextView qty, int itemNumber) {
         if (itemNumber == 1) {
-            qty.setText(
-                    String.valueOf(samosaQty)
-            );
-        }
-
-        if (itemNumber == 2) {
-            qty.setText(
-                    String.valueOf(kachoriQty)
-            );
-        }
-
-        if (itemNumber == 3) {
-            qty.setText(
-                    String.valueOf(mirchiQty)
-            );
+            qty.setText(String.valueOf(samosaQty));
+        } else if (itemNumber == 2) {
+            qty.setText(String.valueOf(kachoriQty));
+        } else {
+            qty.setText(String.valueOf(mirchiQty));
         }
     }
 
-    int getSubtotal() {
-
-        return
-                (samosaQty * 20)
+    private int getSubtotal() {
+        return (samosaQty * 20)
                 + (kachoriQty * 30)
                 + (mirchiQty * 30);
     }
 
-    void updateTotal() {
-
+    private void updateTotal() {
         if (totalText == null) {
             return;
         }
@@ -334,24 +265,20 @@ public class MainActivity extends Activity {
         int subtotal = getSubtotal();
 
         if (subtotal == 0) {
-            totalText.setText(
-                    "Subtotal: ₹0"
-            );
+            totalText.setText("Subtotal: ₹0");
             return;
         }
 
-        int total =
-                subtotal + DELIVERY_FEE;
+        int total = subtotal + DELIVERY_FEE;
 
         totalText.setText(
-                "Subtotal: ₹" + subtotal
-                        + "\nDelivery: ₹" + DELIVERY_FEE
-                        + "\nTotal: ₹" + total
+                "Subtotal: ₹" + subtotal +
+                "\nDelivery: ₹" + DELIVERY_FEE +
+                "\nTotal: ₹" + total
         );
     }
 
-    void getCurrentLocation() {
-
+    private void getCurrentLocation() {
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -365,324 +292,202 @@ public class MainActivity extends Activity {
                     },
                     LOCATION_PERMISSION_REQUEST
             );
-
             return;
         }
 
-        locationText.setText(
-                "Getting current location..."
-        );
+        locationText.setText("Getting current location...");
 
         locationClient.getCurrentLocation(
                 com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
                 null
         ).addOnSuccessListener(location -> {
-
             if (location == null) {
-
-                locationText.setText(
-                        "Location nahi mili"
-                );
-
+                locationText.setText("Location nahi mili");
                 return;
             }
 
-            customerLatitude =
-                    location.getLatitude();
-
-            customerLongitude =
-                    location.getLongitude();
+            customerLatitude = location.getLatitude();
+            customerLongitude = location.getLongitude();
 
             locationText.setText(
-                    "📍 Location captured\n"
-                            + "Latitude: "
-                            + customerLatitude
-                            + "\nLongitude: "
-                            + customerLongitude
+                    "📍 Location captured\n" +
+                    "Latitude: " + customerLatitude +
+                    "\nLongitude: " + customerLongitude
             );
-
-        }).addOnFailureListener(e -> {
-
-            locationText.setText(
-                    "Location failed: "
-                            + e.getMessage()
-            );
-        });
+        }).addOnFailureListener(e ->
+                locationText.setText("Location failed: " + e.getMessage())
+        );
     }
 
-    void placeOrder() {
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode,
+            String[] permissions,
+            int[] grantResults
+    ) {
+        super.onRequestPermissionsResult(
+                requestCode,
+                permissions,
+                grantResults
+        );
 
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getCurrentLocation();
+            } else {
+                Toast.makeText(
+                        this,
+                        "Location permission denied",
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        }
+    }
+
+    private void placeOrder() {
         if (auth.getCurrentUser() == null) {
-
             Toast.makeText(
                     this,
                     "Please wait, connecting...",
                     Toast.LENGTH_SHORT
             ).show();
-
             return;
         }
 
         int subtotal = getSubtotal();
 
         if (subtotal < 100) {
-
             Toast.makeText(
                     this,
                     "Minimum order ₹100 hai",
                     Toast.LENGTH_SHORT
             ).show();
-
             return;
         }
 
-        String customerName =
-                name.getText().toString().trim();
-
-        String customerMobile =
-                mobile.getText().toString().trim();
-
-        String customerAddress =
-                address.getText().toString().trim();
+        String customerName = name.getText().toString().trim();
+        String customerMobile = mobile.getText().toString().trim();
+        String customerAddress = address.getText().toString().trim();
 
         if (customerName.isEmpty()
                 || customerMobile.isEmpty()
                 || customerAddress.isEmpty()) {
-
             Toast.makeText(
                     this,
                     "Name, mobile aur address bharo",
                     Toast.LENGTH_LONG
             ).show();
-
             return;
         }
 
-        int total =
-                subtotal + DELIVERY_FEE;
+        int total = subtotal + DELIVERY_FEE;
 
-        Map<String, Object> items =
-                new HashMap<>();
+        Map<String, Object> items = new HashMap<>();
+        items.put("samosa", samosaQty);
+        items.put("kachori", kachoriQty);
+        items.put("mirchiBada", mirchiQty);
 
-        items.put(
-                "samosa",
-                samosaQty
-        );
+        Map<String, Object> order = new HashMap<>();
+        order.put("userId", auth.getCurrentUser().getUid());
+        order.put("customerName", customerName);
+        order.put("mobile", customerMobile);
+        order.put("address", customerAddress);
+        order.put("items", items);
+        order.put("subtotal", subtotal);
+        order.put("deliveryFee", DELIVERY_FEE);
+        order.put("total", total);
+        order.put("paymentMethod", "COD");
+        order.put("status", "PLACED");
 
-        items.put(
-                "kachori",
-                kachoriQty
-        );
-
-        items.put(
-                "mirchiBada",
-                mirchiQty
-        );
-
-        Map<String, Object> order =
-                new HashMap<>();
-
-        order.put(
-                "userId",
-                auth.getCurrentUser().getUid()
-        );
-
-        order.put(
-                "customerName",
-                customerName
-        );
-
-        order.put(
-                "mobile",
-                customerMobile
-        );
-
-        order.put(
-                "address",
-                customerAddress
-        );
-
-        order.put(
-                "items",
-                items
-        );
-
-        order.put(
-                "subtotal",
-                subtotal
-        );
-
-        order.put(
-                "deliveryFee",
-                DELIVERY_FEE
-        );
-
-        order.put(
-                "total",
-                total
-        );
-
-        order.put(
-                "paymentMethod",
-                "COD"
-        );
-
-        order.put(
-                "status",
-                "PLACED"
-        );
-
-        if (customerLatitude != null
-                && customerLongitude != null) {
-
-            order.put(
-                    "latitude",
-                    customerLatitude
-            );
-
-            order.put(
-                    "longitude",
-                    customerLongitude
-            );
+        if (customerLatitude != null && customerLongitude != null) {
+            order.put("latitude", customerLatitude);
+            order.put("longitude", customerLongitude);
         }
 
-        order.put(
-                "createdAt",
-                FieldValue.serverTimestamp()
-        );
+        order.put("createdAt", FieldValue.serverTimestamp());
 
         db.collection("orders")
                 .add(order)
-                .addOnSuccessListener(
-                        documentReference -> {
+                .addOnSuccessListener(documentReference -> {
+                    String orderId = documentReference.getId();
 
-                            String orderId =
-                                    documentReference.getId();
+                    getSharedPreferences(PREFS, MODE_PRIVATE)
+                            .edit()
+                            .putString(LAST_ORDER_ID, orderId)
+                            .apply();
 
-                            getSharedPreferences(
-                                    PREFS,
-                                    MODE_PRIVATE
-                            )
-                                    .edit()
-                                    .putString(
-                                            LAST_ORDER_ID,
-                                            orderId
-                                    )
-                                    .apply();
+                    Toast.makeText(
+                            this,
+                            "Order placed!\nID: " + orderId,
+                            Toast.LENGTH_LONG
+                    ).show();
 
-                            Toast.makeText(
-                                    this,
-                                    "Order placed!\nID: "
-                                            + orderId,
-                                    Toast.LENGTH_LONG
-                            ).show();
+                    startOrderListener();
 
-                            startOrderListener();
+                    String message =
+                            "Samosa King Order\n" +
+                            "Order ID: " + orderId + "\n" +
+                            "Name: " + customerName + "\n" +
+                            "Mobile: " + customerMobile + "\n" +
+                            "Address: " + customerAddress + "\n" +
+                            "Samosa: " + samosaQty + "\n" +
+                            "Kachori: " + kachoriQty + "\n" +
+                            "Mirchi Bada: " + mirchiQty + "\n" +
+                            "Total: ₹" + total + "\n" +
+                            "Payment: COD";
 
-                            String message =
-                                    "Samosa King Order\n"
-                                            + "Order ID: "
-                                            + orderId
-                                            + "\n"
-                                            + "Name: "
-                                            + customerName
-                                            + "\n"
-                                            + "Mobile: "
-                                            + customerMobile
-                                            + "\n"
-                                            + "Address: "
-                                            + customerAddress
-                                            + "\n"
-                                            + "Samosa: "
-                                            + samosaQty
-                                            + "\n"
-                                            + "Kachori: "
-                                            + kachoriQty
-                                            + "\n"
-                                            + "Mirchi Bada: "
-                                            + mirchiQty
-                                            + "\n"
-                                            + "Total: ₹"
-                                            + total
-                                            + "\n"
-                                            + "Payment: COD";
-
-                            try {
-
-                                Intent intent =
-                                        new Intent(
-                                                Intent.ACTION_VIEW,
-                                                Uri.parse(
-                                                        "https://wa.me/917891851475?text="
-                                                                + Uri.encode(
-                                                                message
-                                                        )
-                                                )
-                                        );
-
-                                startActivity(intent);
-
-                            } catch (Exception e) {
-
-                                Toast.makeText(
-                                        this,
-                                        "Order saved successfully",
-                                        Toast.LENGTH_LONG
-                                ).show();
-                            }
-                        }
-                )
-                .addOnFailureListener(
-                        e -> Toast.makeText(
+                    try {
+                        Intent intent = new Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(
+                                        "https://wa.me/917891851475?text=" +
+                                        Uri.encode(message)
+                                )
+                        );
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(
                                 this,
-                                "Order save failed: "
-                                        + e.getMessage(),
+                                "Order saved successfully",
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "Order save failed: " + e.getMessage(),
                                 Toast.LENGTH_LONG
                         ).show()
                 );
     }
 
-    void loadLastOrder() {
-
+    private void loadLastOrder() {
         SharedPreferences prefs =
-                getSharedPreferences(
-                        PREFS,
-                        MODE_PRIVATE
-                );
+                getSharedPreferences(PREFS, MODE_PRIVATE);
 
         String orderId =
-                prefs.getString(
-                        LAST_ORDER_ID,
-                        null
-                );
+                prefs.getString(LAST_ORDER_ID, null);
 
         if (orderId != null) {
             startOrderListener();
         }
     }
 
-    void startOrderListener() {
+    private void startOrderListener() {
+        if (statusText == null) {
+            return;
+        }
 
         SharedPreferences prefs =
-                getSharedPreferences(
-                        PREFS,
-                        MODE_PRIVATE
-                );
+                getSharedPreferences(PREFS, MODE_PRIVATE);
 
         String orderId =
-                prefs.getString(
-                        LAST_ORDER_ID,
-                        null
-                );
+                prefs.getString(LAST_ORDER_ID, null);
 
         if (orderId == null) {
-
-            Toast.makeText(
-                    this,
-                    "No order found",
-                    Toast.LENGTH_SHORT
-            ).show();
-
+            statusText.setText("No order found");
             return;
         }
 
@@ -690,57 +495,244 @@ public class MainActivity extends Activity {
             orderListener.remove();
         }
 
-        orderListener =
-                db.collection("orders")
-                        .document(orderId)
-                        .addSnapshotListener(
-                                (snapshot, error) -> {
-
-                                    if (error != null) {
-
-                                        Toast.makeText(
-                                                this,
-                                                "Tracking failed: "
-                                                        + error.getMessage(),
-                                                Toast.LENGTH_LONG
-                                        ).show();
-
-                                        return;
-                                    }
-
-                                    if (snapshot == null
-                                            || !snapshot.exists()) {
-
-                                        statusText.setText(
-                                                "Order not found"
-                                        );
-
-                                        return;
-                                    }
-
-                                    String status =
-                                            snapshot.getString(
-                                                    "status"
-                                            );
-
-                                    if (status == null) {
-                                                                 }
-
-                                    statusText.setText(
-                                            "📦 ORDER STATUS\n" + status
-                                    );
-                                }
+        orderListener = db.collection("orders")
+                .document(orderId)
+                .addSnapshotListener((snapshot, error) -> {
+                    if (error != null) {
+                        statusText.setText(
+                                "Tracking failed: " + error.getMessage()
                         );
+                        return;
+                    }
+
+                    if (snapshot == null || !snapshot.exists()) {
+                        statusText.setText("Order not found");
+                        return;
+                    }
+
+                    String status = snapshot.getString("status");
+
+                    if (status == null) {
+                        status = "UNKNOWN";
+                    }
+
+                    statusText.setText(
+                            "📦 ORDER STATUS\n" + status
+                    );
+                });
+    }
+
+    private void cancelLatestOrder() {
+        SharedPreferences prefs =
+                getSharedPreferences(PREFS, MODE_PRIVATE);
+
+        String orderId =
+                prefs.getString(LAST_ORDER_ID, null);
+
+        if (orderId == null) {
+            Toast.makeText(
+                    this,
+                    "No order found",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        db.collection("orders")
+                .document(orderId)
+                .get()
+                .addOnSuccessListener(order -> {
+                    if (!order.exists()) {
+                        Toast.makeText(
+                                this,
+                                "Order not found",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    String status = order.getString("status");
+
+                    if (!"PLACED".equals(status)) {
+                        Toast.makeText(
+                                this,
+                                "Order ab cancel nahi ho sakta",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    db.collection("orders")
+                            .document(orderId)
+                            .update("status", "CANCELLED")
+                            .addOnSuccessListener(unused -> {
+                                Toast.makeText(
+                                        this,
+                                        "Order cancelled",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                                startOrderListener();
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(
+                                            this,
+                                            "Cancel failed: " + e.getMessage(),
+                                            Toast.LENGTH_LONG
+                                    ).show()
+                            );
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "Cancel failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+    }
+
+    private void showOrderHistory() {
+        if (auth.getCurrentUser() == null) {
+            return;
+        }
+
+        db.collection("orders")
+                .whereEqualTo(
+                        "userId",
+                        auth.getCurrentUser().getUid()
+                )
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
+                        Toast.makeText(
+                                this,
+                                "No order history",
+                                Toast.LENGTH_LONG
+                        ).show();
+                        return;
+                    }
+
+                    StringBuilder history = new StringBuilder();
+
+                    for (DocumentSnapshot doc :
+                            querySnapshot.getDocuments()) {
+
+                        String status = doc.getString("status");
+                        Long total = doc.getLong("total");
+
+                        history.append("Order: ")
+                                .append(doc.getId())
+                                .append("\nStatus: ")
+                                .append(status == null ? "UNKNOWN" : status)
+                                .append("\nTotal: ₹")
+                                .append(total == null ? 0 : total)
+                                .append("\n\n");
+                    }
+
+                    new AlertDialog.Builder(this)
+                            .setTitle("Order History")
+                            .setMessage(history.toString())
+                            .setPositiveButton("OK", null)
+                            .show();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(
+                                this,
+                                "History failed: " + e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{
+                                Manifest.permission.POST_NOTIFICATIONS
+                        },
+                        NOTIFICATION_PERMISSION_REQUEST
+                );
+            }
+        }
+
+        saveFirebaseMessagingToken();
+    }
+
+    private void saveFirebaseMessagingToken() {
+        FirebaseMessaging.getInstance()
+                .getToken()
+                .addOnSuccessListener(token -> {
+                    // Real FCM token obtained.
+                });
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel =
+                    new NotificationChannel(
+                            "samosa_king_orders",
+                            "Samosa King Orders",
+                            NotificationManager.IMPORTANCE_HIGH
+                    );
+
+            NotificationManager manager =
+                    getSystemService(NotificationManager.class);
+
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void showLocalNotification(
+            String title,
+            String message
+    ) {
+        if (Build.VERSION.SDK_INT >= 33
+                && ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+        ) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(
+                        this,
+                        "samosa_king_orders"
+                )
+                        .setSmallIcon(
+                                android.R.drawable.ic_dialog_info
+                        )
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setPriority(
+                                NotificationCompat.PRIORITY_HIGH
+                        )
+                        .setAutoCancel(true);
+
+        NotificationManager manager =
+                (NotificationManager) getSystemService(
+                        Context.NOTIFICATION_SERVICE
+                );
+
+        if (manager != null) {
+            manager.notify(1001, builder.build());
+        }
     }
 
     @Override
     protected void onDestroy() {
-
         if (orderListener != null) {
             orderListener.remove();
+            orderListener = null;
         }
 
         super.onDestroy();
     }
-}           status = "UNKNOWN";
-                     
+}
