@@ -724,5 +724,23 @@ public class MainActivity extends Activity {
                                             );
 
                                     if (status == null) {
-                                        status = "UNKNOWN";
+                                                                 }
+
+                                    statusText.setText(
+                                            "📦 ORDER STATUS\n" + status
+                                    );
+                                }
+                        );
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        if (orderListener != null) {
+            orderListener.remove();
+        }
+
+        super.onDestroy();
+    }
+}           status = "UNKNOWN";
                      
