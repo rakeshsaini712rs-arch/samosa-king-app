@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "samosa-king-3b90d",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
