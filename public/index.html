@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samosa King - Admin Panel</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    .header {
+      background: #1b1b1b;
+      padding: 18px;
+      text-align: center;
+      border-bottom: 2px solid #d4af37;
+    }
+
+    .header h1 {
+      margin: 0;
+      color: #d4af37;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      color: #ccc;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #1d1d1d;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 18px;
+      border: 1px solid #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #555;
+      background: #292929;
+      color: white;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 11px 15px;
+      margin: 5px;
+      border: 0;
+      border-radius: 8px;
+      background: #d4af37;
+      color: #111;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .danger {
+      background: #b3261e;
+      color: white;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 20px;
+      background: #333;
+      color: #d4af37;
+      font-weight: bold;
+    }
+
+    .order {
+      border: 1px solid #444;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px 0;
+      background: #171717;
+    }
+
+    .order h3 {
+      color: #d4af37;
+      margin-top: 0;
+    }
+
+    .items {
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .error {
+      color: #ff6b6b;
+      margin-top: 10px;
+    }
+
+    .success {
+      color: #72e072;
+      margin-top: 10px;
+    }
+
+    .small {
+      color: #aaa;
+      font-size: 13px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>👑 SAMOSA KING</h1>
+    <p>Admin Panel — Nawalgarh</p>
+  </div>
+
+  <div class="container">
+
+    <!-- LOGIN -->
+    <div id="loginCard" class="card">
+      <h2>Admin Login</h2>
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Admin Email"
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+      >
+
+      <button id="loginBtn">Login</button>
+
+      <div id="loginMessage"></div>
+    </div>
+
+
+    <!-- ADMIN -->
+    <div id="adminPanel" class="hidden">
+
+      <div class="card">
+        <h2>Orders</h2>
+
+        <button id="refreshBtn">Refresh Orders</button>
+        <button id="logoutBtn" class="danger">Logout</button>
+
+        <div id="message"></div>
+      </div>
+
+      <div id="orders"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- Firebase -->
+  <script type="module">
+
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    }
+    from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+    import {
+      getFirestore,
+      collection,
+      query,
+      orderBy,
+      getDocs,
+      updateDoc,
+      doc
+    }
+    from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+
+    /*
+     * IMPORTANT:
+     * Neeche Firebase WEB APP ki REAL configuration daalni hai.
+     *
+     * Firebase Console:
+     * Project Settings
+     * → Your apps
+     * → Web app </> 
+     */
+
+    const firebaseConfig = {
+
+      apiKey: "PASTE_REAL_WEB_API_KEY_HERE",
+
+      authDomain:
+        "samosa-king-3b90d.firebaseapp.com",
+
+      projectId:
+        "samosa-king-3b90d",
+
+      storageBucket:
+        "samosa-king-3b90d.firebasestorage.app",
+
+      messagingSenderId:
+        "PASTE_REAL_WEB_MESSAGING_SENDER_ID_HERE",
+
+      appId:
+        "PASTE_REAL_WEB_APP_ID_HERE"
+    };
+
+
+    const ADMIN_UID =
+      "vJCq3yQDe0QcCg5EoEPnjVKwUgJ2";
+
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    const db = getFirestore(app);
+
+
+    const loginCard =
+      document.getElementById("loginCard");
+
+    const adminPanel =
+      document.getElementById("adminPanel");
+
+    const loginMessage =
+      document.getElementById("loginMessage");
+
+    const message =
+      document.getElementById("message");
+
+    const ordersDiv =
+      document.getElementById("orders");
+
+
+    /*
+     * AUTH STATE
+     */
+
+    onAuthStateChanged(auth, async (user) => {
+
+      if (!user) {
+
+        loginCard.classList.remove("hidden");
+        adminPanel.classList.add("hidden");
+
+        return;
+      }
+
+
+      if (user.uid !== ADMIN_UID) {
+
+        await signOut(auth);
+
+        loginCard.classList.remove("hidden");
+        adminPanel.classList.add("hidden");
+
+        loginMessage.innerHTML =
+          '<div class="error">Admin access denied.</div>';
+
+        return;
+      }
+
+
+      loginCard.classList.add("hidden");
+      adminPanel.classList.remove("hidden");
+
+      await loadOrders();
+
+    });
+
+
+    /*
+     * LOGIN
+     */
+
+    document
+      .getElementById("loginBtn")
+      .addEventListener("click", async () => {
+
+        const email =
+          document.getElementById("email").value.trim();
+
+        const password =
+          document.getElementById("password").value;
+
+
+        if (!email || !password) {
+
+          loginMessage.innerHTML =
+            '<div class="error">Email aur password bharo.</div>';
+
+          return;
+        }
+
+
+        loginMessage.innerHTML =
+          "Login ho raha hai...";
+
+
+        try {
+
+          const result =
+            await signInWithEmailAndPassword(
+              auth,
+              email,
+              password
+            );
+
+
+          if (result.user.uid !== ADMIN_UID) {
+
+            await signOut(auth);
+
+            throw new Error(
+              "Ye account admin nahi hai."
+            );
+          }
+
+
+          loginMessage.innerHTML =
+            '<div class="success">Login successful.</div>';
+
+        } catch (error) {
+
+          console.error(error);
+
+          loginMessage.innerHTML =
+            '<div class="error">' +
+            escapeHtml(error.message) +
+            '</div>';
+        }
+
+      });
+
+
+    /*
+     * LOGOUT
+     */
+
+    document
+      .getElementById("logoutBtn")
+      .addEventListener("click", async () => {
+
+        await signOut(auth);
+
+      });
+
+
+    /*
+     * REFRESH
+     */
+
+    document
+      .getElementById("refreshBtn")
+      .addEventListener("click", async () => {
+
+        await loadOrders();
+
+      });
+
+
+    /*
+     * LOAD REAL ORDERS FROM FIRESTORE
+     */
+
+    async function loadOrders() {
+
+      ordersDiv.innerHTML =
+        "<p>Real orders load ho rahe hain...</p>";
+
+
+      try {
+
+        const ordersRef =
+          collection(db, "orders");
+
+        const q =
+          query(
+            ordersRef,
+            orderBy("createdAt", "desc")
+          );
+
+        const snapshot =
+          await getDocs(q);
+
+
+        if (snapshot.empty) {
+
+          ordersDiv.innerHTML =
+            '<div class="card">' +
+            '<h3>Abhi koi order nahi hai.</h3>' +
+            '</div>';
+
+          return;
+        }
+
+
+        ordersDiv.innerHTML = "";
+
+
+        snapshot.forEach((orderDoc) => {
+
+          const data =
+            orderDoc.data();
+
+          renderOrder(
+            orderDoc.id,
+            data
+          );
+
+        });
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        ordersDiv.innerHTML =
+          '<div class="card error">' +
+          'Orders load nahi hue: ' +
+          escapeHtml(error.message) +
+          '</div>';
+      }
+
+    }
+
+
+    /*
+     * DISPLAY ONE ORDER
+     */
+
+    function renderOrder(orderId, data) {
+
+      const order =
+        document.createElement("div");
+
+      order.className = "order";
+
+
+      const status =
+        data.status || "PLACED";
+
+
+      let createdText = "";
+
+      if (data.createdAt) {
+
+        try {
+
+          createdText =
+            data.createdAt
+              .toDate()
+              .toLocaleString("en-IN");
+
+        } catch (e) {
+
+          createdText = "";
+        }
+      }
+
+
+      let itemsHtml = "";
+
+
+      if (data.items) {
+
+        Object.entries(data.items)
+          .forEach(([item, quantity]) => {
+
+            itemsHtml +=
+              "<div>" +
+              escapeHtml(formatItemName(item)) +
+              " × " +
+              escapeHtml(String(quantity)) +
+              "</div>";
+
+          });
+
+      }
+
+
+      order.innerHTML = `
+
+        <h3>Order #${escapeHtml(orderId)}</h3>
+
+        <p>
+          <b>Name:</b>
+          ${escapeHtml(data.name || "-")}
+        </p>
+
+        <p>
+          <b>Mobile:</b>
+          ${escapeHtml(data.mobile || "-")}
+        </p>
+
+        <p>
+          <b>Address:</b>
+          ${escapeHtml(data.address || "-")}
+        </p>
+
+        <div class="items">
+          <b>Items</b>
+          ${itemsHtml || "<div>-</div>"}
+        </div>
+
+        <p>
+          <b>Subtotal:</b>
+          ₹${escapeHtml(String(data.subtotal ?? 0))}
+        </p>
+
+        <p>
+          <b>Delivery:</b>
+          ₹${escapeHtml(String(data.delivery ?? 0))}
+        </p>
+
+        <p>
+          <b>Total:</b>
+          ₹${escapeHtml(String(data.total ?? 0))}
+        </p>
+
+        <p>
+          <b>Payment:</b>
+          ${escapeHtml(data.paymentMethod || "COD")}
+        </p>
+
+        <p>
+          <b>Order Time:</b>
+          ${escapeHtml(createdText || "-")}
+        </p>
+
+        <p>
+          <b>Status:</b>
+          <span class="status">
+            ${escapeHtml(status)}
+          </span>
+        </p>
+
+        <div>
+
+          <button
+            onclick="changeStatus('${orderId}', 'PLACED')">
+            PLACED
+          </button>
+
+          <button
+            onclick="changeStatus('${orderId}', 'PREPARING')">
+            PREPARING
+          </button>
+
+          <button
+            onclick="changeStatus('${orderId}', 'OUT FOR DELIVERY')">
+            OUT FOR DELIVERY
+          </button>
+
+          <button
+            onclick="changeStatus('${orderId}', 'DELIVERED')">
+            DELIVERED
+          </button>
+
+          <button
+            class="danger"
+            onclick="changeStatus('${orderId}', 'CANCELLED')">
+            CANCELLED
+          </button>
+
+        </div>
+
+        <div class="small">
+          Order ID: ${escapeHtml(orderId)}
+        </div>
+      `;
+
+
+      ordersDiv.appendChild(order);
+
+    }
+
+
+    /*
+     * CHANGE REAL FIRESTORE STATUS
+     */
+
+    window.changeStatus =
+      async function(orderId, newStatus) {
+
+        try {
+
+          message.innerHTML =
+            "Status update ho raha hai...";
+
+
+          await updateDoc(
+            doc(db, "orders", orderId),
+            {
+              status: newStatus
+            }
+          );
+
+
+          message.innerHTML =
+            '<div class="success">' +
+            "Status updated: " +
+            escapeHtml(newStatus) +
+            "</div>";
+
+
+          await loadOrders();
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          message.innerHTML =
+            '<div class="error">' +
+            "Status update failed: " +
+            escapeHtml(error.message) +
+            "</div>";
+        }
+
+      };
+
+
+    /*
+     * ITEM NAME
+     */
+
+    function formatItemName(name) {
+
+      const names = {
+
+        samosa: "Samosa",
+
+        kachori: "Kachori",
+
+        mirchiBada: "Mirchi Bada"
+
+      };
+
+      return names[name] || name;
+
+    }
+
+
+    /*
+     * SECURITY: HTML ESCAPE
+     */
+
+    function escapeHtml(value) {
+
+      return String(value)
+
+        .replaceAll("&", "&amp;")
+
+        .replaceAll("<", "&lt;")
+
+        .replaceAll(">", "&gt;")
+
+        .replaceAll('"', "&quot;")
+
+        .replaceAll("'", "&#039;");
+    }
+
+  </script>
+
+</body>
+</html>
