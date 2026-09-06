@@ -76,18 +76,16 @@ public class MainActivity extends Activity {
         title.setTextSize(28);
         title.setTextColor(Color.BLACK);
         title.setGravity(Gravity.CENTER);
-
         main.addView(title);
 
         TextView shop = new TextView(this);
         shop.setText(
-                "Nansa Gate, Nawalgarh\n"
-                        + "Delivery ₹30 • Minimum Order ₹100"
+                "Nansa Gate, Nawalgarh\n" +
+                "Delivery ₹30 • Minimum Order ₹100"
         );
         shop.setTextSize(16);
         shop.setGravity(Gravity.CENTER);
         shop.setPadding(0, 10, 0, 20);
-
         main.addView(shop);
 
         main.addView(addItem("Samosa", 20, 1));
@@ -97,7 +95,6 @@ public class MainActivity extends Activity {
         totalText = new TextView(this);
         totalText.setTextSize(20);
         totalText.setPadding(0, 25, 0, 25);
-
         main.addView(totalText);
 
         name = new EditText(this);
@@ -114,33 +111,25 @@ public class MainActivity extends Activity {
         address = new EditText(this);
         address.setHint("Delivery Address");
         address.setMinLines(3);
-
         main.addView(address);
 
         Button orderButton = new Button(this);
         orderButton.setText("PLACE COD ORDER");
-
         main.addView(orderButton);
 
         orderButton.setOnClickListener(v -> placeOrder());
 
         Button trackingButton = new Button(this);
         trackingButton.setText("MY LATEST ORDER");
-
         main.addView(trackingButton);
 
-        trackingButton.setOnClickListener(
-                v -> showLatestOrder()
-        );
+        trackingButton.setOnClickListener(v -> showLatestOrder());
 
         Button adminButton = new Button(this);
         adminButton.setText("ADMIN LOGIN");
-
         main.addView(adminButton);
 
-        adminButton.setOnClickListener(
-                v -> showAdminLogin()
-        );
+        adminButton.setOnClickListener(v -> showAdminLogin());
 
         setContentView(main);
 
@@ -154,17 +143,11 @@ public class MainActivity extends Activity {
     ) {
 
         LinearLayout row = new LinearLayout(this);
-        row.setOrientation(
-                LinearLayout.HORIZONTAL
-        );
-        row.setGravity(
-                Gravity.CENTER_VERTICAL
-        );
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
 
         TextView item = new TextView(this);
-        item.setText(
-                itemName + "  ₹" + price
-        );
+        item.setText(itemName + "  ₹" + price);
         item.setTextSize(18);
 
         Button minus = new Button(this);
@@ -181,11 +164,7 @@ public class MainActivity extends Activity {
 
         row.addView(
                 item,
-                new LinearLayout.LayoutParams(
-                        0,
-                        70,
-                        1
-                )
+                new LinearLayout.LayoutParams(0, 70, 1)
         );
 
         row.addView(minus);
@@ -212,18 +191,15 @@ public class MainActivity extends Activity {
 
         minus.setOnClickListener(v -> {
 
-            if (itemNumber == 1
-                    && samosaQty > 0) {
+            if (itemNumber == 1 && samosaQty > 0) {
                 samosaQty--;
             }
 
-            if (itemNumber == 2
-                    && kachoriQty > 0) {
+            if (itemNumber == 2 && kachoriQty > 0) {
                 kachoriQty--;
             }
 
-            if (itemNumber == 3
-                    && mirchiQty > 0) {
+            if (itemNumber == 3 && mirchiQty > 0) {
                 mirchiQty--;
             }
 
@@ -234,27 +210,18 @@ public class MainActivity extends Activity {
         return row;
     }
 
-    void updateQty(
-            TextView qty,
-            int itemNumber
-    ) {
+    void updateQty(TextView qty, int itemNumber) {
 
         if (itemNumber == 1) {
-            qty.setText(
-                    String.valueOf(samosaQty)
-            );
+            qty.setText(String.valueOf(samosaQty));
         }
 
         if (itemNumber == 2) {
-            qty.setText(
-                    String.valueOf(kachoriQty)
-            );
+            qty.setText(String.valueOf(kachoriQty));
         }
 
         if (itemNumber == 3) {
-            qty.setText(
-                    String.valueOf(mirchiQty)
-            );
+            qty.setText(String.valueOf(mirchiQty));
         }
     }
 
@@ -275,21 +242,16 @@ public class MainActivity extends Activity {
         int subtotal = getSubtotal();
 
         if (subtotal == 0) {
-
-            totalText.setText(
-                    "Subtotal: ₹0"
-            );
-
+            totalText.setText("Subtotal: ₹0");
             return;
         }
 
-        int total =
-                subtotal + DELIVERY_FEE;
+        int total = subtotal + DELIVERY_FEE;
 
         totalText.setText(
-                "Subtotal: ₹" + subtotal
-                        + "\nDelivery: ₹" + DELIVERY_FEE
-                        + "\nTotal: ₹" + total
+                "Subtotal: ₹" + subtotal +
+                        "\nDelivery: ₹" + DELIVERY_FEE +
+                        "\nTotal: ₹" + total
         );
     }
 
@@ -341,69 +303,30 @@ public class MainActivity extends Activity {
             return;
         }
 
-        int total =
-                subtotal + DELIVERY_FEE;
+        int total = subtotal + DELIVERY_FEE;
 
-        Map<String, Object> items =
-                new HashMap<>();
+        Map<String, Object> items = new HashMap<>();
 
         items.put("samosa", samosaQty);
         items.put("kachori", kachoriQty);
         items.put("mirchiBada", mirchiQty);
 
-        Map<String, Object> order =
-                new HashMap<>();
+        Map<String, Object> order = new HashMap<>();
 
         order.put(
                 "userId",
                 auth.getCurrentUser().getUid()
         );
 
-        order.put(
-                "customerName",
-                customerName
-        );
-
-        order.put(
-                "mobile",
-                customerMobile
-        );
-
-        order.put(
-                "address",
-                customerAddress
-        );
-
-        order.put(
-                "items",
-                items
-        );
-
-        order.put(
-                "subtotal",
-                subtotal
-        );
-
-        order.put(
-                "deliveryFee",
-                DELIVERY_FEE
-        );
-
-        order.put(
-                "total",
-                total
-        );
-
-        order.put(
-                "paymentMethod",
-                "COD"
-        );
-
-        order.put(
-                "status",
-                "PLACED"
-        );
-
+        order.put("customerName", customerName);
+        order.put("mobile", customerMobile);
+        order.put("address", customerAddress);
+        order.put("items", items);
+        order.put("subtotal", subtotal);
+        order.put("deliveryFee", DELIVERY_FEE);
+        order.put("total", total);
+        order.put("paymentMethod", "COD");
+        order.put("status", "PLACED");
         order.put(
                 "createdAt",
                 FieldValue.serverTimestamp()
@@ -419,51 +342,40 @@ public class MainActivity extends Activity {
 
                             Toast.makeText(
                                     this,
-                                    "Order placed!\nID: "
-                                            + latestOrderId,
+                                    "Order placed!\nID: " +
+                                            latestOrderId,
                                     Toast.LENGTH_LONG
                             ).show();
 
                             String message =
-                                    "Samosa King Order\n"
-                                            + "Order ID: "
-                                            + latestOrderId
-                                            + "\n"
-                                            + "Name: "
-                                            + customerName
-                                            + "\n"
-                                            + "Mobile: "
-                                            + customerMobile
-                                            + "\n"
-                                            + "Address: "
-                                            + customerAddress
-                                            + "\n"
-                                            + "Samosa: "
-                                            + samosaQty
-                                            + "\n"
-                                            + "Kachori: "
-                                            + kachoriQty
-                                            + "\n"
-                                            + "Mirchi Bada: "
-                                            + mirchiQty
-                                            + "\n"
-                                            + "Total: ₹"
-                                            + total
-                                            + "\n"
-                                            + "Payment: COD";
+                                    "Samosa King Order\n" +
+                                    "Order ID: " +
+                                    latestOrderId + "\n" +
+                                    "Name: " +
+                                    customerName + "\n" +
+                                    "Mobile: " +
+                                    customerMobile + "\n" +
+                                    "Address: " +
+                                    customerAddress + "\n" +
+                                    "Samosa: " +
+                                    samosaQty + "\n" +
+                                    "Kachori: " +
+                                    kachoriQty + "\n" +
+                                    "Mirchi Bada: " +
+                                    mirchiQty + "\n" +
+                                    "Total: ₹" +
+                                    total + "\n" +
+                                    "Payment: COD";
 
                             try {
 
-                                Intent intent =
-                                        new Intent(
-                                                Intent.ACTION_VIEW,
-                                                Uri.parse(
-                                                        "https://wa.me/917891851475?text="
-                                                                + Uri.encode(
-                                                                message
-                                                        )
-                                                )
-                                        );
+                                Intent intent = new Intent(
+                                        Intent.ACTION_VIEW,
+                                        Uri.parse(
+                                                "https://wa.me/917891851475?text=" +
+                                                        Uri.encode(message)
+                                        )
+                                );
 
                                 startActivity(intent);
 
@@ -475,14 +387,13 @@ public class MainActivity extends Activity {
                                         Toast.LENGTH_LONG
                                 ).show();
                             }
-
                         }
                 )
                 .addOnFailureListener(
                         e -> Toast.makeText(
                                 this,
-                                "Order save failed: "
-                                        + e.getMessage(),
+                                "Order save failed: " +
+                                        e.getMessage(),
                                 Toast.LENGTH_LONG
                         ).show()
                 );
@@ -531,8 +442,7 @@ public class MainActivity extends Activity {
                                             .getDocuments()
                                             .get(0);
 
-                            latestOrderId =
-                                    doc.getId();
+                            latestOrderId = doc.getId();
 
                             showOrderTracking(doc);
                         }
@@ -540,16 +450,14 @@ public class MainActivity extends Activity {
                 .addOnFailureListener(
                         e -> Toast.makeText(
                                 this,
-                                "Order load failed: "
-                                        + e.getMessage(),
+                                "Order load failed: " +
+                                        e.getMessage(),
                                 Toast.LENGTH_LONG
                         ).show()
                 );
     }
 
-    void showOrderTracking(
-            DocumentSnapshot doc
-    ) {
+    void showOrderTracking(DocumentSnapshot doc) {
 
         String status =
                 doc.getString("status");
@@ -580,10 +488,7 @@ public class MainActivity extends Activity {
         TextView title =
                 new TextView(this);
 
-        title.setText(
-                "👑 MY ORDER"
-        );
-
+        title.setText("👑 MY ORDER");
         title.setTextSize(26);
         title.setGravity(Gravity.CENTER);
 
@@ -595,20 +500,20 @@ public class MainActivity extends Activity {
         orderInfo.setTextSize(18);
 
         orderInfo.setText(
-                "Order ID:\n"
-                        + doc.getId()
-                        + "\n\n"
-                        + "Name: "
-                        + customerName
-                        + "\n"
-                        + "Address: "
-                        + addressText
-                        + "\n"
-                        + "Total: ₹"
-                        + total
-                        + "\n\n"
-                        + "STATUS: "
-                        + status
+                "Order ID:\n" +
+                        doc.getId() +
+                        "\n\n" +
+                        "Name: " +
+                        customerName +
+                        "\n" +
+                        "Address: " +
+                        addressText +
+                        "\n" +
+                        "Total: ₹" +
+                        total +
+                        "\n\n" +
+                        "STATUS: " +
+                        status
         );
 
         main.addView(orderInfo);
@@ -618,9 +523,7 @@ public class MainActivity extends Activity {
             Button cancel =
                     new Button(this);
 
-            cancel.setText(
-                    "CANCEL ORDER"
-            );
+            cancel.setText("CANCEL ORDER");
 
             main.addView(cancel);
 
@@ -642,7 +545,10 @@ public class MainActivity extends Activity {
 
         setContentView(main);
 
-        listenToOrder(doc.getId(), orderInfo);
+        listenToOrder(
+                doc.getId(),
+                orderInfo
+        );
     }
 
     void listenToOrder(
@@ -672,19 +578,17 @@ public class MainActivity extends Activity {
                                             );
 
                                     orderInfo.setText(
-                                            "Order ID:\n"
-                                                    + snapshot.getId()
-                                                    + "\n\n"
-                                                    + "STATUS: "
-                                                    + status
+                                            "Order ID:\n" +
+                                                    snapshot.getId() +
+                                                    "\n\n" +
+                                                    "STATUS: " +
+                                                    status
                                     );
                                 }
                         );
     }
 
-    void cancelOrder(
-            String orderId
-    ) {
+    void cancelOrder(String orderId) {
 
         db.collection("orders")
                 .document(orderId)
@@ -728,6 +632,61 @@ public class MainActivity extends Activity {
                                                 showLatestOrder();
                                             }
                                     )
-                
+                                    .addOnFailureListener(
+                                            e -> Toast.makeText(
+                                                    this,
+                                                    "Cancel failed: " +
+                                                            e.getMessage(),
+                                                    Toast.LENGTH_LONG
+                                            ).show()
+                                    );
+                        }
+                )
+                .addOnFailureListener(
+                        e -> Toast.makeText(
+                                this,
+                                "Order check failed: " +
+                                        e.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show()
+                );
     }
-                    }
+
+    void showAdminLogin() {
+
+        LinearLayout layout =
+                new LinearLayout(this);
+
+        layout.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        layout.setPadding(
+                30,
+                30,
+                30,
+                30
+        );
+
+        TextView title =
+                new TextView(this);
+
+        title.setText("👑 ADMIN LOGIN");
+        title.setTextSize(26);
+        title.setGravity(Gravity.CENTER);
+
+        layout.addView(title);
+
+        EditText email =
+                new EditText(this);
+
+        email.setHint("Admin Email");
+
+        email.setInputType(
+                android.text.InputType.TYPE_CLASS_TEXT
+                        | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        );
+
+        layout.addView(email);
+
+        EditText pass
