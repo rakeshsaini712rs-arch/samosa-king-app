@@ -95,6 +95,13 @@ public class MainActivity extends Activity {
         orderButton.setOnClickListener(
                 v -> placeOrder()
         );
+        Button trackingButton = new Button(this);
+trackingButton.setText("TRACK MY ORDER");
+main.addView(trackingButton);
+
+trackingButton.setOnClickListener(
+        v -> showLatestOrder()
+);
 
         setContentView(main);
 
@@ -463,4 +470,54 @@ public class MainActivity extends Activity {
                         }
                 );
     }
-}
+void showLatestOrder() {
+
+    if (auth.getCurrentUser() == null) {
+        Toast.makeText(
+                this,
+                "Connecting...",
+                Toast.LENGTH_SHORT
+        ).show();
+        return;
+    }
+
+    db.collection("orders")
+            .whereEqualTo(
+                    "userId",
+                    auth.getCurrentUser().getUid()
+            )
+            .get()
+            .addOnSuccessListener(querySnapshot -> {
+
+                if (querySnapshot.isEmpty()) {
+                    Toast.makeText(
+                            this,
+                            "No order found",
+                            Toast.LENGTH_LONG
+                    ).show();
+                    return;
+                }
+
+                com.google.firebase.firestore.DocumentSnapshot order =
+                        querySnapshot.getDocuments()
+                                .get(querySnapshot.size() - 1);
+
+                String orderId = order.getId();
+                String status = order.getString("status");
+
+                Toast.makeText(
+                        this,
+                        "Order: " + orderId
+                                + "\nStatus: " + status,
+                        Toast.LENGTH_LONG
+                ).show();
+            })
+            .addOnFailureListener(e ->
+                    Toast.makeText(
+                            this,
+                            "Tracking failed: "
+                                    + e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show()
+            );
+}}
