@@ -20,7 +20,9 @@ public class MainActivity extends Activity {
     FirebaseAuth auth;
     FirebaseFirestore db;
 
-    EditText name, mobile, address;
+    EditText name;
+    EditText mobile;
+    EditText address;
     TextView totalText;
 
     int samosaQty = 0;
@@ -90,7 +92,9 @@ public class MainActivity extends Activity {
         orderButton.setText("PLACE COD ORDER");
         main.addView(orderButton);
 
-        orderButton.setOnClickListener(v -> placeOrder());
+        orderButton.setOnClickListener(
+                v -> placeOrder()
+        );
 
         setContentView(main);
 
@@ -104,11 +108,17 @@ public class MainActivity extends Activity {
     ) {
 
         LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+        row.setGravity(
+                Gravity.CENTER_VERTICAL
+        );
 
         TextView item = new TextView(this);
-        item.setText(itemName + "  ₹" + price);
+        item.setText(
+                itemName + "  ₹" + price
+        );
         item.setTextSize(18);
 
         Button minus = new Button(this);
@@ -125,8 +135,13 @@ public class MainActivity extends Activity {
 
         row.addView(
                 item,
-                new LinearLayout.LayoutParams(0, 70, 1)
+                new LinearLayout.LayoutParams(
+                        0,
+                        70,
+                        1
+                )
         );
+
         row.addView(minus);
         row.addView(qty);
         row.addView(plus);
@@ -145,25 +160,36 @@ public class MainActivity extends Activity {
                 mirchiQty++;
             }
 
-            updateQty(qty, itemNumber);
+            updateQty(
+                    qty,
+                    itemNumber
+            );
+
             updateTotal();
         });
 
         minus.setOnClickListener(v -> {
 
-            if (itemNumber == 1 && samosaQty > 0) {
+            if (itemNumber == 1
+                    && samosaQty > 0) {
                 samosaQty--;
             }
 
-            if (itemNumber == 2 && kachoriQty > 0) {
+            if (itemNumber == 2
+                    && kachoriQty > 0) {
                 kachoriQty--;
             }
 
-            if (itemNumber == 3 && mirchiQty > 0) {
+            if (itemNumber == 3
+                    && mirchiQty > 0) {
                 mirchiQty--;
             }
 
-            updateQty(qty, itemNumber);
+            updateQty(
+                    qty,
+                    itemNumber
+            );
+
             updateTotal();
         });
 
@@ -176,21 +202,28 @@ public class MainActivity extends Activity {
     ) {
 
         if (itemNumber == 1) {
-            qty.setText(String.valueOf(samosaQty));
+            qty.setText(
+                    String.valueOf(samosaQty)
+            );
         }
 
         if (itemNumber == 2) {
-            qty.setText(String.valueOf(kachoriQty));
+            qty.setText(
+                    String.valueOf(kachoriQty)
+            );
         }
 
         if (itemNumber == 3) {
-            qty.setText(String.valueOf(mirchiQty));
+            qty.setText(
+                    String.valueOf(mirchiQty)
+            );
         }
     }
 
     int getSubtotal() {
 
-        return (samosaQty * 20)
+        return
+                (samosaQty * 20)
                 + (kachoriQty * 30)
                 + (mirchiQty * 30);
     }
@@ -204,16 +237,23 @@ public class MainActivity extends Activity {
         int subtotal = getSubtotal();
 
         if (subtotal == 0) {
-            totalText.setText("Subtotal: ₹0");
+
+            totalText.setText(
+                    "Subtotal: ₹0"
+            );
+
             return;
         }
 
-        int total = subtotal + DELIVERY_FEE;
+        int total =
+                subtotal + DELIVERY_FEE;
 
         totalText.setText(
                 "Subtotal: ₹" + subtotal
-                        + "\nDelivery: ₹" + DELIVERY_FEE
-                        + "\nTotal: ₹" + total
+                        + "\nDelivery: ₹"
+                        + DELIVERY_FEE
+                        + "\nTotal: ₹"
+                        + total
         );
     }
 
@@ -244,13 +284,19 @@ public class MainActivity extends Activity {
         }
 
         String customerName =
-                name.getText().toString().trim();
+                name.getText()
+                        .toString()
+                        .trim();
 
         String customerMobile =
-                mobile.getText().toString().trim();
+                mobile.getText()
+                        .toString()
+                        .trim();
 
         String customerAddress =
-                address.getText().toString().trim();
+                address.getText()
+                        .toString()
+                        .trim();
 
         if (customerName.isEmpty()
                 || customerMobile.isEmpty()
@@ -265,14 +311,26 @@ public class MainActivity extends Activity {
             return;
         }
 
-        int total = subtotal + DELIVERY_FEE;
+        int total =
+                subtotal + DELIVERY_FEE;
 
         Map<String, Object> items =
                 new HashMap<>();
 
-        items.put("samosa", samosaQty);
-        items.put("kachori", kachoriQty);
-        items.put("mirchiBada", mirchiQty);
+        items.put(
+                "samosa",
+                samosaQty
+        );
+
+        items.put(
+                "kachori",
+                kachoriQty
+        );
+
+        items.put(
+                "mirchiBada",
+                mirchiQty
+        );
 
         Map<String, Object> order =
                 new HashMap<>();
@@ -282,15 +340,51 @@ public class MainActivity extends Activity {
                 auth.getCurrentUser().getUid()
         );
 
-        order.put("customerName", customerName);
-        order.put("mobile", customerMobile);
-        order.put("address", customerAddress);
-        order.put("items", items);
-        order.put("subtotal", subtotal);
-        order.put("deliveryFee", DELIVERY_FEE);
-        order.put("total", total);
-        order.put("paymentMethod", "COD");
-        order.put("status", "PLACED");
+        order.put(
+                "customerName",
+                customerName
+        );
+
+        order.put(
+                "mobile",
+                customerMobile
+        );
+
+        order.put(
+                "address",
+                customerAddress
+        );
+
+        order.put(
+                "items",
+                items
+        );
+
+        order.put(
+                "subtotal",
+                subtotal
+        );
+
+        order.put(
+                "deliveryFee",
+                DELIVERY_FEE
+        );
+
+        order.put(
+                "total",
+                total
+        );
+
+        order.put(
+                "paymentMethod",
+                "COD"
+        );
+
+        order.put(
+                "status",
+                "PLACED"
+        );
+
         order.put(
                 "createdAt",
                 FieldValue.serverTimestamp()
@@ -302,7 +396,8 @@ public class MainActivity extends Activity {
                         documentReference -> {
 
                             String orderId =
-                                    documentReference.getId();
+                                    documentReference
+                                            .getId();
 
                             Toast.makeText(
                                     this,
@@ -313,14 +408,22 @@ public class MainActivity extends Activity {
 
                             String message =
                                     "Samosa King Order\n"
-                                    + "Order ID: " + orderId + "\n"
-                                    + "Name: " + customerName + "\n"
-                                    + "Mobile: " + customerMobile + "\n"
-                                    + "Address: " + customerAddress + "\n"
-                                    + "Samosa: " + samosaQty + "\n"
-                                    + "Kachori: " + kachoriQty + "\n"
-                                    + "Mirchi Bada: " + mirchiQty + "\n"
-                                    + "Total: ₹" + total + "\n"
+                                    + "Order ID: "
+                                    + orderId + "\n"
+                                    + "Name: "
+                                    + customerName + "\n"
+                                    + "Mobile: "
+                                    + customerMobile + "\n"
+                                    + "Address: "
+                                    + customerAddress + "\n"
+                                    + "Samosa: "
+                                    + samosaQty + "\n"
+                                    + "Kachori: "
+                                    + kachoriQty + "\n"
+                                    + "Mirchi Bada: "
+                                    + mirchiQty + "\n"
+                                    + "Total: ₹"
+                                    + total + "\n"
                                     + "Payment: COD";
 
                             try {
@@ -330,7 +433,9 @@ public class MainActivity extends Activity {
                                                 Intent.ACTION_VIEW,
                                                 Uri.parse(
                                                         "https://wa.me/917891851475?text="
-                                                                + Uri.encode(message)
+                                                                + Uri.encode(
+                                                                        message
+                                                                )
                                                 )
                                         );
 
@@ -356,16 +461,6 @@ public class MainActivity extends Activity {
                                     Toast.LENGTH_LONG
                             ).show();
                         }
-                                                    )
-                                    .addOnFailureListener(
-                                            e -> Toast.makeText(
-                                                    this,
-                                                    "Cancel failed: "
-                                                            + e.getMessage(),
-                                                    Toast.LENGTH_LONG
-                                            ).show()
-                                    );
-                        }
-                    );
+                );
     }
 }
