@@ -3,25 +3,42 @@ package com.samosaking.nawalgarh;
 import android.app.Activity;
 import android.os.Bundle;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
+import android.graphics.Color;
 import android.view.Gravity;
 import android.widget.*;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends Activity {
 
     int samosa = 0, kachori = 0, mirchi = 0;
-
     TextView totalText;
+
+    FirebaseAuth auth;
+    FirebaseFirestore db;
 
     @Override
     public void onCreate(Bundle b) {
         super.onCreate(b);
 
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        showApp();
+    }
+
+    void showApp() {
+
         LinearLayout main = new LinearLayout(this);
         main.setOrientation(LinearLayout.VERTICAL);
         main.setPadding(25, 25, 25, 25);
-        main.setBackgroundColor(Color.rgb(255,248,239));
+        main.setBackgroundColor(Color.rgb(255, 248, 239));
 
         TextView title = new TextView(this);
         title.setText("👑 Samosa King");
@@ -35,9 +52,9 @@ public class MainActivity extends Activity {
         address.setGravity(Gravity.CENTER);
         main.addView(address);
 
-        main.addView(item("Samosa ₹20", 20, 1));
-        main.addView(item("Kachori ₹30", 30, 2));
-        main.addView(item("Mirchi Bada ₹30", 30, 3));
+        main.addView(item("Samosa ₹20", 1));
+        main.addView(item("Kachori ₹30", 2));
+        main.addView(item("Mirchi Bada ₹30", 3));
 
         totalText = new TextView(this);
         totalText.setTextSize(22);
@@ -50,6 +67,11 @@ public class MainActivity extends Activity {
         name.setHint("Customer Name");
         main.addView(name);
 
+        EditText mobile = new EditText(this);
+        mobile.setHint("Mobile Number");
+        mobile.setInputType(2);
+        main.addView(mobile);
+
         EditText customerAddress = new EditText(this);
         customerAddress.setHint("Delivery Address");
         main.addView(customerAddress);
@@ -60,46 +82,72 @@ public class MainActivity extends Activity {
 
         order.setOnClickListener(v -> {
 
-            int total = samosa * 20 + kachori * 30 + mirchi * 30;
+            int subtotal =
+                    samosa * 20 +
+                    kachori * 30 +
+                    mirchi * 30;
 
-            if (total < 100) {
-                Toast.makeText(this,
+            if (subtotal < 100) {
+                Toast.makeText(
+                        this,
                         "Minimum order ₹100 hai",
-                        Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_LONG
+                ).show();
                 return;
             }
 
-            total += 30;
+            String customerName = name.getText().toString().trim();
+            String customerMobile = mobile.getText().toString().trim();
+            String deliveryAddress =
+                    customerAddress.getText().toString().trim();
 
-            String message =
-                    "👑 SAMOSA KING ORDER\n\n" +
-                    "Customer: " + name.getText().toString() + "\n" +
-                    "Address: " + customerAddress.getText().toString() + "\n\n" +
-                    "Samosa: " + samosa + "\n" +
-                    "Kachori: " + kachori + "\n" +
-                    "Mirchi Bada: " + mirchi + "\n\n" +
-                    "Delivery: ₹30\n" +
-                    "Total: ₹" + total + "\n" +
-                    "Payment: Cash on Delivery";
+            if (customerName.isEmpty()) {
+                name.setError("Name required");
+                return;
+            }
 
-            try {
-                Intent intent = new Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://wa.me/917891851475?text="
-                                + Uri.encode(message))
+            if (customerMobile.isEmpty()) {
+                mobile.setError("Mobile number required");
+                return;
+            }
+
+            if (deliveryAddress.isEmpty()) {
+                customerAddress.setError("Address required");
+                return;
+            }
+
+            if (auth.getCurrentUser() == null) {
+
+                auth.signInAnonymously()
+                        .addOnSuccessListener(result -> saveOrder(
+                                customerName,
+                                customerMobile,
+                                deliveryAddress,
+                                subtotal
+                        ))
+                        .addOnFailureListener(e ->
+                                Toast.makeText(
+                                        this,
+                                        "Login failed: " + e.getMessage(),
+                                        Toast.LENGTH_LONG
+                                ).show()
+                        );
+
+            } else {
+
+                saveOrder(
+                        customerName,
+                        customerMobile,
+                        deliveryAddress,
+                        subtotal
                 );
-                startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(this,
-                        "WhatsApp available nahi hai",
-                        Toast.LENGTH_LONG).show();
             }
         });
 
         setContentView(main);
     }
 
-    LinearLayout item(String name, int price, int type) {
+    LinearLayout item(String name, int type) {
 
         LinearLayout row = new LinearLayout(this);
         row.setGravity(Gravity.CENTER_VERTICAL);
@@ -108,8 +156,11 @@ public class MainActivity extends Activity {
         TextView text = new TextView(this);
         text.setText(name);
         text.setTextSize(20);
-        row.addView(text, new LinearLayout.LayoutParams(
-                0, -2, 1));
+
+        row.addView(
+                text,
+                new LinearLayout.LayoutParams(0, -2, 1)
+        );
 
         Button minus = new Button(this);
         minus.setText("-");
@@ -119,13 +170,18 @@ public class MainActivity extends Activity {
         qty.setText("0");
         qty.setTextSize(20);
         qty.setGravity(Gravity.CENTER);
-        row.addView(qty, new LinearLayout.LayoutParams(70, -2));
+
+        row.addView(
+                qty,
+                new LinearLayout.LayoutParams(70, -2)
+        );
 
         Button plus = new Button(this);
         plus.setText("+");
         row.addView(plus);
 
         minus.setOnClickListener(v -> {
+
             if (type == 1 && samosa > 0) samosa--;
             if (type == 2 && kachori > 0) kachori--;
             if (type == 3 && mirchi > 0) mirchi--;
@@ -135,6 +191,7 @@ public class MainActivity extends Activity {
         });
 
         plus.setOnClickListener(v -> {
+
             if (type == 1) samosa++;
             if (type == 2) kachori++;
             if (type == 3) mirchi++;
@@ -147,15 +204,33 @@ public class MainActivity extends Activity {
     }
 
     void updateQty(TextView qty, int type) {
-        if (type == 1) qty.setText(String.valueOf(samosa));
-        if (type == 2) qty.setText(String.valueOf(kachori));
-        if (type == 3) qty.setText(String.valueOf(mirchi));
+
+        if (type == 1)
+            qty.setText(String.valueOf(samosa));
+
+        if (type == 2)
+            qty.setText(String.valueOf(kachori));
+
+        if (type == 3)
+            qty.setText(String.valueOf(mirchi));
     }
 
     void updateTotal() {
+
         if (totalText != null) {
-            int total = samosa * 20 + kachori * 30 + mirchi * 30;
-            totalText.setText("Cart Total: ₹" + total);
+
+            int total =
+                    samosa * 20 +
+                    kachori * 30 +
+                    mirchi * 30;
+
+            totalText.setText(
+                    "Cart Total: ₹" + total
+            );
         }
     }
-}
+
+    void saveOrder(
+            String customerName,
+            String customerMobile,
+           
