@@ -356,6 +356,16 @@ public class MainActivity extends Activity {
                                     Toast.LENGTH_LONG
                             ).show();
                         }
-                );
+                                                    )
+                                    .addOnFailureListener(
+                                            e -> Toast.makeText(
+                                                    this,
+                                                    "Cancel failed: "
+                                                            + e.getMessage(),
+                                                    Toast.LENGTH_LONG
+                                            ).show()
+                                    );
+                        }
+                    );
     }
 }
