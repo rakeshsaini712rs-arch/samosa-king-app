@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "855148039257",
+    "project_id": "samosa-king-3b90d",
+    "storage_bucket": "samosa-king-3b90d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855148039257:android:535730f98ea24e77253548",
+        "android_client_info": {
+          "package_name": "com.samosaking.nawalgarh"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
