@@ -1,6 +1,7 @@
-name: Deploy Admin Panel to Firebase Hosting
+name: Create and Deploy Firebase Hosting
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -16,6 +17,41 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Authenticate Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Create Firebase Hosting site if missing
+        shell: bash
+        run: |
+          set -e
+
+          TOKEN="$(gcloud auth print-access-token)"
+
+          STATUS="$(curl -s -o /tmp/site.json -w "%{http_code}" \
+            -H "Authorization: Bearer $TOKEN" \
+            "https://firebasehosting.googleapis.com/v1beta1/projects/samosa-king-3b90d/sites/samosa-king-3b90d")"
+
+          if [ "$STATUS" = "200" ]; then
+            echo "Hosting site already exists."
+          elif [ "$STATUS" = "404" ]; then
+            echo "Creating Hosting site..."
+
+            curl -sS -X POST \
+              -H "Authorization: Bearer $TOKEN" \
+              -H "Content-Type: application/json" \
+              "https://firebasehosting.googleapis.com/v1beta1/projects/samosa-king-3b90d/sites?siteId=samosa-king-3b90d"
+
+            echo
+          else
+            cat /tmp/site.json
+            exit 1
+          fi
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
