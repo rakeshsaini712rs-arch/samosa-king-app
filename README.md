@@ -1,14 +1,17 @@
-# Samosa King – Nawalgarh
+# Samosa King Android App
 
-Android app starter for Samosa King. Current ordering configuration:
-- Address: Nansa Gate, Nawalgarh
-- Hours: 8:30 AM–6:00 PM
-- Minimum order: ₹100
-- Delivery: ₹30 up to 5 km
-- Samosa: ₹20
-- Kachori: ₹30
-- Mirchi Bada: ₹30
-- Payment: Cash on Delivery (COD) for the first release
-- Contact/order notification: 7891851475
+Production-oriented Android app for Samosa King, Nansa Gate, Nawalgarh.
 
-Online payments (PhonePe) can be integrated later through a merchant/payment gateway account and a secure backend. Do not put secret keys, OTPs, passwords, or UPI PINs in the app source.
+Features in this source:
+- Samosa ₹20, Kachori ₹30, Mirchi Bada ₹30
+- Minimum order ₹100
+- Delivery fee ₹30
+- COD only
+- Anonymous Firebase Authentication
+- Real Firestore order creation
+- Real device GPS coordinates when permission/location is available
+- Live Firestore order-status listener
+- Customer cancellation while order is PLACED
+
+Firebase project: samosa-king-3b90d
+Application ID: com.samosaking.nawalgarh
