@@ -1,4 +1,4 @@
-name: Samosa King FINAL APK v2
+name: Samosa King FINAL APK v3
 
 on:
   workflow_dispatch:
@@ -25,33 +25,46 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: FORCE ANDROIDX
+      - name: Extract FINAL project
         shell: bash
         run: |
-          echo "android.useAndroidX=true" >> "$GITHUB_WORKSPACE/gradle.properties"
-          echo "android.enableJetifier=true" >> "$GITHUB_WORKSPACE/gradle.properties"
-          echo "===== GRADLE PROPERTIES ====="
-          cat "$GITHUB_WORKSPACE/gradle.properties"
-          echo "=============================="
+          set -e
+          rm -rf _final_build
+          mkdir -p _final_build
+          unzip -q SamosaKing_FINAL_READY_REUPLOAD.zip -d _final_build
 
-      - name: Verify AndroidX
-        shell: bash
-        run: |
-          grep "android.useAndroidX=true" "$GITHUB_WORKSPACE/gradle.properties"
-          grep "android.enableJetifier=true" "$GITHUB_WORKSPACE/gradle.properties"
+          test -f _final_build/settings.gradle
+          test -f _final_build/build.gradle
+          test -f _final_build/app/build.gradle
+          test -f _final_build/app/google-services.json
+          test -f _final_build/app/src/main/AndroidManifest.xml
+          test -f _final_build/app/src/main/java/com/samosaking/nawalgarh/MainActivity.java
 
-      - name: Build APK
+          echo "FINAL PROJECT FOUND"
+          find _final_build -maxdepth 4 -type f | sort
+
+      - name: Enable AndroidX
+        working-directory: _final_build
         run: |
-          gradle clean assembleDebug --no-daemon --stacktrace
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
+
+      - name: Build FINAL APK
+        working-directory: _final_build
+        run: |
+          gradle clean assembleDebug --no-daemon --stacktrace \
+            -Pandroid.useAndroidX=true \
+            -Pandroid.enableJetifier=true
 
       - name: Verify APK
+        shell: bash
         run: |
-          test -s app/build/outputs/apk/debug/app-debug.apk
-          ls -lh app/build/outputs/apk/debug/app-debug.apk
+          test -s _final_build/app/build/outputs/apk/debug/app-debug.apk
+          ls -lh _final_build/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload APK
+      - name: Upload FINAL APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-King-Final-APK-v2
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: Samosa-King-FINAL-v3
+          path: _final_build/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
