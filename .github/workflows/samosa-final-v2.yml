@@ -1,4 +1,4 @@
-name: Samosa King FINAL APK v3
+name: Samosa King FINAL APK v4
 
 on:
   workflow_dispatch:
@@ -8,8 +8,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Extract fixed project
+        shell: bash
+        run: |
+          set -e
+          rm -rf _final_build
+          mkdir -p _final_build
+
+          unzip -q SamosaKing_FINAL_FIXED_ASSET.zip -d _final_build
+
+          test -f _final_build/settings.gradle
+          test -f _final_build/build.gradle
+          test -f _final_build/app/build.gradle
+          test -f _final_build/app/google-services.json
+          test -f _final_build/app/src/main/AndroidManifest.xml
+          test -f _final_build/app/src/main/assets/index.html
+          test -f _final_build/app/src/main/java/com/samosaking/nawalgarh/MainActivity.java
+
+          echo "Fixed project verified."
+
+      - name: Enable AndroidX
+        shell: bash
+        run: |
+          cd _final_build
+          printf '\nandroid.useAndroidX=true\nandroid.enableJetifier=true\n' >> gradle.properties
 
       - name: Setup Java 17
         uses: actions/setup-java@v5
@@ -20,41 +45,24 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android SDK 35
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
+
       - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
-      - name: Extract FINAL project
-        shell: bash
-        run: |
-          set -e
-          rm -rf _final_build
-          mkdir -p _final_build
-          unzip -q SamosaKing_FINAL_READY_REUPLOAD.zip -d _final_build
-
-          test -f _final_build/settings.gradle
-          test -f _final_build/build.gradle
-          test -f _final_build/app/build.gradle
-          test -f _final_build/app/google-services.json
-          test -f _final_build/app/src/main/AndroidManifest.xml
-          test -f _final_build/app/src/main/java/com/samosaking/nawalgarh/MainActivity.java
-
-          echo "FINAL PROJECT FOUND"
-          find _final_build -maxdepth 4 -type f | sort
-
-      - name: Enable AndroidX
+      - name: Build APK
         working-directory: _final_build
         run: |
-          echo "android.useAndroidX=true" >> gradle.properties
-          echo "android.enableJetifier=true" >> gradle.properties
-
-      - name: Build FINAL APK
-        working-directory: _final_build
-        run: |
-          gradle clean assembleDebug --no-daemon --stacktrace \
-            -Pandroid.useAndroidX=true \
-            -Pandroid.enableJetifier=true
+          gradle clean assembleDebug --no-daemon --stacktrace
 
       - name: Verify APK
         shell: bash
@@ -62,9 +70,9 @@ jobs:
           test -s _final_build/app/build/outputs/apk/debug/app-debug.apk
           ls -lh _final_build/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload FINAL APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-King-FINAL-v3
+          name: Samosa-King-Final-APK
           path: _final_build/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
