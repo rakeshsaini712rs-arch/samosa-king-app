@@ -1,22 +1,19 @@
 package com.samosaking.nawalgarh;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthOptions;
+import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -28,225 +25,228 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends Activity {
-
-    private static final int LOCATION_REQUEST = 1001;
-    private static final int DELIVERY_FEE = 30;
-    private static final String PREFS = "samosa_king";
-    private static final String LAST_ORDER = "last_order_id";
-
+    private WebView web;
     private FirebaseAuth auth;
     private FirebaseFirestore db;
-    private FusedLocationProviderClient fusedLocation;
-    private WebView webView;
-    private SharedPreferences prefs;
-    private ListenerRegistration orderListener;
+    private ListenerRegistration statusListener;
 
-    private String pendingName;
-    private String pendingMobile;
-    private String pendingAddress;
-    private String pendingItemsJson;
+    private String pendingName, pendingPhone, pendingAddress, pendingItems;
     private int pendingSubtotal;
+    private boolean authInProgress = false;
+    private boolean orderInProgress = false;
+    private String verificationId;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        auth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
-        fusedLocation = LocationServices.getFusedLocationProviderClient(this);
-        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-
-        setupWebView();
-
-        if (auth.getCurrentUser() == null) {
-            auth.signInAnonymously().addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    webView.loadUrl("file:///android_asset/index.html");
-                } else {
-                    webView.evaluateJavascript("orderError('Firebase connection failed')", null);
-                }
-            });
-        } else {
-            webView.loadUrl("file:///android_asset/index.html");
-        }
-    }
-
-    private void setupWebView() {
-        webView = new WebView(this);
-        WebSettings settings = webView.getSettings();
+    public void onCreate(Bundle b) {
+        super.onCreate(b);
+        web = new WebView(this);
+        WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
-        webView.setWebViewClient(new WebViewClient());
-        webView.setWebChromeClient(new WebChromeClient());
-        webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
-        setContentView(webView);
+        web.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                try {
+                    if (url.startsWith("tel:") || url.startsWith("https://wa.me/") || url.startsWith("whatsapp:")) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                        return true;
+                    }
+                } catch (Exception ignored) {}
+                return false;
+            }
+        });
+        web.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+        setContentView(web);
+
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        auth.addAuthStateListener(firebaseAuth -> {
+            if (firebaseAuth.getCurrentUser() != null) {
+                authInProgress = false;
+                runJs("window.authReady&&window.authReady();");
+                if (pendingName != null && !orderInProgress) createOrder();
+            }
+        });
+
+        if (auth.getCurrentUser() == null) signIn();
+        web.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void signIn() {
+        if (authInProgress) return;
+        authInProgress = true;
+        auth.signInAnonymously()
+                .addOnSuccessListener(r -> {
+                    authInProgress = false;
+                    runJs("window.authReady&&window.authReady();");
+                    if (pendingName != null && !orderInProgress) createOrder();
+                })
+                .addOnFailureListener(e -> {
+                    authInProgress = false;
+                    runJs("window.orderError(" + JSONObject.quote("Firebase sign-in failed: " + e.getMessage()) + ");");
+                });
+    }
+
+    private void sendOtp(String phone) {
+        PhoneAuthOptions options = PhoneAuthOptions.newBuilder(auth)
+                .setPhoneNumber(phone)
+                .setTimeout(60L, java.util.concurrent.TimeUnit.SECONDS)
+                .setActivity(this)
+                .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    @Override public void onVerificationCompleted(PhoneAuthCredential credential) {
+                        auth.signInWithCredential(credential).addOnSuccessListener(r ->
+                                runJs("window.otpVerified(" + JSONObject.quote(phone) + ");"))
+                                .addOnFailureListener(e -> runJs("window.otpError(" + JSONObject.quote(e.getMessage()) + ");"));
+                    }
+                    @Override public void onVerificationFailed(com.google.firebase.FirebaseException e) {
+                        runJs("window.otpError(" + JSONObject.quote(e.getMessage()) + ");");
+                    }
+                    @Override public void onCodeSent(String id, PhoneAuthProvider.ForceResendingToken token) {
+                        verificationId = id;
+                        runJs("window.otpSent();");
+                    }
+                }).build();
+        PhoneAuthProvider.verifyPhoneNumber(options);
+    }
+
+    private void verifyOtp(String code) {
+        if (verificationId == null) {
+            runJs("window.otpError('Please request OTP first.');");
+            return;
+        }
+        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
+        auth.signInWithCredential(credential)
+                .addOnSuccessListener(r -> {
+                    String phone = r.getUser() != null ? r.getUser().getPhoneNumber() : "";
+                    runJs("window.otpVerified(" + JSONObject.quote(phone == null ? "" : phone) + ");");
+                })
+                .addOnFailureListener(e -> runJs("window.otpError(" + JSONObject.quote(e.getMessage()) + ");"));
+    }
+
+    private void runJs(String js) {
+        runOnUiThread(() -> {
+            if (web != null) web.evaluateJavascript(js, null);
+        });
+    }
+
+    private void beginOrder(String n, String p, String a, String items, int sub) {
+        if (orderInProgress) return;
+        pendingName = n;
+        pendingPhone = p;
+        pendingAddress = a;
+        pendingItems = items;
+        pendingSubtotal = sub;
+
+        if (sub < 100) {
+            runJs("window.orderError('Minimum order is ₹100.');");
+            return;
+        }
+
+        if (auth.getCurrentUser() == null) {
+            signIn();
+            return;
+        }
+        createOrder();
+    }
+
+    private void createOrder() {
+        if (orderInProgress) return;
+        if (auth.getCurrentUser() == null) {
+            signIn();
+            return;
+        }
+        orderInProgress = true;
+        int delivery = 30;
+        int total = pendingSubtotal + delivery;
+        writeOrder(total, delivery);
+    }
+
+    private void writeOrder(int total, int delivery) {
+        try {
+            Map<String, Object> order = new HashMap<>();
+            order.put("userId", auth.getCurrentUser().getUid());
+            order.put("customerName", pendingName);
+            order.put("mobile", pendingPhone);
+            order.put("address", pendingAddress);
+            order.put("paymentMethod", "COD");
+            order.put("subtotal", pendingSubtotal);
+            order.put("deliveryFee", delivery);
+            order.put("total", total);
+            order.put("status", "PLACED");
+            order.put("createdAt", FieldValue.serverTimestamp());
+
+            JSONArray arr = new JSONArray(pendingItems);
+            Map<String, Object> items = new HashMap<>();
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject item = arr.getJSONObject(i);
+                items.put(item.getString("id"), item.getInt("qty"));
+            }
+            order.put("items", items);
+
+            db.collection("orders").add(order)
+                    .addOnSuccessListener(ref -> {
+                        getPreferences(Context.MODE_PRIVATE).edit()
+                                .putString("lastOrderId", ref.getId()).apply();
+                        listenStatus(ref.getId());
+                        orderInProgress = false;
+                        pendingName = null;
+                        runJs("window.orderCreated(" + JSONObject.quote(ref.getId()) + ");");
+                    })
+                    .addOnFailureListener(e -> {
+                        orderInProgress = false;
+                        runJs("window.orderError(" + JSONObject.quote("Order save failed: " + e.getMessage()) + ");");
+                    });
+        } catch (Exception e) {
+            orderInProgress = false;
+            runJs("window.orderError(" + JSONObject.quote("Order error: " + e.getMessage()) + ");");
+        }
+    }
+
+    private void listenStatus(String id) {
+        if (statusListener != null) statusListener.remove();
+        statusListener = db.collection("orders").document(id)
+                .addSnapshotListener((snapshot, error) -> {
+                    if (error != null || snapshot == null || !snapshot.exists()) return;
+                    String status = snapshot.getString("status");
+                    if (status == null) status = "PLACED";
+                    runJs("window.statusUpdate(" + JSONObject.quote(status) + ");");
+                });
     }
 
     public class AndroidBridge {
         @JavascriptInterface
-        public void placeOrder(String name, String mobile, String address, String itemsJson, int subtotal) {
-            runOnUiThread(() -> {
-                if (auth.getCurrentUser() == null) {
-                    webView.evaluateJavascript("orderError('Firebase connection is not ready')", null);
-                    return;
-                }
+        public void sendOtp(String phone) {
+            runOnUiThread(() -> sendOtp(phone));
+        }
 
-                if (subtotal < 100) {
-                    webView.evaluateJavascript("orderError('Minimum order ₹100 hai')", null);
-                    return;
-                }
+        @JavascriptInterface
+        public void verifyOtp(String code) {
+            runOnUiThread(() -> verifyOtp(code));
+        }
 
-                pendingName = name;
-                pendingMobile = mobile;
-                pendingAddress = address;
-                pendingItemsJson = itemsJson;
-                pendingSubtotal = subtotal;
-
-                if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                        && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                    }, LOCATION_REQUEST);
-                } else {
-                    savePendingOrder();
-                }
-            });
+        @JavascriptInterface
+        public void placeOrder(String n, String p, String a, String items, int subtotal) {
+            runOnUiThread(() -> beginOrder(n, p, a, items, subtotal));
         }
 
         @JavascriptInterface
         public void loadLastOrder() {
             runOnUiThread(() -> {
-                String orderId = prefs.getString(LAST_ORDER, "");
-                if (orderId == null || orderId.isEmpty()) {
-                    webView.evaluateJavascript("statusUpdate('NO ORDER')", null);
-                    return;
-                }
-                listenToOrder(orderId);
+                String id = getPreferences(Context.MODE_PRIVATE).getString("lastOrderId", null);
+                if (id != null) listenStatus(id);
             });
         }
 
         @JavascriptInterface
         public void cancelLastOrder() {
             runOnUiThread(() -> {
-                String orderId = prefs.getString(LAST_ORDER, "");
-                if (orderId == null || orderId.isEmpty()) return;
-
-                db.collection("orders").document(orderId).get()
-                        .addOnSuccessListener(doc -> {
-                            if (!doc.exists()) return;
-                            String status = doc.getString("status");
-                            if (!"PLACED".equals(status)) {
-                                webView.evaluateJavascript("orderError('Order ab cancel nahi ho sakta')", null);
-                                return;
-                            }
-                            db.collection("orders").document(orderId)
-                                    .update("status", "CANCELLED")
-                                    .addOnSuccessListener(v -> webView.evaluateJavascript("statusUpdate('CANCELLED')", null))
-                                    .addOnFailureListener(e -> webView.evaluateJavascript("orderError('Cancel failed')", null));
-                        })
-                        .addOnFailureListener(e -> webView.evaluateJavascript("orderError('Order load failed')", null));
+                String id = getPreferences(Context.MODE_PRIVATE).getString("lastOrderId", null);
+                if (id != null) {
+                    db.collection("orders").document(id).update("status", "CANCELLED");
+                }
             });
         }
     }
-
-    private void savePendingOrder() {
-        if (pendingName == null) return;
-
-        int total = pendingSubtotal + DELIVERY_FEE;
-        Map<String, Object> items = new HashMap<>();
-
-        try {
-            JSONArray array = new JSONArray(pendingItemsJson);
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject item = array.getJSONObject(i);
-                String id = item.getString("id");
-                int qty = item.getInt("qty");
-                items.put(id, qty);
-            }
-        } catch (Exception e) {
-            webView.evaluateJavascript("orderError('Invalid cart data')", null);
-            return;
-        }
-
-        Map<String, Object> order = new HashMap<>();
-        order.put("userId", auth.getCurrentUser().getUid());
-        order.put("customerName", pendingName);
-        order.put("mobile", pendingMobile);
-        order.put("address", pendingAddress);
-        order.put("items", items);
-        order.put("subtotal", pendingSubtotal);
-        order.put("deliveryFee", DELIVERY_FEE);
-        order.put("total", total);
-        order.put("paymentMethod", "COD");
-        order.put("status", "PLACED");
-        order.put("createdAt", FieldValue.serverTimestamp());
-
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocation.getLastLocation().addOnSuccessListener(location -> {
-                if (location != null) {
-                    order.put("latitude", location.getLatitude());
-                    order.put("longitude", location.getLongitude());
-                }
-                writeOrder(order);
-            }).addOnFailureListener(e -> writeOrder(order));
-        } else {
-            writeOrder(order);
-        }
-    }
-
-    private void writeOrder(Map<String, Object> order) {
-        db.collection("orders").add(order)
-                .addOnSuccessListener(ref -> {
-                    prefs.edit().putString(LAST_ORDER, ref.getId()).apply();
-                    webView.evaluateJavascript("orderCreated('" + ref.getId() + "')", null);
-                    listenToOrder(ref.getId());
-                    pendingName = null;
-                    pendingMobile = null;
-                    pendingAddress = null;
-                    pendingItemsJson = null;
-                })
-                .addOnFailureListener(e -> webView.evaluateJavascript(
-                        "orderError(" + JSONObject.quote("Order save failed: " + e.getMessage()) + ")", null));
-    }
-
-    private void listenToOrder(String orderId) {
-        if (orderListener != null) orderListener.remove();
-        orderListener = db.collection("orders").document(orderId)
-                .addSnapshotListener((snapshot, error) -> {
-                    if (error != null || snapshot == null || !snapshot.exists()) return;
-                    String status = snapshot.getString("status");
-                    if (status == null) status = "PLACED";
-                    String js = "statusUpdate(" + JSONObject.quote(status) + ")";
-                    webView.evaluateJavascript(js, null);
-                });
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_REQUEST) {
-            savePendingOrder();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (orderListener != null) orderListener.remove();
-        if (webView != null) webView.destroy();
-        super.onDestroy();
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
-    }
 }
-
