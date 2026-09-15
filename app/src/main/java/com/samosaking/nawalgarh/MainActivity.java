@@ -46,6 +46,10 @@ public class MainActivity extends Activity {
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
         web.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                injectProductImages();
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 try {
                     if (url.startsWith("tel:") || url.startsWith("https://wa.me/") || url.startsWith("whatsapp:")) {
@@ -72,6 +76,22 @@ public class MainActivity extends Activity {
 
         if (auth.getCurrentUser() == null) signIn();
         web.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void injectProductImages() {
+        String js = "(function(){" +
+                "var m={" +
+                "'Samosa':'samosa.jpg','Kachori':'samosa.jpg','Mirchi Bada':'mirchi-bada.jpg'," +
+                "'Dahi Bhalla Plate 1':'dahi-bhalla-1.jpg','Dahi Bhalla Plate 2':'dahi-bhalla-2.jpg'," +
+                "'Pizza':'pizza.jpg','Wraps':'wraps.jpg','Momos':'momos.jpg','Burger':'burger.jpg'," +
+                "'Pasta':'pasta.jpg','Manchurian':'manchurian.jpg','Kaju Katli':'kaju-katli.jpg'," +
+                "'Rasgulla':'rasgulla.jpg','Rajbhog':'rasgulla.jpg','Gulab Jamun':'gulab-jamun.jpg'," +
+                "'Sohan Papdi':'sohan-papdi.jpg','Milk Cake':'milk-cake.jpg','Kalakand':'kalakand.jpg'," +
+                "'Dilkushal':'dilkushal.jpg','Peda':'milk-cake.jpg','Petha':'kalakand.jpg'," +
+                "'Namkin':'sohan-papdi.jpg','Rasmalai':'dahi-bhalla-1.jpg','Dahi (Curd)':'dahi-bhalla-2.jpg'};" +
+                "document.querySelectorAll('.card').forEach(function(c){var h=c.querySelector('h3');if(!h)return;var f=m[h.textContent.trim()];if(!f)return;var v=c.querySelector('.visual');if(!v)return;var src='https://raw.githubusercontent.com/rakeshsaini712rs-arch/samosa-king-app/main/app/src/main/'+f;v.innerHTML='<img src=\"'+src+'\" style=\"width:100%;height:100%;object-fit:cover;border-radius:13px;display:block\" loading=\"lazy\" onerror=\"this.style.display=\'none\'\">';});" +
+                "})();";
+        runJs(js);
     }
 
     private void signIn() {
