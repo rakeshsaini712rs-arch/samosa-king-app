@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 22
-        versionName '2.2'
+        versionCode 23
+        versionName '2.3'
     }
 }
 
@@ -51,9 +51,9 @@ tasks.register('patchProductionNative') {
     doLast {
         def f=file('src/main/java/com/samosaking/nawalgarh/MainActivity.java')
         def s=f.getText('UTF-8')
-        def marker='setContentView(w);a=FirebaseAuth.getInstance();'
+        def marker='setContentView(w);if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},5201);a=FirebaseAuth.getInstance();'
         if(s.contains(marker) && !s.contains('POST_NOTIFICATIONS,Manifest.permission.POST_NOTIFICATIONS')){
-            s=s.replace(marker,'setContentView(w);if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},5201);a=FirebaseAuth.getInstance();')
+            s=s.replace('setContentView(w);a=FirebaseAuth.getInstance();',marker)
         }
         s=s.replace('u.startsWith("tel:")||u.startsWith("https://wa.me/")||u.startsWith("whatsapp:")','u.startsWith("tel:")||u.startsWith("https://wa.me/")||u.startsWith("whatsapp:")||u.startsWith("https://www.google.com/maps/")')
         def token='a=FirebaseAuth.getInstance();db=FirebaseFirestore.getInstance();'
@@ -65,4 +65,14 @@ tasks.register('patchProductionNative') {
         f.setText(s,'UTF-8')
     }
 }
-preBuild.dependsOn(patchProductImages,patchProductionNative)
+
+tasks.register('disableLoginGateForBuild') {
+    doLast {
+        def f=file('src/main/assets/production.js')
+        def s=f.getText('UTF-8')
+        s=s.replace('P.loginGate();','')
+        f.setText(s,'UTF-8')
+    }
+}
+
+preBuild.dependsOn(patchProductImages,patchProductionNative,disableLoginGateForBuild)
