@@ -2,8 +2,7 @@
 function installOrderFix(){
   var b=document.querySelector('.order');
   if(!b || b.dataset.skFixed==='1') return;
-  b.dataset.skFixed='1';
-  b.removeAttribute('onclick');
+  b.dataset.skFixed='1'; b.removeAttribute('onclick');
   b.onclick=function(){
     var c=(typeof cart!=='undefined')?cart:{};
     var sub=typeof subtotal==='function'?Number(subtotal()):0;
@@ -16,8 +15,9 @@ function installOrderFix(){
     if(sub<100){if(msg)msg.textContent='Minimum order is ₹100.';return;}
     if(!n||!p||!ad){if(msg)msg.textContent='Please enter name, phone and delivery address.';return;}
     var items=Object.entries(c).map(function(e){return{id:e[0],qty:Number(e[1])}});
-    if(msg)msg.textContent='Checking delivery area and placing COD order…';
-    AndroidBridge.placeOrderWithCoupon(n,p,ad,JSON.stringify(items),sub,code);
+    if(!window.AndroidBridge||typeof AndroidBridge.placeOrderWithCoupon!=='function'){if(msg)msg.textContent='Order service is not available.';return;}
+    if(msg)msg.textContent=code==='DIWALI'?'Applying DIWALI 10% discount and placing COD order…':'Checking delivery area and placing COD order…';
+    try{AndroidBridge.placeOrderWithCoupon(n,p,ad,JSON.stringify(items),sub,code);}catch(e){if(msg)msg.textContent='Could not start order: '+e.message;}
   };
 }
 function addCoupon(){
@@ -26,7 +26,7 @@ function addCoupon(){
   var box=document.createElement('div');box.id='skcouponOrder';box.className='sksection';
   box.innerHTML='<h3>🎁 Coupon</h3><div class="skrow"><input id="skorderCoupon" class="skinput" placeholder="Coupon code"><button type="button" class="skbtn gold">Apply</button></div><div id="skorderCouponMsg" class="sksmall"></div>';
   var h=sheet.querySelector('h3');if(h)h.after(box);else sheet.prepend(box);
-  box.querySelector('button').onclick=function(){var v=document.getElementById('skorderCoupon').value.trim().toUpperCase();var m=document.getElementById('skorderCouponMsg');if(v==='DIWALI'){var s=Number(typeof subtotal==='function'?subtotal():0),d=Math.floor(s*.10);m.textContent=d?'✅ DIWALI applied: ₹'+d+' discount.':'Minimum order is ₹100.';}else m.textContent=v?'Coupon will be validated securely when the order is submitted.':'Enter a coupon code.';};
+  box.querySelector('button').onclick=function(){var v=document.getElementById('skorderCoupon').value.trim().toUpperCase();var m=document.getElementById('skorderCouponMsg');if(v==='DIWALI'){var s=Number(typeof subtotal==='function'?subtotal():0),d=Math.floor(s*.10);m.textContent=d?'✅ DIWALI applied: ₹'+d+' discount. Final amount will be verified securely.':'Minimum order is ₹100.';}else m.textContent=v?'Coupon will be validated securely when the order is submitted.':'Enter a coupon code.';};
 }
 function run(){addCoupon();installOrderFix();}
 setInterval(run,800);document.addEventListener('DOMContentLoaded',run);
