@@ -1,14 +1,24 @@
 package com.samosaking.nawalgarh;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
@@ -25,6 +35,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends Activity {
+    private static final int LOCATION_REQ = 4101;
+    private static final double SHOP_LAT = 27.8514056;
+    private static final double SHOP_LON = 75.2711528;
+    private static final double DELIVERY_KM = 5.0;
+    private static final String CHANNEL_ID = "order_status";
     private WebView web;
     private FirebaseAuth auth;
     private FirebaseFirestore db;
@@ -34,21 +49,26 @@ public class MainActivity extends Activity {
     private boolean authInProgress = false;
     private boolean orderInProgress = false;
     private String verificationId;
+    private String lastNotifiedStatus = "";
 
     @Override public void onCreate(Bundle b) {
         super.onCreate(b);
+        createNotificationChannel();
         web = new WebView(this);
         WebSettings settings = web.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
+        settings.setAllowFileAccessFromFileURLs(true);
+        settings.setAllowUniversalAccessFromFileURLs(true);
         web.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 injectProductImages();
                 web.postDelayed(() -> injectProductImages(), 300);
                 web.postDelayed(() -> injectProductImages(), 1000);
+                loadLastOrder();
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 try { if (url.startsWith("tel:") || url.startsWith("https://wa.me/") || url.startsWith("whatsapp:")) { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); return true; } } catch (Exception ignored) {}
@@ -67,38 +87,59 @@ public class MainActivity extends Activity {
     }
 
     private void injectProductImages() {
-        String js = "(function(){" +
-                "var m={" +
-                "'Samosa':'samosa.jpg','Kachori':'samosa.jpg','Mirchi Bada':'mirchi-bada.jpg'," +
-                "'Dahi Bhalla Plate 1':'dahi-bhalla-1.jpg','Dahi Bhalla Plate 2':'dahi-bhalla-2.jpg'," +
-                "'Pizza':'pizza.jpg','Wraps':'wraps.jpg','Momos':'momos.jpg','Burger':'burger.jpg'," +
-                "'Pasta':'pasta.jpg','Manchurian':'manchurian.jpg','Kaju Katli':'kaju-katli.jpg'," +
-                "'Rasgulla':'rasgulla.jpg','Rajbhog':'rasgulla.jpg','Gulab Jamun':'gulab-jamun.jpg'," +
-                "'Sohan Papdi':'sohan-papdi.jpg','Milk Cake':'milk-cake.jpg','Kalakand':'kalakand.jpg'," +
-                "'Dilkushal':'dilkushal.jpg','Peda':'milk-cake.jpg','Petha':'kalakand.jpg'," +
-                "'Namkin':'sohan-papdi.jpg','Rasmalai':'dahi-bhalla-1.jpg','Dahi (Curd)':'dahi-bhalla-2.jpg'};" +
-                "document.querySelectorAll('.card').forEach(function(c){var h=c.querySelector('h3');if(!h)return;var f=m[h.textContent.trim()];if(!f)return;var v=c.querySelector('.visual');if(!v)return;var src='product-images/'+f;v.innerHTML='<img src=\"'+src+'\" style=\"width:100%;height:100%;object-fit:cover;border-radius:13px;display:block\" loading=\"eager\">';});" +
-                "})();";
+        String js = "(function(){var m={'Samosa':'samosa.jpg','Kachori':'samosa.jpg','Mirchi Bada':'mirchi-bada.jpg','Dahi Bhalla Plate 1':'dahi-bhalla-1.jpg','Dahi Bhalla Plate 2':'dahi-bhalla-2.jpg','Pizza':'pizza.jpg','Wraps':'wraps.jpg','Momos':'momos.jpg','Burger':'burger.jpg','Pasta':'pasta.jpg','Manchurian':'manchurian.jpg','Kaju Katli':'kaju-katli.jpg','Rasgulla':'rasgulla.jpg','Rajbhog':'rasgulla.jpg','Gulab Jamun':'gulab-jamun.jpg','Sohan Papdi':'sohan-papdi.jpg','Milk Cake':'milk-cake.jpg','Kalakand':'kalakand.jpg','Dilkushal':'dilkushal.jpg','Peda':'milk-cake.jpg','Petha':'kalakand.jpg','Namkin':'sohan-papdi.jpg','Rasmalai':'dahi-bhalla-1.jpg','Dahi (Curd)':'dahi-bhalla-2.jpg'};document.querySelectorAll('.card').forEach(function(c){var h=c.querySelector('h3');if(!h)return;var f=m[h.textContent.trim()];if(!f)return;var v=c.querySelector('.visual');if(!v)return;var img=v.querySelector('img');if(!img){img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:13px;display:block';img.loading='eager';v.innerHTML='';v.appendChild(img);}var src='product-images/'+f;if(img.getAttribute('src')!==src)img.src=src;});})();";
         runJs(js);
     }
 
-    private void signIn() { if (authInProgress) return; authInProgress = true; auth.signInAnonymously().addOnSuccessListener(r -> { authInProgress=false; runJs("window.authReady&&window.authReady();"); if(pendingName!=null&&!orderInProgress)createOrder(); }).addOnFailureListener(e -> { authInProgress=false; runJs("window.orderError("+JSONObject.quote("Firebase sign-in failed: "+e.getMessage())+");"); }); }
-    private void sendOtp(String phone) { PhoneAuthOptions options=PhoneAuthOptions.newBuilder(auth).setPhoneNumber(phone).setTimeout(60L,java.util.concurrent.TimeUnit.SECONDS).setActivity(this).setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks(){
-        @Override public void onVerificationCompleted(PhoneAuthCredential credential){auth.signInWithCredential(credential).addOnSuccessListener(r->runJs("window.otpVerified("+JSONObject.quote(phone)+");")).addOnFailureListener(e->runJs("window.otpError("+JSONObject.quote(e.getMessage())+");"));}
-        @Override public void onVerificationFailed(com.google.firebase.FirebaseException e){runJs("window.otpError("+JSONObject.quote(e.getMessage())+");");}
-        @Override public void onCodeSent(String id,PhoneAuthProvider.ForceResendingToken token){verificationId=id;runJs("window.otpSent();");}
-    }).build(); PhoneAuthProvider.verifyPhoneNumber(options); }
-    private void verifyOtp(String code){if(verificationId==null){runJs("window.otpError('Please request OTP first.');");return;} PhoneAuthCredential credential=PhoneAuthProvider.getCredential(verificationId,code); auth.signInWithCredential(credential).addOnSuccessListener(r->{String phone=r.getUser()!=null?r.getUser().getPhoneNumber():"";runJs("window.otpVerified("+JSONObject.quote(phone==null?"":phone)+");");}).addOnFailureListener(e->runJs("window.otpError("+JSONObject.quote(e.getMessage())+");"));}
+    private void signIn() { if (authInProgress) return; authInProgress = true; auth.signInAnonymously().addOnSuccessListener(r -> {authInProgress=false;runJs("window.authReady&&window.authReady();");if(pendingName!=null&&!orderInProgress)createOrder();}).addOnFailureListener(e->{authInProgress=false;runJs("window.orderError("+JSONObject.quote("Firebase sign-in failed: "+e.getMessage())+");");}); }
+    private void sendOtp(String phone) { PhoneAuthOptions options=PhoneAuthOptions.newBuilder(auth).setPhoneNumber(phone).setTimeout(60L,java.util.concurrent.TimeUnit.SECONDS).setActivity(this).setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks(){@Override public void onVerificationCompleted(PhoneAuthCredential credential){auth.signInWithCredential(credential).addOnSuccessListener(r->runJs("window.otpVerified("+JSONObject.quote(phone)+");")).addOnFailureListener(e->runJs("window.otpError("+JSONObject.quote(e.getMessage())+");"));}@Override public void onVerificationFailed(com.google.firebase.FirebaseException e){runJs("window.otpError("+JSONObject.quote(e.getMessage())+");");}@Override public void onCodeSent(String id,PhoneAuthProvider.ForceResendingToken token){verificationId=id;runJs("window.otpSent();");}}).build();PhoneAuthProvider.verifyPhoneNumber(options); }
+    private void verifyOtp(String code){if(verificationId==null){runJs("window.otpError('Please request OTP first.');");return;}PhoneAuthCredential credential=PhoneAuthProvider.getCredential(verificationId,code);auth.signInWithCredential(credential).addOnSuccessListener(r->{String phone=r.getUser()!=null?r.getUser().getPhoneNumber():"";runJs("window.otpVerified("+JSONObject.quote(phone==null?"":phone)+");");}).addOnFailureListener(e->runJs("window.otpError("+JSONObject.quote(e.getMessage())+");"));}
     private void runJs(String js){runOnUiThread(()->{if(web!=null)web.evaluateJavascript(js,null);});}
-    private void beginOrder(String n,String p,String a,String items,int sub){if(orderInProgress)return;pendingName=n;pendingPhone=p;pendingAddress=a;pendingItems=items;pendingSubtotal=sub;if(sub<100){runJs("window.orderError('Minimum order is ₹100.');");return;}if(auth.getCurrentUser()==null){signIn();return;}createOrder();}
+
+    private void beginOrder(String n,String p,String a,String items,int sub){
+        if(orderInProgress)return;
+        pendingName=n;pendingPhone=p;pendingAddress=a;pendingItems=items;pendingSubtotal=sub;
+        if(sub<100){runJs("window.orderError('Minimum order is ₹100.');");return;}
+        if(auth.getCurrentUser()==null){signIn();return;}
+        checkDeliveryLocation();
+    }
+
+    private void checkDeliveryLocation(){
+        if(Build.VERSION.SDK_INT>=23 && ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},LOCATION_REQ);
+            runJs("window.locationRequired&&window.locationRequired();");
+            return;
+        }
+        LocationManager lm=(LocationManager)getSystemService(LOCATION_SERVICE);
+        Location last=null;
+        try{last=lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);if(last==null)last=lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);}catch(Exception ignored){}
+        if(last!=null){handleLocation(last);return;}
+        try{lm.requestSingleUpdate(LocationManager.NETWORK_PROVIDER,new LocationListener(){@Override public void onLocationChanged(Location l){handleLocation(l);}},null);}catch(Exception e){runJs("window.orderError('Location could not be read. Please enable GPS and try again.');");}
+    }
+
+    private void handleLocation(Location loc){
+        float[] d=new float[1];Location.distanceBetween(loc.getLatitude(),loc.getLongitude(),SHOP_LAT,SHOP_LON,d);double km=d[0]/1000.0;
+        runJs("window.locationResult&&window.locationResult("+JSONObject.quote(String.format(java.util.Locale.US,"%.2f",km))+");");
+        if(km>DELIVERY_KM){pendingName=null;runJs("window.orderError('Delivery is available only within 5 km of Nansa Gate, Nawalgarh. Your location is "+String.format(java.util.Locale.US,"%.2f",km)+" km away.');");return;}
+        createOrder();
+    }
+
     private void createOrder(){if(orderInProgress)return;if(auth.getCurrentUser()==null){signIn();return;}orderInProgress=true;int delivery=30;writeOrder(pendingSubtotal+delivery,delivery);}
     private void writeOrder(int total,int delivery){try{Map<String,Object> order=new HashMap<>();order.put("userId",auth.getCurrentUser().getUid());order.put("customerName",pendingName);order.put("mobile",pendingPhone);order.put("address",pendingAddress);order.put("paymentMethod","COD");order.put("subtotal",pendingSubtotal);order.put("deliveryFee",delivery);order.put("total",total);order.put("status","PLACED");order.put("createdAt",FieldValue.serverTimestamp());JSONArray arr=new JSONArray(pendingItems);Map<String,Object> items=new HashMap<>();for(int i=0;i<arr.length();i++){JSONObject item=arr.getJSONObject(i);items.put(item.getString("id"),item.getInt("qty"));}order.put("items",items);db.collection("orders").add(order).addOnSuccessListener(ref->{getPreferences(Context.MODE_PRIVATE).edit().putString("lastOrderId",ref.getId()).apply();listenStatus(ref.getId());orderInProgress=false;pendingName=null;runJs("window.orderCreated("+JSONObject.quote(ref.getId())+");");}).addOnFailureListener(e->{orderInProgress=false;runJs("window.orderError("+JSONObject.quote("Order save failed: "+e.getMessage())+");");});}catch(Exception e){orderInProgress=false;runJs("window.orderError("+JSONObject.quote("Order error: "+e.getMessage())+");");}}
-    private void listenStatus(String id){if(statusListener!=null)statusListener.remove();statusListener=db.collection("orders").document(id).addSnapshotListener((snapshot,error)->{if(error!=null||snapshot==null||!snapshot.exists())return;String status=snapshot.getString("status");if(status==null)status="PLACED";runJs("window.statusUpdate("+JSONObject.quote(status)+");");});}
+
+    private void listenStatus(String id){if(statusListener!=null)statusListener.remove();statusListener=db.collection("orders").document(id).addSnapshotListener((snapshot,error)->{if(error!=null||snapshot==null||!snapshot.exists())return;String status=snapshot.getString("status");if(status==null)status="PLACED";runJs("window.statusUpdate("+JSONObject.quote(status)+");");if(!status.equals(lastNotifiedStatus)){lastNotifiedStatus=status;if(!status.equals("PLACED"))showStatusNotification(status);}});}
+    private void createNotificationChannel(){if(Build.VERSION.SDK_INT>=26){NotificationManager nm=getSystemService(NotificationManager.class);nm.createNotificationChannel(new NotificationChannel(CHANNEL_ID,"Order status",NotificationManager.IMPORTANCE_DEFAULT));}}
+    private void showStatusNotification(String status){if(Build.VERSION.SDK_INT>=33&&ActivityCompat.checkSelfPermission(this,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)return;NotificationCompat.Builder b=new NotificationCompat.Builder(this,CHANNEL_ID).setSmallIcon(android.R.drawable.ic_dialog_info).setContentTitle("Samosa King – Order Update").setContentText("Order status: "+status).setPriority(NotificationCompat.PRIORITY_DEFAULT).setAutoCancel(true);((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(8127,b.build());}
+    private void loadLastOrder(){String id=getPreferences(Context.MODE_PRIVATE).getString("lastOrderId",null);if(id!=null)listenStatus(id);}
+
+    @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] results){super.onRequestPermissionsResult(requestCode,permissions,results);if(requestCode==LOCATION_REQ){if(results.length>0&&(results[0]==PackageManager.PERMISSION_GRANTED||(results.length>1&&results[1]==PackageManager.PERMISSION_GRANTED)))checkDeliveryLocation();else runJs("window.orderError('Location permission is required to verify the 5 km delivery area.');");}}
+
     public class AndroidBridge{
         @JavascriptInterface public void sendOtp(String phone){runOnUiThread(()->sendOtp(phone));}
         @JavascriptInterface public void verifyOtp(String code){runOnUiThread(()->verifyOtp(code));}
         @JavascriptInterface public void placeOrder(String n,String p,String a,String items,int subtotal){runOnUiThread(()->beginOrder(n,p,a,items,subtotal));}
-        @JavascriptInterface public void loadLastOrder(){runOnUiThread(()->{String id=getPreferences(Context.MODE_PRIVATE).getString("lastOrderId",null);if(id!=null)listenStatus(id);});}
+        @JavascriptInterface public void loadLastOrder(){runOnUiThread(()->loadLastOrder());}
         @JavascriptInterface public void cancelLastOrder(){runOnUiThread(()->{String id=getPreferences(Context.MODE_PRIVATE).getString("lastOrderId",null);if(id!=null)db.collection("orders").document(id).update("status","CANCELLED");});}
+        @JavascriptInterface public void getLocation(){runOnUiThread(()->checkDeliveryLocation());}
     }
 }
