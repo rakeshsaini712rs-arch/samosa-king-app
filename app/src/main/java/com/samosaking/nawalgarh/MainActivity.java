@@ -64,15 +64,15 @@ public class MainActivity extends Activity {
     private void injectProductImages() {
         String js = "(function(){" +
                 "var m={" +
-                "'Samosa':'samosa.jpg','Kachori':'samosa.jpg','Mirchi Bada':'mirchibada.jpg'," +
+                "'Samosa':'samosa.jpg','Kachori':'samosa.jpg','Mirchi Bada':'mirchi-bada.jpg'," +
                 "'Dahi Bhalla Plate 1':'dahi-bhalla-1.jpg','Dahi Bhalla Plate 2':'dahi-bhalla-2.jpg'," +
                 "'Pizza':'pizza.jpg','Wraps':'wraps.jpg','Momos':'momos.jpg','Burger':'burger.jpg'," +
-                "'Pasta':'pasta.jpg','Manchurian':'manchurian.jpg','Kaju Katli':'kaju.jpg'," +
-                "'Rasgulla':'rasgulla.jpg','Rajbhog':'rasgulla.jpg','Gulab Jamun':'gulabjamun.jpg'," +
-                "'Sohan Papdi':'sohan.jpg','Milk Cake':'milkcake.jpg','Kalakand':'kalakand.jpg'," +
-                "'Dilkushal':'dilkushal.jpg','Peda':'milkcake.jpg','Petha':'kalakand.jpg'," +
-                "'Namkin':'sohan.jpg','Rasmalai':'dahi-bhalla-1.jpg','Dahi (Curd)':'dahi-bhalla-2.jpg'};" +
-                "document.querySelectorAll('.card').forEach(function(c){var h=c.querySelector('h3');if(!h)return;var f=m[h.textContent.trim()];if(!f)return;var v=c.querySelector('.visual');if(!v)return;var src='https://raw.githubusercontent.com/rakeshsaini712rs-arch/samosa-king-app/main/app/src/main/'+f;v.innerHTML='<img src=\"'+src+'\" style=\"width:100%;height:100%;object-fit:cover;border-radius:13px;display:block\" loading=\"lazy\" onerror=\"this.style.display=\'none\'\">';});" +
+                "'Pasta':'pasta.jpg','Manchurian':'manchurian.jpg','Kaju Katli':'kaju-katli.jpg'," +
+                "'Rasgulla':'rasgulla.jpg','Rajbhog':'rasgulla.jpg','Gulab Jamun':'gulab-jamun.jpg'," +
+                "'Sohan Papdi':'sohan-papdi.jpg','Milk Cake':'milk-cake.jpg','Kalakand':'kalakand.jpg'," +
+                "'Dilkushal':'dilkushal.jpg','Peda':'milk-cake.jpg','Petha':'kalakand.jpg'," +
+                "'Namkin':'sohan-papdi.jpg','Rasmalai':'dahi-bhalla-1.jpg','Dahi (Curd)':'dahi-bhalla-2.jpg'};" +
+                "document.querySelectorAll('.card').forEach(function(c){var h=c.querySelector('h3');if(!h)return;var f=m[h.textContent.trim()];if(!f)return;var v=c.querySelector('.visual');if(!v)return;var src='file:///android_asset/product-images/'+f;v.innerHTML='<img src=\"'+src+'\" style=\"width:100%;height:100%;object-fit:cover;border-radius:13px;display:block\" loading=\"eager\">';});" +
                 "})();";
         runJs(js);
     }
