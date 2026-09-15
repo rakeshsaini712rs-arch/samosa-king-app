@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 19
-        versionName '1.9'
+        versionCode 20
+        versionName '2.0'
     }
 }
 
@@ -56,10 +56,10 @@ tasks.register('patchProductionNative') {
             s=s.replace(marker,'setContentView(w);if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS},5201);a=FirebaseAuth.getInstance();')
         }
         s=s.replace('u.startsWith("tel:")||u.startsWith("https://wa.me/")||u.startsWith("whatsapp:")','u.startsWith("tel:")||u.startsWith("https://wa.me/")||u.startsWith("whatsapp:")||u.startsWith("https://www.google.com/maps/")')
-        def oldHist='void history(){if(a.getCurrentUser()==null){js("window.renderHistory(\\'[]\\')");return;}'
+        def oldHist='void history(){if(a.getCurrentUser()==null){js("window.renderHistory(\\\'[]\\\')");return;}'
         def newHist='void history(){if(a.getCurrentUser()==null){a.signInAnonymously().addOnSuccessListener(x->history()).addOnFailureListener(e->js("window.renderHistoryError&&window.renderHistoryError("+JSONObject.quote(e.getMessage())+");"));return;}'
         if(s.contains(oldHist)) s=s.replace(oldHist,newHist)
-        def oldErr='}).addOnFailureListener(e->js("window.renderHistory(\\'[]\\')"));}'
+        def oldErr='}).addOnFailureListener(e->js("window.renderHistory(\\\'[]\\\')"));}'
         def newErr='}).addOnFailureListener(e->js("window.renderHistoryError&&window.renderHistoryError("+JSONObject.quote("Could not load order history: "+e.getMessage())+");"));}'
         if(s.contains(oldErr)) s=s.replace(oldErr,newErr)
         def token='a=FirebaseAuth.getInstance();db=FirebaseFirestore.getInstance();'
