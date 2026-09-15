@@ -4,6 +4,7 @@ Premium Android ordering app for Samosa King, Nansa Gate, Nawalgarh.
 
 - 24-item menu with product photos
 - Firebase-backed COD ordering
+- Firebase Anonymous Authentication (mandatory secure login; no SMS OTP required)
 - GPS delivery-radius verification (5 km)
 - Live order status and customer order history
 - Saved customer profile and delivery addresses
@@ -16,4 +17,4 @@ Payment: Cash on Delivery in the current release. Online payment can be added la
 
 Build: `gradle clean assembleDebug --no-daemon --stacktrace`
 
-Latest build trigger: Firebase OTP phone-number formatting fix.
+Latest build trigger: switched mandatory customer login from paid SMS OTP to real Firebase Anonymous Authentication.
