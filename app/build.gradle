@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 21
-        versionName '2.1'
+        versionCode 22
+        versionName '2.2'
     }
 }
 
@@ -59,6 +59,9 @@ tasks.register('patchProductionNative') {
         def token='a=FirebaseAuth.getInstance();db=FirebaseFirestore.getInstance();'
         def tokenNew='a=FirebaseAuth.getInstance();db=FirebaseFirestore.getInstance();com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken().addOnSuccessListener(t->{if(a.getCurrentUser()!=null)db.collection("users").document(a.getCurrentUser().getUid()).set(java.util.Collections.singletonMap("fcmToken",t),SetOptions.merge());});'
         if(s.contains(token) && !s.contains('getToken().addOnSuccessListener')) s=s.replace(token,tokenNew)
+        def authOld='if(a.getCurrentUser()==null)a.signInAnonymously().addOnSuccessListener(x->js("window.authReady&&window.authReady();"));'
+        def authNew='if(a.getCurrentUser()==null)a.signInAnonymously().addOnSuccessListener(x->js("window.authReady&&window.authReady();")).addOnFailureListener(e->js("window.authError&&window.authError("+JSONObject.quote(e.getMessage())+");"));else js("window.authReady&&window.authReady();");'
+        if(s.contains(authOld) && !s.contains('window.authError')) s=s.replace(authOld,authNew)
         f.setText(s,'UTF-8')
     }
 }
