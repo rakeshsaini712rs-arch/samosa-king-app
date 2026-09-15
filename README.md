@@ -15,3 +15,5 @@ Premium Android ordering app for Samosa King, Nansa Gate, Nawalgarh.
 Payment: Cash on Delivery in the current release. Online payment can be added later through a secure merchant/backend integration.
 
 Build: `gradle clean assembleDebug --no-daemon --stacktrace`
+
+Latest build trigger: Firebase OTP phone-number formatting fix.
