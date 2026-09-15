@@ -4,50 +4,30 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function admin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
     function couponValid() {
-      return request.resource.data.couponCode == '' && request.resource.data.discount == 0
-        || request.resource.data.couponCode != ''
+      return (request.resource.data.couponCode == '' && request.resource.data.discount == 0)
+        || (request.resource.data.couponCode != ''
           && exists(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode))
           && get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.enabled == true
           && get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.firstOnly == false
           && request.resource.data.subtotal >= get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.minOrder
           && ((get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.type == 'PERCENT'
-              && request.resource.data.discount == min(request.resource.data.subtotal,
-                   request.resource.data.subtotal * get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value / 100))
+              && request.resource.data.discount == (request.resource.data.subtotal * get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value / 100 <= request.resource.data.subtotal ? request.resource.data.subtotal * get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value / 100 : request.resource.data.subtotal))
             || (get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.type == 'FLAT'
-              && request.resource.data.discount == min(request.resource.data.subtotal,
-                   get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value)));
+              && request.resource.data.discount == (get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value <= request.resource.data.subtotal ? get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value : request.resource.data.subtotal))));
     }
     match /orders/{orderId} {
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.paymentMethod == 'COD'
-        && request.resource.data.subtotal >= 100
-        && request.resource.data.deliveryFee == 30
-        && request.resource.data.discount >= 0
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid
+        && request.resource.data.paymentMethod == 'COD' && request.resource.data.subtotal >= 100
+        && request.resource.data.deliveryFee == 30 && request.resource.data.discount >= 0
         && request.resource.data.discount <= request.resource.data.subtotal
         && request.resource.data.total == request.resource.data.subtotal + 30 - request.resource.data.discount
-        && couponValid()
-        && request.resource.data.status == 'PLACED';
+        && couponValid() && request.resource.data.status == 'PLACED';
       allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || admin());
-      allow update: if signedIn() && ((resource.data.userId == request.auth.uid
-          && request.resource.data.userId == resource.data.userId
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
-          && request.resource.data.status == 'CANCELLED') || admin());
+      allow update: if signedIn() && ((resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) && request.resource.data.status == 'CANCELLED') || admin());
       allow delete: if false;
     }
-    match /users/{uid} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
-      match /addresses/{addressId} { allow read, create, update, delete: if signedIn() && request.auth.uid == uid; }
-    }
-    match /reviews/{reviewId} {
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid
-        && exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId))
-        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid
-        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == 'DELIVERED'
-        && request.resource.data.rating >= 1 && request.resource.data.rating <= 5;
-      allow read: if signedIn() && (resource.data.userId == request.auth.uid || admin());
-      allow update, delete: if false;
-    }
+    match /users/{uid} { allow read, write: if signedIn() && request.auth.uid == uid; match /addresses/{addressId} { allow read, create, update, delete: if signedIn() && request.auth.uid == uid; } }
+    match /reviews/{reviewId} { allow create: if signedIn() && request.resource.data.userId == request.auth.uid && exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == 'DELIVERED' && request.resource.data.rating >= 1 && request.resource.data.rating <= 5; allow read: if signedIn() && (resource.data.userId == request.auth.uid || admin()); allow update, delete: if false; }
     match /admins/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /menu/{itemId} { allow read: if true; allow write: if admin(); }
     match /offers/{offerId} { allow read: if true; allow write: if admin(); }
