@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 23
-        versionName '2.3'
+        versionCode 24
+        versionName '2.4'
     }
 }
 
@@ -62,6 +62,36 @@ tasks.register('patchProductionNative') {
         def authOld='if(a.getCurrentUser()==null)a.signInAnonymously().addOnSuccessListener(x->js("window.authReady&&window.authReady();"));'
         def authNew='if(a.getCurrentUser()==null)a.signInAnonymously().addOnSuccessListener(x->js("window.authReady&&window.authReady();")).addOnFailureListener(e->js("window.authError&&window.authError("+JSONObject.quote(e.getMessage())+");"));else js("window.authReady&&window.authReady();");'
         if(s.contains(authOld) && !s.contains('window.authError')) s=s.replace(authOld,authNew)
+        def hs=s.indexOf('void history(){')
+        def he=s.indexOf('void profile(){',hs)
+        if(hs>=0&&he>hs){
+            def nh='void history(){if(a.getCurrentUser()==null){a.signInAnonymously().addOnSuccessListener(x->history()).addOnFailureListener(e->js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");"));return;}db.collection("orders").whereEqualTo("userId",a.getCurrentUser().getUid()).get().addOnSuccessListener(s->{try{List<DocumentSnapshot>l=new ArrayList<>(s.getDocuments());l.sort((x,y)->{Date dx=x.getDate("createdAt"),dy=y.getDate("createdAt");if(dx==null&&dy==null)return 0;if(dx==null)return 1;if(dy==null)return -1;return dy.compareTo(dx);});JSONArray out=new JSONArray();for(DocumentSnapshot d:l.subList(0,Math.min(50,l.size()))){JSONObject o=new JSONObject();o.put("id",d.getId());o.put("total",d.getLong("total")!=null?d.getLong("total"):0);o.put("status",String.valueOf(d.get("status")));o.put("date",d.getDate("createdAt")!=null?d.getDate("createdAt").toString():"Recent");Map<String,Object>im=d.get("items",Map.class);JSONArray ia=new JSONArray();if(im!=null)for(Map.Entry<String,Object>q:im.entrySet()){JSONObject z=new JSONObject();z.put("id",q.getKey());z.put("qty",((Number)q.getValue()).intValue());ia.put(z);}o.put("itemsJson",ia.toString());out.put(o);}js("window.renderHistory("+JSONObject.quote(out.toString())+");");}catch(Exception e){js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");");}}).addOnFailureListener(e->js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");"));}'
+            s=s.substring(0,hs)+nh+s.substring(he)
+        }
+        def couponOld='if(pc.isEmpty()){save.run();return;}db.collection("coupons").document(pc).get().addOnSuccessListener(c->{'
+        def couponNew='if(pc.isEmpty()){save.run();return;}if(pc.equals("DIWALI")){discount=Math.min((long)ps,((long)ps*10)/100);save.run();return;}db.collection("coupons").document(pc).get().addOnSuccessListener(c->{'
+        if(s.contains(couponOld)) s=s.replace(couponOld,couponNew)
+        f.setText(s,'UTF-8')
+    }
+}
+
+tasks.register('patchDiwaliAndOrderUI') {
+    doLast {
+        def f=file('src/main/assets/production.js')
+        def s=f.getText('UTF-8')
+        def add='''\n(function(){\n  function install(){\n    if(window.__skOrderFix)return;\n    window.__skOrderFix=1;\n    var sheet=document.querySelector('.sheet');\n    if(sheet&&!document.getElementById('skcouponOrder')){\n      var box=document.createElement('div');box.className='sksection skoffer';box.id='skcouponOrder';\n      box.innerHTML='<h3>🎁 Coupon</h3><div class="skrow"><input id="skorderCoupon" class="skinput" placeholder="Coupon code (e.g. DIWALI)"><button type="button" class="skbtn gold" onclick="SKOrderFix.applyCoupon()">Apply</button></div><div id="skorderCouponMsg" class="sksmall"></div>';\n      var h=sheet.querySelector('h3');if(h)h.after(box);else sheet.prepend(box);\n    }\n    var b=document.querySelector('.order');if(b)b.onclick=function(){SKOrderFix.submit()};\n  }\n  window.SKOrderFix={\n    applyCoupon:function(){var v=(document.getElementById('skorderCoupon')?.value||'').trim().toUpperCase();var m=document.getElementById('skorderCouponMsg');if(v==='DIWALI'){m.textContent='✅ DIWALI coupon: 10% discount will be applied on subtotal.';m.style.color='#15824a';}else if(v)m.textContent='Coupon will be validated securely when the order is submitted.';else m.textContent='Enter a coupon code.';},\n    submit:function(){\n      var n=(document.getElementById('name')?.value||'').trim(),p=(document.getElementById('phone')?.value||'').trim(),ad=(document.getElementById('address')?.value||'').trim();\n      var c=window.cart||{};var sub=typeof subtotal==='function'?subtotal():0;var code=(document.getElementById('skorderCoupon')?.value||'').trim().toUpperCase();\n      var msg=document.getElementById('msg');\n      if(!Object.keys(c).length){if(msg)msg.textContent='Cart is empty.';return;}\n      if(sub<100){if(msg)msg.textContent='Minimum order is ₹100.';return;}\n      if(!n||!p||!ad){if(msg)msg.textContent='Please enter name, phone and delivery address.';return;}\n      if(!window.AndroidBridge||typeof AndroidBridge.placeOrderWithCoupon!=='function'){if(msg)msg.textContent='Order service is not available in this APK.';return;}\n      if(msg)msg.textContent=code==='DIWALI'?'Applying DIWALI 10% discount and checking delivery area…':'Checking delivery area and placing COD order…';\n      var items=Object.entries(c).map(function(e){return {id:e[0],qty:Number(e[1])}});\n      try{AndroidBridge.placeOrderWithCoupon(n,p,ad,JSON.stringify(items),sub,code);}catch(e){if(msg)msg.textContent='Could not start order: '+e.message;}\n    }\n  };\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(install,300)});else setTimeout(install,300);\n  setTimeout(install,1200);\n})();\n'''
+        if(!s.contains('window.__skOrderFix')) s+=add
+        f.setText(s,'UTF-8')
+    }
+}
+
+tasks.register('patchFirestoreCouponRule') {
+    doLast {
+        def f=file('../firestore.rules')
+        def s=f.getText('UTF-8')
+        def old='return (request.resource.data.couponCode == \'\' && request.resource.data.discount == 0)\n        || (request.resource.data.couponCode != \'\''
+        def neu='return (request.resource.data.couponCode == \'\' && request.resource.data.discount == 0)\n        || (request.resource.data.couponCode == \'DIWALI\' && request.resource.data.discount == request.resource.data.subtotal * 10 / 100)\n        || (request.resource.data.couponCode != \'\''
+        if(s.contains(old) && !s.contains("couponCode == 'DIWALI'")) s=s.replace(old,neu)
         f.setText(s,'UTF-8')
     }
 }
@@ -75,4 +105,4 @@ tasks.register('disableLoginGateForBuild') {
     }
 }
 
-preBuild.dependsOn(patchProductImages,patchProductionNative,disableLoginGateForBuild)
+preBuild.dependsOn(patchProductImages,patchProductionNative,patchDiwaliAndOrderUI,patchFirestoreCouponRule,disableLoginGateForBuild)
