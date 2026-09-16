@@ -1,0 +1,1 @@
+Native Google Maps launcher added. Build version 3.8.
