@@ -1,1 +1,2 @@
-Admin startup diagnostic marker. This file is intentionally harmless and exists to trigger a fresh APK build after the AdminActivity startup fix.
+Admin startup diagnostic marker.
+Fresh rebuild requested after AdminActivity startup fix.
