@@ -8,7 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,17 +25,28 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build clean debug APK
-        run: gradle clean assembleDebug --stacktrace
+      - name: Build CUSTOMER APK
+        run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
-      - name: Verify APK
-        run: |
-          test -s app/build/outputs/apk/debug/app-debug.apk
-          ls -lh app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify CUSTOMER APK
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload APK
+      - name: Build ADMIN APK
+        run: gradle :admin:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+
+      - name: Verify ADMIN APK
+        run: test -s admin/build/outputs/apk/debug/admin-debug.apk
+
+      - name: Upload CUSTOMER APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-King-APK
+          name: Samosa-King-CUSTOMER-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - name: Upload ADMIN APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Samosa-King-ADMIN-APK
+          path: admin/build/outputs/apk/debug/admin-debug.apk
           if-no-files-found: error
