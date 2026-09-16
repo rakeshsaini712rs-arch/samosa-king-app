@@ -17,15 +17,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
-      - name: Build FINAL APK
+      - name: Build CUSTOMER + ADMIN APK
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-        run: gradle clean assembleDebug --no-daemon --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
-      - name: Verify APK
+        run: gradle clean :app:assembleDebug :admin:assembleDebug --no-daemon --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+      - name: Verify CUSTOMER APK
         run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Verify ADMIN APK
+        run: test -s admin/build/outputs/apk/debug/admin-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Samosa-King-FINAL-APK
+          name: Samosa-King-CUSTOMER-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Samosa-King-ADMIN-APK
+          path: admin/build/outputs/apk/debug/admin-debug.apk
           if-no-files-found: error
