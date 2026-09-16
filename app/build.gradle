@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 31
-        versionName '3.1'
+        versionCode 32
+        versionName '3.2'
     }
 }
 
@@ -26,8 +26,12 @@ dependencies {
 tasks.register('patchProductImages') {
     doLast {
         def f=file('src/main/assets/index.html'); def s=f.getText('UTF-8')
+        if(!s.contains('<script src="image-data.js"></script>')) s=s.replace('</head>','<script src="image-data.js"></script></head>')
         if(!s.contains('<script src="production.js"></script>')) s=s.replace('</body>','<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script></body>')
         else { if(!s.contains('<script src="drawer-fix.js"></script>')) s=s.replace('<script src="production.js"></script>','<script src="production.js"></script><script src="drawer-fix.js"></script>'); if(!s.contains('<script src="all-buttons-fix.js"></script>')) s=s.replace('<script src="drawer-fix.js"></script>','<script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script>') }
+        def st=s.indexOf('function card(x){'); def en=s.indexOf('function add(id){',st)
+        if(st>=0&&en>st){def nc='''function card(x){let id=x[0],p=x[3],q=cart[id]||0;let im={mirchi:'mirchi-bada',kajukatli:'kaju-katli',gulabjamun:'gulab-jamun',sohanpapdi:'sohan-papdi',milkcake:'milk-cake'};let key=im[id]||id;let src=(window.SK_IMAGES&&window.SK_IMAGES[key])?('data:image/jpeg;base64,'+window.SK_IMAGES[key]):'';return `<div class="card"><div class="visual">${src?`<img class="photo" src="${src}" alt="${x[1]}" loading="eager">`:x[4]}</div><h3>${x[1]}</h3><div class="desc">${x[2]}</div><div class="unit">${x[5]}</div><div class="bottom"><span class="price">₹${p}</span>${q?`<div class="qty"><button onclick="changeQty('${id}',-1)">−</button><b>${q}</b><button onclick="changeQty('${id}',1)">+</button></div>`:`<button class="add" onclick="add('${id}')">Add</button>`}</div></div>`}''';s=s.substring(0,st)+nc+s.substring(en)}
+        if(!s.contains('.photo{')) s=s.replace('</style>','.photo{width:100%;height:112px;object-fit:cover;display:block;border-radius:13px}.visual{overflow:hidden}</style>')
         f.setText(s,'UTF-8')
     }
 }
@@ -42,7 +46,7 @@ tasks.register('patchProductionNative') {
         def authNew='if(a.getCurrentUser()==null)a.signInAnonymously().addOnSuccessListener(x->js("window.authReady&&window.authReady();")).addOnFailureListener(e->js("window.authError&&window.authError("+JSONObject.quote(e.getMessage())+");"));else js("window.authReady&&window.authReady();");'
         if(s.contains(authOld)) s=s.replace(authOld,authNew)
         def hs=s.indexOf('void history(){'); def he=s.indexOf('void profile(){',hs)
-        if(hs>=0&&he>hs){def nh='void history(){if(a.getCurrentUser()==null){a.signInAnonymously().addOnSuccessListener(x->history()).addOnFailureListener(e->js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");"));return;}db.collection("orders").whereEqualTo("userId",a.getCurrentUser().getUid()).get().addOnSuccessListener(s->{try{List<DocumentSnapshot>l=new ArrayList<>(s.getDocuments());l.sort((x,y)->{Date dx=x.getDate("createdAt"),dy=y.getDate("createdAt");if(dx==null&&dy==null)return 0;if(dx==null)return 1;if(dy==null)return -1;return dy.compareTo(dx);});JSONArray out=new JSONArray();for(DocumentSnapshot d:l.subList(0,Math.min(50,l.size()))){JSONObject o=new JSONObject();o.put("id",d.getId());o.put("total",d.getLong("total")!=null?d.getLong("total"):0);o.put("status",String.valueOf(d.get("status")));o.put("date",d.getDate("createdAt")!=null?d.getDate("createdAt").toString():"Recent");Map<String,Object>im=d.get("items",Map.class);JSONArray ia=new JSONArray();if(im!=null)for(Map.Entry<String,Object>q:im.entrySet()){JSONObject z=new JSONObject();z.put("id",q.getKey());z.put("qty",((Number)q.getValue()).intValue());ia.put(z);}o.put("itemsJson",ia.toString());out.put(o);}js("window.renderHistory("+JSONObject.quote(out.toString())+");");}catch(Exception e){js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");");}}).addOnFailureListener(e->js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");"));}';s=s.substring(0,hs)+nh+s.substring(he)}
+        if(hs>=0&&he>hs){def nh='void history(){if(a.getCurrentUser()==null){a.signInAnonymously().addOnSuccessListener(x->history()).addOnFailureListener(e->js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");"));return;}db.collection("orders").whereEqualTo("userId",a.getCurrentUser().getUid()).get().addOnSuccessListener(s->{try{List<DocumentSnapshot>l=new ArrayList<>(s.getDocuments());l.sort((x,y)->{Date dx=x.getDate("createdAt"),dy=y.getDate("createdAt");if(dx==null&&dy==null)return 0;if(dx==null)return 1;if(dy==null)return -1;return dy.compareTo(dx);});JSONArray out=new JSONArray();for(DocumentSnapshot d:l.subList(0,Math.min(50,l.size()))){JSONObject o=new JSONObject();o.put("id",d.getId());o.put("total",d.getLong("total")!=null?d.getLong("total"):0);o.put("status",String.valueOf(d.get("status")));o.put("date",d.getDate("createdAt")!=null?d.getDate("createdAt").toString():"Recent");Map<String,Object>im=d.get("items",Map.class);JSONArray ia=new JSONArray();if(im!=null)for(Map.Entry<String,Object>q:im.entrySet()){JSONObject z=new JSONObject();z.put("id",q.getKey());z.put("qty",((Number)q.getValue()).intValue());ia.put(z);}o.put("itemsJson",ia.toString());js("window.renderHistory("+JSONObject.quote(out.toString())+");");}catch(Exception e){js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");");}}).addOnFailureListener(e->js("window.renderHistoryError("+JSONObject.quote(e.getMessage())+");"));}';s=s.substring(0,hs)+nh+s.substring(he)}
         f.setText(s,'UTF-8')
     }
 }
