@@ -1,6 +1,8 @@
 name: Build Samosa King APK
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -8,22 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v5
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
-      - name: Build APK
-        run: gradle assembleDebug
+      - name: Build clean debug APK
+        run: gradle clean assembleDebug --stacktrace
+
+      - name: Verify APK
+        run: |
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Samosa-King-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
