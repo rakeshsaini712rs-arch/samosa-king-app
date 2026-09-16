@@ -1,6 +1,6 @@
 (function(){'use strict';
 var imageMap={
- 'Samosa':'samosa.jpg','Kachori':'kachori.jpg','Mirchi Bada':'mirchi-bada.jpg',
+ 'Samosa':'samosa.jpg','Kachori':'samosa.jpg','Mirchi Bada':'mirchi-bada.jpg',
  'Dahi Bhalla Plate 1':'dahi-bhalla-1.jpg','Dahi Bhalla Plate 2':'dahi-bhalla-2.jpg',
  'Pizza':'pizza.jpg','Wraps':'wraps.jpg','Momos':'momos.jpg','Burger':'burger.jpg',
  'Pasta':'pasta.jpg','Manchurian':'manchurian.jpg','Kaju Katli':'kaju-katli.jpg',
