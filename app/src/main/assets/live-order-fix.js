@@ -1,0 +1,10 @@
+(function(){'use strict';
+var statusNames={PLACED:'Order Placed',ACCEPTED:'Order Accepted',PREPARING:'Preparing your order',OUT_FOR_DELIVERY:'Out for Delivery',DELIVERED:'Delivered',CANCELLED:'Order Cancelled',REJECTED:'Order Rejected'};
+var stage={PLACED:1,ACCEPTED:2,PREPARING:3,OUT_FOR_DELIVERY:4,DELIVERED:5};
+function el(id){return document.getElementById(id)}
+function paint(st){st=String(st||'PLACED').toUpperCase();var s=el('status'),h=el('statusHelp'),c=el('cancelBtn'),steps=el('statusSteps');if(s)s.textContent=statusNames[st]||st;if(h){if(st==='CANCELLED')h.textContent='This order has been cancelled.';else if(st==='REJECTED')h.textContent='This order was rejected by the shop.';else if(st==='DELIVERED')h.textContent='Order delivered successfully. Thank you!';else h.textContent='Live status from Samosa King.'}if(steps){var n=stage[st]||0;steps.innerHTML=[1,2,3,4,5].map(function(i){return '<i class="step '+(i<=n?'on':'')+'"></i>'}).join('')}if(c)c.style.display=st==='PLACED'?'block':'none'}
+window.statusUpdate=function(st){paint(st);window.__skLastStatus=st};
+window.orderCreated=function(id){try{localStorage.setItem('sk_last_order_id',id)}catch(e){}paint('PLACED');var h=el('statusHelp');if(h)h.textContent='Order placed. Waiting for shop acceptance…';try{if(typeof closeCart==='function')closeCart()}catch(e){}};
+window.cancelOrder=function(){var c=el('cancelBtn');if(c)c.disabled=true;if(!window.AndroidBridge||typeof AndroidBridge.cancelLastOrder!=='function'){if(c)c.disabled=false;alert('Cancel service is not available in this APK.');return}try{AndroidBridge.cancelLastOrder();var h=el('statusHelp');if(h)h.textContent='Cancellation requested. Checking live order status…';setTimeout(function(){if(c)c.disabled=false;if(window.AndroidBridge&&typeof AndroidBridge.loadLastOrder==='function')AndroidBridge.loadLastOrder()},700)}catch(e){if(c)c.disabled=false;alert('Could not cancel the order. Please try again.')}};
+window.addEventListener('load',function(){setTimeout(function(){if(window.AndroidBridge&&typeof AndroidBridge.loadLastOrder==='function')AndroidBridge.loadLastOrder()},500)});
+})();
