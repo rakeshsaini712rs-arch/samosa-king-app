@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 34
-        versionName '3.4'
+        versionCode 35
+        versionName '3.5'
     }
 }
 
@@ -27,51 +27,24 @@ tasks.register('patchProductImages') {
     doLast {
         def f = file('src/main/assets/index.html')
         def s = f.getText('UTF-8')
-        if (!s.contains('<script src="image-data.js"></script>')) {
-            s = s.replace('</head>', '<script src="image-data.js"></script></head>')
-        }
-        if (!s.contains('<script src="production.js"></script>')) {
-            s = s.replace('</body>', '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script><script src="navigation-fix.js"></script></body>')
-        } else if (!s.contains('<script src="navigation-fix.js"></script>')) {
-            s = s.replace('</body>', '<script src="navigation-fix.js"></script></body>')
-        }
-        def st = s.indexOf('function card(x){')
-        def en = s.indexOf('function add(id){', st)
-        if (st >= 0 && en > st) {
-            def nc = '''function card(x){let id=x[0],p=x[3],q=cart[id]||0;let im={mirchi:'mirchi-bada',kajukatli:'kaju-katli',gulabjamun:'gulab-jamun',sohanpapdi:'sohan-papdi',milkcake:'milk-cake'};let key=im[id]||id;let src=(window.SK_IMAGES&&window.SK_IMAGES[key])?('data:image/jpeg;base64,'+window.SK_IMAGES[key]):'';return `<div class="card"><div class="visual">${src?`<img class="photo" src="${src}" alt="${x[1]}" loading="eager">`:x[4]}</div><h3>${x[1]}</h3><div class="desc">${x[2]}</div><div class="unit">${x[5]}</div><div class="bottom"><span class="price">₹${p}</span>${q?`<div class="qty"><button onclick="changeQty('${id}',-1)">−</button><b>${q}</b><button onclick="changeQty('${id}',1)">+</button></div>`:`<button class="add" onclick="add('${id}')">Add</button>`}</div></div>`}'''
-            s = s.substring(0, st) + nc + s.substring(en)
-        }
-        if (!s.contains('.photo{')) {
-            s = s.replace('</style>', '.photo{width:100%;height:112px;object-fit:cover;display:block;border-radius:13px}.visual{overflow:hidden}</style>')
-        }
-        f.setText(s, 'UTF-8')
+        if (!s.contains('<script src="image-data.js"></script>')) s = s.replace('</head>', '<script src="image-data.js"></script></head>')
+        if (!s.contains('<script src="production.js"></script>')) s = s.replace('</body>', '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script><script src="navigation-fix.js"></script></body>')
+        else if (!s.contains('<script src="navigation-fix.js"></script>')) s = s.replace('</body>', '<script src="navigation-fix.js"></script></body>')
+        def st=s.indexOf('function card(x){'), en=s.indexOf('function add(id){',st)
+        if(st>=0&&en>st){def nc='''function card(x){let id=x[0],p=x[3],q=cart[id]||0;let im={mirchi:'mirchi-bada',kajukatli:'kaju-katli',gulabjamun:'gulab-jamun',sohanpapdi:'sohan-papdi',milkcake:'milk-cake'};let key=im[id]||id;let src=(window.SK_IMAGES&&window.SK_IMAGES[key])?('data:image/jpeg;base64,'+window.SK_IMAGES[key]):'';return `<div class="card"><div class="visual">${src?`<img class="photo" src="${src}" alt="${x[1]}" loading="eager">`:x[4]}</div><h3>${x[1]}</h3><div class="desc">${x[2]}</div><div class="unit">${x[5]}</div><div class="bottom"><span class="price">₹${p}</span>${q?`<div class="qty"><button onclick="changeQty('${id}',-1)">−</button><b>${q}</b><button onclick="changeQty('${id}',1)">+</button></div>`:`<button class="add" onclick="add('${id}')">Add</button>`}</div></div>`}''';s=s.substring(0,st)+nc+s.substring(en)}
+        s=s.replace('.photo{width:100%;height:112px;object-fit:cover;display:block;border-radius:13px}.visual{overflow:hidden}', '.photo{width:100%;height:112px;object-fit:cover;display:block;border-radius:13px;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0)}.visual{overflow:hidden}')
+        if(!s.contains('image-rendering:auto'))s=s.replace('</style>','.photo{width:100%;height:112px;object-fit:cover;display:block;border-radius:13px;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0)}.visual{overflow:hidden}</style>')
+        f.setText(s,'UTF-8')
     }
 }
 
 tasks.register('patchDiwaliAndOrderUI') {
     doLast {
-        def f = file('src/main/assets/production.js')
-        def s = f.getText('UTF-8')
-        if (!s.contains('SKOrderFix.submit=function')) {
-            s += '''
-(function(){
-window.SKOrderFix=window.SKOrderFix||{};
-SKOrderFix.submit=function(){var n=(document.getElementById('name')?.value||'').trim(),p=(document.getElementById('phone')?.value||'').trim(),ad=(document.getElementById('address')?.value||'').trim(),c=(typeof cart!=='undefined')?cart:{},sub=typeof subtotal==='function'?subtotal():0,msg=document.getElementById('msg');if(!Object.keys(c).length){if(msg)msg.textContent='Cart is empty.';return}if(sub<100){if(msg)msg.textContent='Minimum order is ₹100.';return}if(!n||!p||!ad){if(msg)msg.textContent='Please enter name, phone and delivery address.';return}if(!window.AndroidBridge||typeof AndroidBridge.placeOrderWithCoupon!=='function'){if(msg)msg.textContent='Order service is not available in this APK.';return}if(msg)msg.textContent='Checking delivery area and placing COD order…';var items=Object.entries(c).map(function(e){return{id:e[0],qty:Number(e[1])}});try{AndroidBridge.placeOrderWithCoupon(n,p,ad,JSON.stringify(items),sub,'')}catch(e){if(msg)msg.textContent='Could not start order: '+e.message}};window.addEventListener('load',function(){var b=document.querySelector('.order');if(b){b.removeAttribute('onclick');b.onclick=function(){SKOrderFix.submit()}}});})();
-'''
-        }
-        f.setText(s, 'UTF-8')
+        def f=file('src/main/assets/production.js');def s=f.getText('UTF-8')
+        if(!s.contains('SKOrderFix.submit=function'))s+='''\n(function(){window.SKOrderFix=window.SKOrderFix||{};SKOrderFix.submit=function(){var n=(document.getElementById('name')?.value||'').trim(),p=(document.getElementById('phone')?.value||'').trim(),ad=(document.getElementById('address')?.value||'').trim(),c=(typeof cart!=='undefined')?cart:{},sub=typeof subtotal==='function'?subtotal():0,msg=document.getElementById('msg');if(!Object.keys(c).length){if(msg)msg.textContent='Cart is empty.';return}if(sub<100){if(msg)msg.textContent='Minimum order is ₹100.';return}if(!n||!p||!ad){if(msg)msg.textContent='Please enter name, phone and delivery address.';return}if(!window.AndroidBridge||typeof AndroidBridge.placeOrderWithCoupon!=='function'){if(msg)msg.textContent='Order service is not available in this APK.';return}if(msg)msg.textContent='Checking delivery area and placing COD order…';var items=Object.entries(c).map(function(e){return{id:e[0],qty:Number(e[1])}});try{AndroidBridge.placeOrderWithCoupon(n,p,ad,JSON.stringify(items),sub,'')}catch(e){if(msg)msg.textContent='Could not start order: '+e.message}};window.addEventListener('load',function(){var b=document.querySelector('.order');if(b){b.removeAttribute('onclick');b.onclick=function(){SKOrderFix.submit()}}});})();\n'''
+        f.setText(s,'UTF-8')
     }
 }
-
-tasks.register('disableLoginGateForBuild') {
-    doLast {
-        def f = file('src/main/assets/production.js')
-        def s = f.getText('UTF-8')
-        s = s.replace('P.loginGate();', '')
-        f.setText(s, 'UTF-8')
-    }
-}
-
-tasks.register('patchFirestoreCouponRule') { doLast { } }
-
-preBuild.dependsOn(patchProductImages, patchDiwaliAndOrderUI, patchFirestoreCouponRule, disableLoginGateForBuild)
+tasks.register('disableLoginGateForBuild'){doLast{def f=file('src/main/assets/production.js');def s=f.getText('UTF-8');f.setText(s.replace('P.loginGate();',''),'UTF-8')}}
+tasks.register('patchFirestoreCouponRule'){doLast{}}
+preBuild.dependsOn(patchProductImages,patchDiwaliAndOrderUI,patchFirestoreCouponRule,disableLoginGateForBuild)
