@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 33
-        versionName '3.3'
+        versionCode 34
+        versionName '3.4'
     }
 }
 
@@ -31,7 +31,9 @@ tasks.register('patchProductImages') {
             s = s.replace('</head>', '<script src="image-data.js"></script></head>')
         }
         if (!s.contains('<script src="production.js"></script>')) {
-            s = s.replace('</body>', '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script></body>')
+            s = s.replace('</body>', '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script><script src="navigation-fix.js"></script></body>')
+        } else if (!s.contains('<script src="navigation-fix.js"></script>')) {
+            s = s.replace('</body>', '<script src="navigation-fix.js"></script></body>')
         }
         def st = s.indexOf('function card(x){')
         def en = s.indexOf('function add(id){', st)
