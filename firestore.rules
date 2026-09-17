@@ -31,7 +31,9 @@ service cloud.firestore {
     match /admins/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /menu/{itemId} { allow read: if true; allow write: if admin(); }
     match /offers/{offerId} { allow read: if true; allow write: if admin(); }
-    match /coupons/{couponId} { allow read: if true; allow write: if admin(); }
+    match /coupons/{couponId} { allow read: true; allow write: if admin(); }
     match /{document=**} { allow read, write: if false; }
   }
 }
+
+// Firestore rules deployment trigger
