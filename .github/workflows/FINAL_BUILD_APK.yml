@@ -12,6 +12,12 @@ jobs:
       GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
     steps:
       - uses: actions/checkout@v4
+      - name: Deploy Firestore Security Rules
+        uses: w9jds/firebase-action@v14
+        with:
+          args: deploy --only firestore:rules --project samosa-king-3b90d
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
