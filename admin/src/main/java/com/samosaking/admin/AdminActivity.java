@@ -1,6 +1,6 @@
 package com.samosaking.admin;
 
-import android.app.*;import android.content.*;import android.net.Uri;import android.os.*;import android.webkit.*;import android.graphics.Color;import org.json.*;
+import android.app.*;import android.content.*;import android.net.Uri;import android.os.*;import android.webkit.*;import android.graphics.Color;import android.widget.TextView;import org.json.*;
 
 public class AdminActivity extends Activity{
  private WebView w;
