@@ -1,1 +1,1 @@
-Trigger build after Admin Firebase verification diagnostics.
+Admin authorization fix build trigger: 2026-09-18T15:00:00Z
