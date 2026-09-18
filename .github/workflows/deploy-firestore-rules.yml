@@ -6,7 +6,7 @@ on:
     paths:
       - 'firestore.rules'
       - 'firebase.json'
-      - '.github/workflows/FIRESTORE_RULES_TRIGGER.txt'
+      - '.github/workflows/deploy-firestore-rules.yml'
 
 jobs:
   deploy:
@@ -30,10 +30,5 @@ jobs:
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-sa.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-sa.json" >> "$GITHUB_ENV"
 
-      - name: Verify Firebase configuration
-        run: |
-          node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)); console.log('Service account:', x.client_email); console.log('Project:', x.project_id);"
-          firebase --version
-
       - name: Deploy Firestore rules
-        run: firebase deploy --only firestore:rules --project samosa-king-3b90d --non-interactive --debug
+        run: firebase deploy --only firestore:rules --project samosa-king-3b90d --non-interactive
