@@ -4,16 +4,25 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
     function admin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
     function couponValid() {
-      return (request.resource.data.couponCode == '' && request.resource.data.discount == 0)
-        || (request.resource.data.couponCode != ''
-          && exists(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode))
+      return request.resource.data.couponCode == ''
+        ? request.resource.data.discount == 0
+        : exists(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode))
           && get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.enabled == true
           && get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.firstOnly == false
           && request.resource.data.subtotal >= get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.minOrder
-          && ((get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.type == 'PERCENT'
-              && request.resource.data.discount == (request.resource.data.subtotal * get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value / 100 <= request.resource.data.subtotal ? request.resource.data.subtotal * get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value / 100 : request.resource.data.subtotal))
-            || (get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.type == 'FLAT'
-              && request.resource.data.discount == (get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value <= request.resource.data.subtotal ? get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value : request.resource.data.subtotal))));
+          && (
+            (get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.type == 'PERCENT'
+              && request.resource.data.discount == (
+                request.resource.data.subtotal * get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value / 100 <= request.resource.data.subtotal
+                ? request.resource.data.subtotal * get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value / 100
+                : request.resource.data.subtotal))
+            ||
+            (get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.type == 'FLAT'
+              && request.resource.data.discount == (
+                get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value <= request.resource.data.subtotal
+                ? get(/databases/$(database)/documents/coupons/$(request.resource.data.couponCode)).data.value
+                : request.resource.data.subtotal))
+          );
     }
     match /orders/{orderId} {
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid
