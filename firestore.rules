@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
-    function admin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function admin() { return signedIn() && request.auth.uid == 'vJCq3yQDe0QcCg5EoEPnjVKwUgJ2'; }
     function couponValid() {
       return request.resource.data.couponCode == ''
         ? request.resource.data.discount == 0
@@ -40,7 +40,7 @@ service cloud.firestore {
     match /admins/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /menu/{itemId} { allow read: if true; allow write: if admin(); }
     match /offers/{offerId} { allow read: if true; allow write: if admin(); }
-    match /coupons/{couponId} { allow read: true; allow write: if admin(); }
+    match /coupons/{couponId} { allow read: if true; allow write: if admin(); }
     match /{document=**} { allow read, write: if false; }
   }
 }
