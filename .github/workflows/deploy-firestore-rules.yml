@@ -6,6 +6,7 @@ on:
     paths:
       - 'firestore.rules'
       - 'firebase.json'
+      - '.github/workflows/FIRESTORE_RULES_TRIGGER.txt'
 
 jobs:
   deploy:
