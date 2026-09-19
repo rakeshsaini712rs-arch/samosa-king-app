@@ -58,8 +58,24 @@
       '<div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div>'+
       '<div class="card"><a class="btn goldbtn" href="samosa://admin/refresh">↻ Refresh</a>'+
       '<a class="btn" href="samosa://admin/logout">Logout</a><div id="msg" class="muted"></div></div>'+
-      '<div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
+      '<div class="card"><h2>💰 Menu Management</h2><div class="muted">Change price and availability. Changes apply to customer app.</div><div id="menu">Loading menu…</div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
   }
+  function menuResult(raw){
+    try{
+      var a=typeof raw==='string'?JSON.parse(raw):(raw||[]),h='',i,o;
+      for(i=0;i<a.length;i++){
+        o=a[i];
+        h+='<div class="order"><b>'+esc(o.name||o.id)+'</b>'+
+          '<input class="input" id="price_'+esc(o.id)+'" type="number" min="0" value="'+esc(o.price)+'" placeholder="Price">'+
+          '<div class="row"><button class="btn goldbtn" onclick="savePrice(\\''+esc(o.id)+'\\')">Save Price</button>'+
+          '<button class="btn" onclick="saveAvailability(\\''+esc(o.id)+'\\','+(!o.enabled)+')">'+(o.enabled?'Mark Sold Out':'Mark Available')+'</button></div></div>';
+      }
+      var m=document.getElementById('menu');if(m)m.innerHTML=h||'<div class="muted">No menu items configured.</div>';
+    }catch(e){adminError('Menu display error: '+e.message);}
+  }
+  function loadMenu(){nativeCall('menuPrices');}
+  function savePrice(id){var e=document.getElementById('price_'+id);if(!e)return;nativeCall('setMenuPrice',[id,e.value]);}
+  function saveAvailability(id,enabled){nativeCall('setMenuAvailability',[id,enabled]);}
   function ordersResult(raw){
     try{
       var a=typeof raw==='string'?JSON.parse(raw):(raw||[]);
@@ -118,7 +134,7 @@
   window.ordersResult=ordersResult;
   window.actionDone=actionDone;window.statusDone=statusDone;
   window.adminError=adminError;window.nativeError=nativeError;
-  setTimeout(function(){var b=document.getElementById('bridge');if(b)b.textContent=(window.AdminNative&&typeof window.AdminNative.ready==='function'&&window.AdminNative.ready())?'✓ Bridge connected':'⚠ Bridge unavailable';},500);
+  loadMenu();setTimeout(function(){var b=document.getElementById('bridge');if(b)b.textContent=(window.AdminNative&&typeof window.AdminNative.ready==='function'&&window.AdminNative.ready())?'✓ Bridge connected':'⚠ Bridge unavailable';},500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);
   else showLogin();
 })();
