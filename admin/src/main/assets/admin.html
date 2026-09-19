@@ -1,11 +1,114 @@
-<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Samosa King Admin</title><style>*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:10px;margin:10px 0}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}</style></head><body><div id="app"></div><script>
-function esc(s){return String(s==null?'':s).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]))}
-function showLogin(){document.getElementById('app').innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1></div><div class="wrap"><div class="card"><h2>Admin Login</h2><p class="muted">Only an account present in Firestore <b>admins/{UID}</b> can enter.</p><input id="email" class="input" type="email" placeholder="Admin email"><input id="pass" class="input" type="password" placeholder="Password"><button class="btn goldbtn" onclick="AdminNative.login(email.value,pass.value)">LOGIN</button><div id="err" class="err"></div></div></div>'}
-function loginError(x){var e=document.getElementById('err');if(e)e.textContent=x}
-function showDashboard(email){document.getElementById('app').innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1><div class="muted" style="color:#ddd">'+esc(email)+'</div></div><div class="wrap"><div class="grid"><div class="stat"><span>Pending</span><br><b id="pending">0</b></div><div class="stat"><span>Total Orders</span><br><b id="total">0</b></div><div class="stat"><span>Today Sales</span><br><b id="today">₹0</b></div><div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div><div class="card"><button class="btn goldbtn" onclick="AdminNative.refresh()">↻ Refresh</button><button class="btn" onclick="AdminNative.logout()">Logout</button><div id="msg" class="muted"></div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>'}
-function ordersResult(raw){try{var a=typeof raw==='string'?JSON.parse(raw):raw||[];a.sort((x,y)=>(Number(y.createdAtMs||Date.parse(y.date)||0)-Number(x.createdAtMs||Date.parse(x.date)||0));var pending=a.filter(x=>!['DELIVERED','CANCELLED','REJECTED'].includes(x.status)).length;document.getElementById('pending').textContent=pending;document.getElementById('total').textContent=a.length;var sales=a.filter(x=>x.status==='DELIVERED').reduce((s,x)=>s+Number(x.total||0),0);document.getElementById('sales').textContent='₹'+sales;var today=new Date().toDateString();var td=a.filter(x=>new Date(x.date).toDateString()===today&&!['CANCELLED','REJECTED'].includes(x.status)).reduce((s,x)=>s+Number(x.total||0),0);document.getElementById('today').textContent='₹'+td;document.getElementById('orders').innerHTML=a.length?a.map(orderHtml).join(''):'<p class="muted">No orders yet.</p>'}catch(e){adminError('Order display error')}}
-function orderHtml(o){var items=(o.items||[]).map(i=>'<div>'+esc(i.name)+' × <b>'+i.qty+'</b></div>').join('');return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status)+'</span></div><p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile)+'</p><p>📍 <b>Delivery address</b><br>'+esc(o.address)+'</p><div class="items"><b>🛒 Items</b>'+items+'</div><p>Subtotal ₹'+o.subtotal+' + Delivery ₹'+o.delivery+' − Discount ₹'+o.discount+'<br><b>💰 Total ₹'+o.total+'</b><br>💵 '+esc(o.payment)+'</p><div class="row"><button class="btn" onclick="AdminNative.call('+JSON.stringify(o.mobile)+')">📞 Call</button><button class="btn" onclick="AdminNative.whatsapp('+JSON.stringify(o.mobile)+')">WhatsApp</button><button class="btn" onclick="AdminNative.navigate('+JSON.stringify(o.address)+')">📍 Navigate</button></div><div class="row">'+['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'].map(s=>'<button class="btn" onclick="AdminNative.updateStatus('+JSON.stringify(o.id)+','+JSON.stringify(s)+')">'+s.replaceAll('_',' ')+'</button>').join('')+'<button class="btn" onclick="AdminNative.reject('+JSON.stringify(o.id)+')">REJECT</button></div><div class="muted">'+esc(o.date)+'</div></div>'}
-function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;AdminNative.refresh()}
-function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+x}
-window.showLogin=showLogin;window.loginError=loginError;window.showDashboard=showDashboard;window.ordersResult=ordersResult;window.actionDone=actionDone;window.adminError=adminError;
-</script></body></html>
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Samosa King Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:10px;margin:10px 0}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function(){
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+      if(c==='&')return '&amp;';
+      if(c==='<')return '&lt;';
+      if(c==='>')return '&gt;';
+      if(c==='"')return '&quot;';
+      return '&#39;';
+    });
+  }
+  function showLogin(){
+    var app=document.getElementById('app');
+    if(!app)return;
+    app.innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1></div>'+
+      '<div class="wrap"><div class="card"><h2>Admin Login</h2>'+
+      '<p class="muted">Use the authorized admin Firebase account.</p>'+
+      '<input id="email" class="input" type="email" placeholder="Admin email" autocomplete="username">'+
+      '<input id="pass" class="input" type="password" placeholder="Password" autocomplete="current-password">'+
+      '<button class="btn goldbtn" onclick="doLogin()">LOGIN</button><div id="err" class="err"></div></div></div>';
+  }
+  function doLogin(){
+    var e=document.getElementById('email'),p=document.getElementById('pass');
+    if(window.AdminNative) AdminNative.login(e?e.value:'',p?p.value:'');
+  }
+  function loginError(x){
+    var e=document.getElementById('err');
+    if(e)e.textContent=String(x||'Login failed');
+  }
+  function showDashboard(label){
+    var app=document.getElementById('app');
+    if(!app)return;
+    app.innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1>'+
+      '<div class="muted" style="color:#ddd">'+esc(label||'Admin')+'</div></div>'+
+      '<div class="wrap"><div class="grid">'+
+      '<div class="stat"><span>Pending</span><br><b id="pending">0</b></div>'+
+      '<div class="stat"><span>Total Orders</span><br><b id="total">0</b></div>'+
+      '<div class="stat"><span>Today Sales</span><br><b id="today">₹0</b></div>'+
+      '<div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div>'+
+      '<div class="card"><button class="btn goldbtn" onclick="AdminNative.refresh()">↻ Refresh</button>'+
+      '<button class="btn" onclick="AdminNative.logout()">Logout</button><div id="msg" class="muted"></div></div>'+
+      '<div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
+  }
+  function ordersResult(raw){
+    try{
+      var a=typeof raw==='string'?JSON.parse(raw):(raw||[]);
+      a.sort(function(x,y){return Number(y.createdAtMs||Date.parse(y.date)||0)-Number(x.createdAtMs||Date.parse(x.date)||0);});
+      var pending=0,i;
+      for(i=0;i<a.length;i++){if(a[i].status!=='DELIVERED'&&a[i].status!=='CANCELLED'&&a[i].status!=='REJECTED')pending++;}
+      var p=document.getElementById('pending'),t=document.getElementById('total'),s=document.getElementById('sales'),todayEl=document.getElementById('today'),o=document.getElementById('orders');
+      if(p)p.textContent=pending;
+      if(t)t.textContent=a.length;
+      var sales=0,today=0,now=new Date().toDateString();
+      for(i=0;i<a.length;i++){
+        if(a[i].status==='DELIVERED')sales+=Number(a[i].total||0);
+        if(new Date(a[i].date).toDateString()===now&&a[i].status!=='CANCELLED'&&a[i].status!=='REJECTED')today+=Number(a[i].total||0);
+      }
+      if(s)s.textContent='₹'+sales;
+      if(todayEl)todayEl.textContent='₹'+today;
+      if(o)o.innerHTML=a.length?mapOrders(a):'<p class="muted">No orders yet.</p>';
+    }catch(e){adminError('Order display error: '+e.message);}
+  }
+  function mapOrders(a){
+    var out='',i;
+    for(i=0;i<a.length;i++)out+=orderHtml(a[i]);
+    return out;
+  }
+  function orderHtml(o){
+    var items='',i,arr=o.items||[];
+    for(i=0;i<arr.length;i++)items+='<div>'+esc(arr[i].name)+' × <b>'+esc(arr[i].qty)+'</b></div>';
+    var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
+    var buttons='',s;
+    for(i=0;i<statuses.length;i++){
+      s=statuses[i];
+      buttons+='<button class="btn" onclick="AdminNative.updateStatus('+JSON.stringify(o.id)+','+JSON.stringify(s)+')">'+s.replace(/_/g,' ')+'</button>';
+    }
+    buttons+='<button class="btn" onclick="AdminNative.reject('+JSON.stringify(o.id)+')">REJECT</button>';
+    return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
+      '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile)+'</p>'+
+      '<p>📍 <b>Delivery address</b><br>'+esc(o.address)+'</p>'+
+      '<div class="items"><b>🛒 Items</b>'+items+'</div>'+
+      '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
+      '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
+      '<div class="row"><button class="btn" onclick="AdminNative.call('+JSON.stringify(o.mobile)+')">📞 Call</button>'+
+      '<button class="btn" onclick="AdminNative.whatsapp('+JSON.stringify(o.mobile)+')">WhatsApp</button>'+
+      '<button class="btn" onclick="AdminNative.navigate('+JSON.stringify(o.address)+')">📍 Navigate</button></div>'+
+      '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
+  }
+  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;if(window.AdminNative)AdminNative.refresh();}
+  function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
+  window.showLogin=showLogin;
+  window.doLogin=doLogin;
+  window.loginError=loginError;
+  window.showDashboard=showDashboard;
+  window.ordersResult=ordersResult;
+  window.actionDone=actionDone;
+  window.adminError=adminError;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);
+  else showLogin();
+})();
+</script>
+</body>
+</html>
