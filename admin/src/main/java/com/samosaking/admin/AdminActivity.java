@@ -30,7 +30,8 @@ public class AdminActivity extends Activity{
     if("reject".equals(action)){reject(id);return;}
     if("call".equals(action)){call(value);return;}
     if("whatsapp".equals(action)){whatsapp(value);return;}
-    if("navigate".equals(action)){nav(value);return;}\n    if("print".equals(action)){printBill(id);return;}
+    if("navigate".equals(action)){nav(value);return;}
+    if("print".equals(action)){printBill(id);return;}
     message("Unknown admin action: "+action);
   }catch(Exception e){message("Action error: "+e.getClass().getSimpleName()+" — "+e.getMessage());}
  }
@@ -113,7 +114,7 @@ public class AdminActivity extends Activity{
  private void call(String n){try{startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+n)));}catch(Exception e){message("Could not open phone dialer.");}}
  private void whatsapp(String n){try{String x=n.replaceAll("[^0-9]","");if(x.length()==10)x="91"+x;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://wa.me/"+x)));}catch(Exception e){message("Could not open WhatsApp.");}}
  private void nav(String a){try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com/maps/dir/?api=1&destination="+Uri.encode(a)+"&travelmode=driving")));}catch(Exception e){message("Could not open Maps.");}}
- private String htmlEsc(String x){if(x==null)return "";return x.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace(""","&quot;").replace("'","&#39;");}
+ private String htmlEsc(String x){if(x==null)return "";return x.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\"","&quot;").replace("'","&#39;");}
  private void printBill(String id){
   if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}
   isAdmin(()->db.collection("orders").document(id).get().addOnSuccessListener(d->{
