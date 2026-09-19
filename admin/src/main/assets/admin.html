@@ -67,8 +67,8 @@
         o=a[i];
         h+='<div class="order"><b>'+esc(o.name||o.id)+'</b>'+
           '<input class="input" id="price_'+esc(o.id)+'" type="number" min="0" value="'+esc(o.price)+'" placeholder="Price">'+
-          '<div class="row"><button class="btn goldbtn" onclick="savePrice(\\''+esc(o.id)+'\\')">Save Price</button>'+
-          '<button class="btn" onclick="saveAvailability(\\''+esc(o.id)+'\\','+(!o.enabled)+')">'+(o.enabled?'Mark Sold Out':'Mark Available')+'</button></div></div>';
+          '<div class="row"><button class="btn goldbtn" onclick="savePrice(\''+esc(o.id)+'\')">Save Price</button>'+
+          '<button class="btn" onclick="saveAvailability(\''+esc(o.id)+'\','+(!o.enabled)+')">'+(o.enabled?'Mark Sold Out':'Mark Available')+'</button></div></div>';
       }
       var m=document.getElementById('menu');if(m)m.innerHTML=h||'<div class="muted">No menu items configured.</div>';
     }catch(e){adminError('Menu display error: '+e.message);}
