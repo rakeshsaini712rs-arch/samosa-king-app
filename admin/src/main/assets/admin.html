@@ -93,16 +93,16 @@
       s=statuses[i];
       buttons+='<button class="btn" onclick="AdminNative.updateStatus('+JSON.stringify(o.id)+','+JSON.stringify(s)+')">'+s.replace(/_/g,' ')+'</button>';
     }
-    buttons+='<button class="btn" onclick="nativeCall('reject',['+JSON.stringify(o.id])+')">REJECT</button>';
+    buttons+='<button class="btn" onclick="AdminNative.reject('+JSON.stringify(o.id)+')">REJECT</button>';
     return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
       '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile)+'</p>'+
       '<p>📍 <b>Delivery address</b><br>'+esc(o.address)+'</p>'+
       '<div class="items"><b>🛒 Items</b>'+items+'</div>'+
       '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
       '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
-      '<div class="row"><button class="btn" onclick="nativeCall('call',['+JSON.stringify(o.mobile])+')">📞 Call</button>'+
-      '<button class="btn" onclick="nativeCall('whatsapp',['+JSON.stringify(o.mobile])+')">WhatsApp</button>'+
-      '<button class="btn" onclick="nativeCall('navigate',['+JSON.stringify(o.address])+')">📍 Navigate</button></div>'+
+      '<div class="row"><button class="btn" onclick="AdminNative.call('+JSON.stringify(o.mobile)+')">📞 Call</button>'+
+      '<button class="btn" onclick="AdminNative.whatsapp('+JSON.stringify(o.mobile)+')">WhatsApp</button>'+
+      '<button class="btn" onclick="AdminNative.navigate('+JSON.stringify(o.address)+')">📍 Navigate</button></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
   function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;if(window.AdminNative)nativeCall('refresh');}
