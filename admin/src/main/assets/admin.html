@@ -88,29 +88,34 @@
     var items='',i,arr=o.items||[];
     for(i=0;i<arr.length;i++)items+='<div>'+esc(arr[i].name)+' × <b>'+esc(arr[i].qty)+'</b></div>';
     var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
-    var buttons='',s;
-    var oid=JSON.stringify(String(o.id)).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    var omobile=JSON.stringify(String(o.mobile||'')).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    var oaddress=JSON.stringify(String(o.address||'')).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
-    for(i=0;i<statuses.length;i++){
-      s=statuses[i];
-      buttons+='<button class="btn" onclick="nativeCall(&quot;updateStatus&quot;,['+oid+',&quot;'+s+'&quot;])">'+s.replace(/_/g,' ')+'</button>';
-    }
-    buttons+='<button class="btn" onclick="nativeCall(&quot;reject&quot;,['+oid+'])">REJECT</button>';
+    var buttons='',s,oid=esc(o.id),mobile=esc(o.mobile||''),address=esc(o.address||'');
+    for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<button type="button" class="btn order-action" data-action="status" data-id="'+oid+'" data-value="'+s+'">'+s.replace(/_/g,' ')+'</button>';}
+    buttons+='<button type="button" class="btn order-action" data-action="reject" data-id="'+oid+'">REJECT</button>';
     return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
-      '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile)+'</p>'+
-      '<p>📍 <b>Delivery address</b><br>'+esc(o.address)+'</p>'+
+      '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+mobile+'</p>'+
+      '<p>📍 <b>Delivery address</b><br>'+address+'</p>'+
       '<div class="items"><b>🛒 Items</b>'+items+'</div>'+
       '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
       '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
-      '<div class="row"><button class="btn" onclick="nativeCall(&quot;call&quot;,['+omobile+'])">📞 Call</button>'+
-      '<button class="btn" onclick="nativeCall(&quot;whatsapp&quot;,['+omobile+'])">WhatsApp</button>'+
-      '<button class="btn" onclick="nativeCall(&quot;navigate&quot;,['+oaddress+'])">📍 Navigate</button></div>'+
+      '<div class="row"><button type="button" class="btn order-action" data-action="call" data-value="'+mobile+'">📞 Call</button>'+
+      '<button type="button" class="btn order-action" data-action="whatsapp" data-value="'+mobile+'">WhatsApp</button>'+
+      '<button type="button" class="btn order-action" data-action="navigate" data-value="'+address+'">📍 Navigate</button></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
   function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;if(window.AdminNative)nativeCall('refresh');}
   function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
   function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
+  document.addEventListener('click',function(ev){
+    var b=ev.target.closest&&ev.target.closest('.order-action');
+    if(!b)return;
+    ev.preventDefault();
+    var a=b.getAttribute('data-action'),id=b.getAttribute('data-id')||'',v=b.getAttribute('data-value')||'';
+    if(a==='status')nativeCall('updateStatus',[id,v]);
+    else if(a==='reject')nativeCall('reject',[id]);
+    else if(a==='call')nativeCall('call',[v]);
+    else if(a==='whatsapp')nativeCall('whatsapp',[v]);
+    else if(a==='navigate')nativeCall('navigate',[v]);
+  });
   window.nativeCall=nativeCall;
   window.showLogin=showLogin;
   window.doLogin=doLogin;
