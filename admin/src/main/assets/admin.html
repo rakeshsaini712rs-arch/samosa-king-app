@@ -106,11 +106,13 @@
   function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
   function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
   document.addEventListener('click',function(ev){
-    var b=ev.target.closest&&ev.target.closest('.order-action');
+    var b=ev.target.closest&&ev.target.closest('.order-action,.admin-action');
     if(!b)return;
     ev.preventDefault();
     var a=b.getAttribute('data-action'),id=b.getAttribute('data-id')||'',v=b.getAttribute('data-value')||'';
-    if(a==='status')nativeCall('updateStatus',[id,v]);
+    if(a==='refresh')nativeCall('refresh');
+    else if(a==='logout')nativeCall('logout');
+    else if(a==='status')nativeCall('updateStatus',[id,v]);
     else if(a==='reject')nativeCall('reject',[id]);
     else if(a==='call')nativeCall('call',[v]);
     else if(a==='whatsapp')nativeCall('whatsapp',[v]);
@@ -124,6 +126,7 @@
   window.ordersResult=ordersResult;
   window.actionDone=actionDone;
   window.adminError=adminError;window.nativeError=nativeError;
+  setTimeout(function(){var b=document.getElementById('bridge');if(b)b.textContent=(window.AdminNative&&typeof window.AdminNative.ready==='function'&&window.AdminNative.ready())?'✓ Bridge connected':'⚠ Bridge unavailable';},500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);
   else showLogin();
 })();
