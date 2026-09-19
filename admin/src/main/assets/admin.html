@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Samosa King Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:10px;margin:10px 0}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}
+*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:10px;margin:10px 0}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff}.btn.status-done{box-shadow:0 0 0 2px #b7e4c7}
 </style>
 </head>
 <body>
@@ -92,7 +92,7 @@
     for(i=0;i<arr.length;i++)items+='<div>'+esc(arr[i].name)+' × <b>'+esc(arr[i].qty)+'</b></div>';
     var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
     var buttons='',s;
-    for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<a class="btn" href="'+actionUrl('status',o.id,s)+'">'+s.replace(/_/g,' ')+'</a>';}
+    for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<a class="btn '+(String(o.status||'')===s?'status-current':'')+'" data-order-id="'+esc(o.id)+'" data-status="'+s+'" href="'+actionUrl('status',o.id,s)+'">'+(String(o.status||'')===s?'✓ ':'')+s.replace(/_/g,' ')+'</a>';}
     buttons+='<a class="btn" href="'+actionUrl('reject',o.id,'')+'">REJECT</a>';
     return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
       '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile||'')+'</p>'+
@@ -105,7 +105,7 @@
       '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
-  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}
+  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}\n  function statusDone(id,st){var a=document.querySelectorAll('.btn[data-order-id]'),i,b;for(i=0;i<a.length;i++){b=a[i];if(b.getAttribute('data-order-id')===String(id)&&b.getAttribute('data-status')===String(st)){b.classList.add('status-done');b.textContent='✓ '+String(st).replace(/_/g,' ');}}}
   function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
   function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
   window.nativeCall=nativeCall;
@@ -114,7 +114,7 @@
   window.loginError=loginError;
   window.showDashboard=showDashboard;
   window.ordersResult=ordersResult;
-  window.actionDone=actionDone;
+  window.actionDone=actionDone;window.statusDone=statusDone;
   window.adminError=adminError;window.nativeError=nativeError;
   setTimeout(function(){var b=document.getElementById('bridge');if(b)b.textContent=(window.AdminNative&&typeof window.AdminNative.ready==='function'&&window.AdminNative.ready())?'✓ Bridge connected':'⚠ Bridge unavailable';},500);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);
