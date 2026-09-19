@@ -102,7 +102,8 @@
       '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
       '<div class="row"><a class="btn" href="'+actionUrl('call','',o.mobile||'')+'">📞 Call</a>'+
       '<a class="btn" href="'+actionUrl('whatsapp','',o.mobile||'')+'">WhatsApp</a>'+
-      '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a></div>'+
+      '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a>'+
+      '<a class="btn goldbtn" href="'+actionUrl('print',o.id,'')+'">🧾 Print Bill</a></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
   function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}
