@@ -8,7 +8,7 @@
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app"></div><div id="nativeErr" style="position:fixed;left:10px;right:10px;bottom:10px;z-index:99;background:#fff3cd;color:#6b4e00;border:1px solid #e0c36a;border-radius:12px;padding:10px;display:none;font-size:12px"></div>
 <script>
 (function(){
   function esc(s){
@@ -30,9 +30,17 @@
       '<input id="pass" class="input" type="password" placeholder="Password" autocomplete="current-password">'+
       '<button class="btn goldbtn" onclick="doLogin()">LOGIN</button><div id="err" class="err"></div></div></div>';
   }
+  function nativeCall(name,args){
+    try{
+      if(window.AdminNative && typeof window.AdminNative[name]==='function') return window.AdminNative[name].apply(window.AdminNative,args||[]);
+      nativeError('Native function unavailable: '+name);
+    }catch(e){nativeError(name+' failed: '+e.message);}
+  }
   function doLogin(){
     var e=document.getElementById('email'),p=document.getElementById('pass');
-    if(window.AdminNative) AdminNative.login(e?e.value:'',p?p.value:'');
+    if(!e||!p)return;
+    if(!e.value.trim()||!p.value){loginError('Email and password required.');return;}
+    nativeCall('login',[e.value.trim(),p.value]);
   }
   function loginError(x){
     var e=document.getElementById('err');
@@ -99,13 +107,14 @@
   }
   function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;if(window.AdminNative)AdminNative.refresh();}
   function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
+  function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
   window.showLogin=showLogin;
   window.doLogin=doLogin;
   window.loginError=loginError;
   window.showDashboard=showDashboard;
   window.ordersResult=ordersResult;
   window.actionDone=actionDone;
-  window.adminError=adminError;
+  window.adminError=adminError;window.nativeError=nativeError;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);
   else showLogin();
 })();
