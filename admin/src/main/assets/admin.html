@@ -103,9 +103,9 @@
       '<div class="items"><b>🛒 Items</b>'+items+'</div>'+
       '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
       '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
-      '<div class="row"><button class="btn" onclick="nativeCall(&quot;call&quot;,[JSON.stringify(o.mobile)])">📞 Call</button>'+
-      '<button class="btn" onclick="nativeCall(&quot;whatsapp&quot;,[JSON.stringify(o.mobile)])">WhatsApp</button>'+
-      '<button class="btn" onclick="nativeCall(&quot;navigate&quot;,[JSON.stringify(o.address)])">📍 Navigate</button></div>'+
+      '<div class="row"><button class="btn" onclick="nativeCall(&quot;call&quot;,[ + omobile + ])">📞 Call</button>'+
+      '<button class="btn" onclick="nativeCall(&quot;whatsapp&quot;,[ + omobile + ])">WhatsApp</button>'+
+      '<button class="btn" onclick="nativeCall(&quot;navigate&quot;,[ + oaddress + ])">📍 Navigate</button></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
   function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;if(window.AdminNative)nativeCall('refresh');}
