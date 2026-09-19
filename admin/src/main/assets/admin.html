@@ -89,11 +89,14 @@
     for(i=0;i<arr.length;i++)items+='<div>'+esc(arr[i].name)+' × <b>'+esc(arr[i].qty)+'</b></div>';
     var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
     var buttons='',s;
+    var oid=JSON.stringify(String(o.id)).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    var omobile=JSON.stringify(String(o.mobile||'')).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    var oaddress=JSON.stringify(String(o.address||'')).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
     for(i=0;i<statuses.length;i++){
       s=statuses[i];
-      buttons+='<button class="btn" onclick="nativeCall(&quot;updateStatus&quot;,[JSON.stringify(o.id),JSON.stringify(s)])">'+s.replace(/_/g,' ')+'</button>';
+      buttons+='<button class="btn" onclick="nativeCall(&quot;updateStatus&quot;,['+oid+',&quot;'+s+'&quot;])">'+s.replace(/_/g,' ')+'</button>';
     }
-    buttons+='<button class="btn" onclick="nativeCall(&quot;reject&quot;,[JSON.stringify(o.id)])">REJECT</button>';
+    buttons+='<button class="btn" onclick="nativeCall(&quot;reject&quot;,['+oid+'])">REJECT</button>';
     return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
       '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile)+'</p>'+
       '<p>📍 <b>Delivery address</b><br>'+esc(o.address)+'</p>'+
