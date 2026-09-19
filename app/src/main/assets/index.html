@@ -46,5 +46,5 @@ function loadLastOrder(){if(window.AndroidBridge&&AndroidBridge.loadLastOrder)An
 function cancelOrder(){if(confirm('Order cancel karna hai?'))AndroidBridge.cancelLastOrder()}
 function otpSent(){$('otpbox').style.display='block';$('loginMsg').textContent='OTP sent.'}function otpVerified(phone){$('loginMsg').textContent='Phone verified: '+phone}function otpError(t){$('loginMsg').textContent=t||'OTP verification failed.'}function sendOtp(){let p=$('loginPhone').value.trim();if(!p)return alert('Phone number bharo');AndroidBridge.sendOtp(p)}function verifyOtp(){let c=$('otp').value.trim();if(!c)return alert('OTP bharo');AndroidBridge.verifyOtp(c)}
 function callShop(){location.href='tel:7891851475'}function waShop(){location.href='https://wa.me/917891851475'}
-try{render();}catch(e){var m=document.getElementById('msg');if(m)m.textContent='App error: '+e.message;}if(window.AndroidBridge&&AndroidBridge.loadMenu)AndroidBridge.loadMenu();loadLastOrder();
+try{render();}catch(e){document.body.innerHTML='<div style="padding:24px;font-family:Arial"><h2>Samosa King</h2><p>App loading error.</p><pre style="white-space:pre-wrap">'+String(e&&e.message||e)+'</pre></div>';}try{if(window.AndroidBridge&&AndroidBridge.loadMenu)AndroidBridge.loadMenu();}catch(e){}try{loadLastOrder();}catch(e){}
 </script></body></html>
