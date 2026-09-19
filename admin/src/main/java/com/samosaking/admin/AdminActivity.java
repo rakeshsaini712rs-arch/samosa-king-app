@@ -15,7 +15,7 @@ public class AdminActivity extends Activity{
  }catch(Throwable e){fatal(e);}}
  private void handleAdminUrl(String u){
   try{
-    Uri x=Uri.parse(u); String action=x.getHost(); String id=x.getQueryParameter("id"); String value=x.getQueryParameter("value");
+    Uri x=Uri.parse(u); String action=x.getPath(); if(action!=null&&action.startsWith("/"))action=action.substring(1); String id=x.getQueryParameter("id"); String value=x.getQueryParameter("value");
     if("refresh".equals(action)){refresh();return;}
     if("logout".equals(action)){if(ordersListener!=null)ordersListener.remove();auth.signOut();js("window.showLogin()");return;}
     if("status".equals(action)){updateStatus(id,value);return;}
