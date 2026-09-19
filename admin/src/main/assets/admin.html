@@ -56,8 +56,8 @@
       '<div class="stat"><span>Total Orders</span><br><b id="total">0</b></div>'+
       '<div class="stat"><span>Today Sales</span><br><b id="today">₹0</b></div>'+
       '<div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div>'+
-      '<div class="card"><button class="btn goldbtn" onclick="nativeCall(&quot;refresh&quot;)">↻ Refresh</button>'+
-      '<button class="btn" onclick="nativeCall(&quot;logout&quot;)">Logout</button><div id="msg" class="muted"></div></div>'+
+      '<div class="card"><a class="btn goldbtn" href="samosa://admin/refresh">↻ Refresh</a>'+
+      '<a class="btn" href="samosa://admin/logout">Logout</a><div id="msg" class="muted"></div></div>'+
       '<div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
   }
   function ordersResult(raw){
@@ -84,40 +84,30 @@
     for(i=0;i<a.length;i++)out+=orderHtml(a[i]);
     return out;
   }
+  function actionUrl(action,id,value){
+    return 'samosa://admin/'+encodeURIComponent(action)+'?id='+encodeURIComponent(id||'')+'&value='+encodeURIComponent(value||'');
+  }
   function orderHtml(o){
     var items='',i,arr=o.items||[];
     for(i=0;i<arr.length;i++)items+='<div>'+esc(arr[i].name)+' × <b>'+esc(arr[i].qty)+'</b></div>';
     var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
-    var buttons='',s,oid=esc(o.id),mobile=esc(o.mobile||''),address=esc(o.address||'');
-    for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<button type="button" class="btn order-action" data-action="status" data-id="'+oid+'" data-value="'+s+'">'+s.replace(/_/g,' ')+'</button>';}
-    buttons+='<button type="button" class="btn order-action" data-action="reject" data-id="'+oid+'">REJECT</button>';
+    var buttons='',s;
+    for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<a class="btn" href="'+actionUrl('status',o.id,s)+'">'+s.replace(/_/g,' ')+'</a>';}
+    buttons+='<a class="btn" href="'+actionUrl('reject',o.id,'')+'">REJECT</a>';
     return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
-      '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+mobile+'</p>'+
-      '<p>📍 <b>Delivery address</b><br>'+address+'</p>'+
+      '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile||'')+'</p>'+
+      '<p>📍 <b>Delivery address</b><br>'+esc(o.address||'')+'</p>'+
       '<div class="items"><b>🛒 Items</b>'+items+'</div>'+
       '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
       '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
-      '<div class="row"><button type="button" class="btn order-action" data-action="call" data-value="'+mobile+'">📞 Call</button>'+
-      '<button type="button" class="btn order-action" data-action="whatsapp" data-value="'+mobile+'">WhatsApp</button>'+
-      '<button type="button" class="btn order-action" data-action="navigate" data-value="'+address+'">📍 Navigate</button></div>'+
+      '<div class="row"><a class="btn" href="'+actionUrl('call','',o.mobile||'')+'">📞 Call</a>'+
+      '<a class="btn" href="'+actionUrl('whatsapp','',o.mobile||'')+'">WhatsApp</a>'+
+      '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
-  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;if(window.AdminNative)nativeCall('refresh');}
+  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}
   function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
   function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
-  document.addEventListener('click',function(ev){
-    var b=ev.target.closest&&ev.target.closest('.order-action,.admin-action');
-    if(!b)return;
-    ev.preventDefault();
-    var a=b.getAttribute('data-action'),id=b.getAttribute('data-id')||'',v=b.getAttribute('data-value')||'';
-    if(a==='refresh')nativeCall('refresh');
-    else if(a==='logout')nativeCall('logout');
-    else if(a==='status')nativeCall('updateStatus',[id,v]);
-    else if(a==='reject')nativeCall('reject',[id]);
-    else if(a==='call')nativeCall('call',[v]);
-    else if(a==='whatsapp')nativeCall('whatsapp',[v]);
-    else if(a==='navigate')nativeCall('navigate',[v]);
-  });
   window.nativeCall=nativeCall;
   window.showLogin=showLogin;
   window.doLogin=doLogin;
