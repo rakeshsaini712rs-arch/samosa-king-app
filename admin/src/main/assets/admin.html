@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Samosa King Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:10px;margin:10px 0}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff}.btn.status-done{box-shadow:0 0 0 2px #b7e4c7}
+*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff}.btn.status-done{box-shadow:0 0 0 2px #b7e4c7}
 </style>
 </head>
 <body>
@@ -89,7 +89,7 @@
   }
   function orderHtml(o){
     var items='',i,arr=o.items||[];
-    for(i=0;i<arr.length;i++)items+='<div>'+esc(arr[i].name)+' × <b>'+esc(arr[i].qty)+'</b></div>';
+    for(i=0;i<arr.length;i++)items+='<div class="itemline"><span>🍽️ <b>'+esc(arr[i].name)+'</b></span><span class="itemqty">× '+esc(arr[i].qty)+'</span></div>';
     var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
     var buttons='',s;
     for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<a class="btn '+(String(o.status||'')===s?'status-current':'')+'" data-order-id="'+esc(o.id)+'" data-status="'+s+'" href="'+actionUrl('status',o.id,s)+'">'+(String(o.status||'')===s?'✓ ':'')+s.replace(/_/g,' ')+'</a>';}
@@ -97,7 +97,7 @@
     return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
       '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile||'')+'</p>'+
       '<p>📍 <b>Delivery address</b><br>'+esc(o.address||'')+'</p>'+
-      '<div class="items"><b>🛒 Items</b>'+items+'</div>'+
+      '<div class="items"><div class="itemhead">🛒 ORDER ITEMS</div>'+items+'</div>'+
       '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
       '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
       '<div class="row"><a class="btn" href="'+actionUrl('call','',o.mobile||'')+'">📞 Call</a>'+
