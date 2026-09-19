@@ -105,7 +105,8 @@
       '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
-  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}\n  function statusDone(id,st){var a=document.querySelectorAll('.btn[data-order-id]'),i,b;for(i=0;i<a.length;i++){b=a[i];if(b.getAttribute('data-order-id')===String(id)&&b.getAttribute('data-status')===String(st)){b.classList.add('status-done');b.textContent='✓ '+String(st).replace(/_/g,' ');}}}
+  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}
+  function statusDone(id,st){var a=document.querySelectorAll('.btn[data-order-id]'),i,b;for(i=0;i<a.length;i++){b=a[i];if(b.getAttribute('data-order-id')===String(id)&&b.getAttribute('data-status')===String(st)){b.classList.add('status-done');b.textContent='✓ '+String(st).replace(/_/g,' ');}}}
   function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
   function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
   window.nativeCall=nativeCall;
