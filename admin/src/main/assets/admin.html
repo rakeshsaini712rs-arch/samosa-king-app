@@ -108,6 +108,7 @@
   function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;if(window.AdminNative)nativeCall('refresh');}
   function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
   function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
+  window.nativeCall=nativeCall;
   window.showLogin=showLogin;
   window.doLogin=doLogin;
   window.loginError=loginError;
