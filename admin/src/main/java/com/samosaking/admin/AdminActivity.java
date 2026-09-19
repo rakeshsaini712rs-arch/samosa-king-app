@@ -1,9 +1,9 @@
 package com.samosaking.admin;
 
-import android.app.*;import android.content.*;import android.net.Uri;import android.os.*;import android.webkit.*;import android.graphics.Color;import android.widget.TextView;import com.google.firebase.FirebaseApp;import com.google.firebase.FirebaseOptions;import com.google.firebase.auth.FirebaseAuth;import com.google.firebase.firestore.*;import org.json.*;import java.util.*;
+import android.app.*;import android.content.*;import android.net.Uri;import android.os.*;import android.webkit.*;import android.print.PrintAttributes;import android.print.PrintManager;import android.graphics.Color;import android.widget.TextView;import com.google.firebase.FirebaseApp;import com.google.firebase.FirebaseOptions;import com.google.firebase.auth.FirebaseAuth;import com.google.firebase.firestore.*;import org.json.*;import java.util.*;
 
 public class AdminActivity extends Activity{
- private WebView w; private FirebaseAuth auth; private FirebaseFirestore db; private ListenerRegistration ordersListener;
+ private WebView w; private WebView printView; private FirebaseAuth auth; private FirebaseFirestore db; private ListenerRegistration ordersListener;
  private static final String PROJECT="samosa-king-3b90d"; private static final String APP_ID="1:855148039257:android:535730f98ea24e77253548"; private static final String API_KEY="AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw";
  private static final String ADMIN_UID="vJCq3yQDe0QcCg5EoEPnjVKwUgJ2";
  @Override public void onCreate(Bundle b){super.onCreate(b);try{
@@ -30,7 +30,7 @@ public class AdminActivity extends Activity{
     if("reject".equals(action)){reject(id);return;}
     if("call".equals(action)){call(value);return;}
     if("whatsapp".equals(action)){whatsapp(value);return;}
-    if("navigate".equals(action)){nav(value);return;}
+    if("navigate".equals(action)){nav(value);return;}\n    if("print".equals(action)){printBill(id);return;}
     message("Unknown admin action: "+action);
   }catch(Exception e){message("Action error: "+e.getClass().getSimpleName()+" — "+e.getMessage());}
  }
@@ -113,7 +113,63 @@ public class AdminActivity extends Activity{
  private void call(String n){try{startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+n)));}catch(Exception e){message("Could not open phone dialer.");}}
  private void whatsapp(String n){try{String x=n.replaceAll("[^0-9]","");if(x.length()==10)x="91"+x;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://wa.me/"+x)));}catch(Exception e){message("Could not open WhatsApp.");}}
  private void nav(String a){try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com/maps/dir/?api=1&destination="+Uri.encode(a)+"&travelmode=driving")));}catch(Exception e){message("Could not open Maps.");}}
+ private String htmlEsc(String x){if(x==null)return "";return x.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace(""","&quot;").replace("'","&#39;");}
+ private void printBill(String id){
+  if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}
+  isAdmin(()->db.collection("orders").document(id).get().addOnSuccessListener(d->{
+   if(!d.exists()){message("Order not found: "+id);return;}
+   try{
+    StringBuilder h=new StringBuilder();
+    h.append("<!doctype html><html><head><meta name='viewport' content='width=device-width,initial-scale=1'><style>");
+    h.append("body{font-family:Arial,sans-serif;color:#111;margin:0;padding:24px;font-size:14px}.bill{max-width:700px;margin:auto}");
+    h.append("h1{text-align:center;margin:0 0 4px;font-size:26px}.sub{text-align:center;color:#555;margin-bottom:18px}");
+    h.append(".line{border-top:1px solid #222;margin:12px 0}.row{display:flex;justify-content:space-between;padding:5px 0}");
+    h.append(".items{margin:10px 0}.total{font-size:20px;font-weight:800;border-top:2px solid #111;margin-top:10px;padding-top:10px}");
+    h.append(".small{font-size:12px;color:#555}@media print{body{padding:0}.bill{max-width:none}}</style></head><body><div class='bill'>");
+    h.append("<h1>SAMOSA KING</h1><div class='sub'>Nawalgarh • Nansa Gate<br>Bill / Order Receipt</div>");
+    h.append("<div><b>Order #").append(htmlEsc(d.getId())).append("</b><br>");
+    h.append("Customer: ").append(htmlEsc(d.getString("customerName"))).append("<br>");
+    h.append("Mobile: ").append(htmlEsc(d.getString("mobile"))).append("<br>");
+    h.append("Address: ").append(htmlEsc(d.getString("address"))).append("<br>");
+    h.append("Payment: ").append(htmlEsc(d.getString("paymentMethod"))).append("<br>");
+    h.append("Date: ").append(htmlEsc(dateText(d.get("createdAt")))).append("</div><div class='line'></div>");
+    h.append("<div class='items'><b>ITEMS</b>");
+    Object im=d.get("items");
+    if(im instanceof Map){
+      for(Map.Entry<?,?> entry:((Map<?,?>)im).entrySet()){
+        String key=String.valueOf(entry.getKey()); Object v=entry.getValue(); String name=itemName(key); long qty=0;
+        if(v instanceof Map){Map<?,?> m=(Map<?,?>)v;Object n=m.get("name");if(n!=null&&!String.valueOf(n).equals("null"))name=String.valueOf(n);qty=num(m.get("qty"));}else qty=num(v);
+        h.append("<div class='row'><span>").append(htmlEsc(name)).append(" × ").append(qty).append("</span></div>");
+      }
+    }
+    h.append("</div><div class='line'>");
+    h.append("</div><div class='row'><span>Subtotal</span><span>₹").append(num(d.get("subtotal"))).append("</span></div>");
+    h.append("<div class='row'><span>Delivery</span><span>₹").append(num(d.get("deliveryFee"))).append("</span></div>");
+    h.append("<div class='row'><span>Discount</span><span>− ₹").append(num(d.get("discount"))).append("</span></div>");
+    h.append("<div class='row total'><span>TOTAL</span><span>₹").append(num(d.get("total"))).append("</span></div>");
+    h.append("<div class='line'></div><div class='small'>Thank you for ordering from Samosa King – Nawalgarh.</div></div></body></html>");
+    String title="Samosa King Bill "+d.getId();
+    runOnUiThread(()->{
+      try{
+        if(printView!=null){printView.destroy();printView=null;}
+        printView=new WebView(this);
+        printView.getSettings().setJavaScriptEnabled(false);
+        printView.setWebViewClient(new WebViewClient(){
+          @Override public void onPageFinished(WebView v,String url){
+            try{
+              PrintManager pm=(PrintManager)getSystemService(PRINT_SERVICE);
+              PrintAttributes attrs=new PrintAttributes.Builder().setMediaSize(PrintAttributes.MediaSize.ISO_A4).setMinMargins(PrintAttributes.Margins.NO_MARGINS).build();
+              pm.print(title,v.createPrintDocumentAdapter(title),attrs);
+            }catch(Exception e){message("Print failed: "+e.getMessage());}
+          }
+        });
+        printView.loadDataWithBaseURL(null,h.toString(),"text/html","UTF-8",null);
+      }catch(Exception e){message("Could not prepare bill: "+e.getMessage());}
+    });
+   }catch(Exception e){message("Bill error: "+e.getMessage());}
+  }).addOnFailureListener(e->message("Could not load order for printing: "+e.getClass().getSimpleName()+" — "+e.getMessage())));
+ }
  public class Bridge{@JavascriptInterface public boolean ready(){return auth!=null&&db!=null;}@JavascriptInterface public void login(String e,String p){auth.signInWithEmailAndPassword(e,p).addOnSuccessListener(x->checkAdmin()).addOnFailureListener(x->js("window.loginError("+JSONObject.quote("Login failed: "+x.getMessage())+")"));}@JavascriptInterface public void refresh(){runOnUiThread(()->refresh());}@JavascriptInterface public void updateStatus(String id,String st){runOnUiThread(()->updateStatus(id,st));}@JavascriptInterface public void reject(String id){runOnUiThread(()->reject(id));}@JavascriptInterface public void logout(){runOnUiThread(()->{if(ordersListener!=null)ordersListener.remove();auth.signOut();js("window.showLogin()");});}@JavascriptInterface public void navigate(String ad){runOnUiThread(()->nav(ad));}@JavascriptInterface public void call(String n){runOnUiThread(()->call(n));}@JavascriptInterface public void whatsapp(String n){runOnUiThread(()->whatsapp(n));}}
  @Override public void onBackPressed(){if(w!=null&&w.canGoBack())w.goBack();else super.onBackPressed();}
- @Override protected void onDestroy(){if(ordersListener!=null)ordersListener.remove();super.onDestroy();}
+ @Override protected void onDestroy(){if(ordersListener!=null)ordersListener.remove();if(printView!=null)printView.destroy();super.onDestroy();}
 }
