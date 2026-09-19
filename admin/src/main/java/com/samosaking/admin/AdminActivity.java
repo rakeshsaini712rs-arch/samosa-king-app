@@ -15,16 +15,24 @@ public class AdminActivity extends Activity{
  }catch(Throwable e){fatal(e);}}
  private void handleAdminUrl(String u){
   try{
-    Uri x=Uri.parse(u); String action=x.getPath(); if(action!=null&&action.startsWith("/"))action=action.substring(1); String id=x.getQueryParameter("id"); String value=x.getQueryParameter("value");
+    Uri x=Uri.parse(u);
+    String action=x.getPath();
+    if(action!=null&&action.startsWith("/"))action=action.substring(1);
+    String id=x.getQueryParameter("id");
+    String value=x.getQueryParameter("value");
+    if(action==null||action.isEmpty()){message("Invalid admin action.");return;}
     if("refresh".equals(action)){refresh();return;}
     if("logout".equals(action)){if(ordersListener!=null)ordersListener.remove();auth.signOut();js("window.showLogin()");return;}
-    if("status".equals(action)){updateStatus(id,value);return;}
+    if("status".equals(action)){
+      if(id==null||id.trim().isEmpty()||value==null||value.trim().isEmpty()){message("Invalid status action data.");return;}
+      updateStatus(id,value);return;
+    }
     if("reject".equals(action)){reject(id);return;}
     if("call".equals(action)){call(value);return;}
     if("whatsapp".equals(action)){whatsapp(value);return;}
     if("navigate".equals(action)){nav(value);return;}
-    message("Unknown admin action.");
-  }catch(Exception e){message("Action error: "+e.getMessage());}
+    message("Unknown admin action: "+action);
+  }catch(Exception e){message("Action error: "+e.getClass().getSimpleName()+" — "+e.getMessage());}
  }
  private void showRuntimeError(String x){js("window.nativeError&&window.nativeError("+JSONObject.quote(x)+")");}
  private void fatal(Throwable e){TextView t=new TextView(this);t.setText("Samosa King ADMIN\n\nStartup error: "+e.getClass().getSimpleName()+"\n"+String.valueOf(e.getMessage()));t.setTextSize(17);t.setTextColor(Color.DKGRAY);t.setPadding(40,80,40,40);setContentView(t);}
