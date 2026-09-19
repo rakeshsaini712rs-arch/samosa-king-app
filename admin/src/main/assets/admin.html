@@ -72,6 +72,9 @@
           '<button class="btn" onclick="saveAvailability(\''+esc(o.id)+'\','+(!o.enabled)+')">'+(o.enabled?'Mark Sold Out':'Mark Available')+'</button></div></div>';
       }
       var m=document.getElementById('menu');if(m)m.innerHTML=h||'<div class="muted">No menu items configured.</div>';
+      var pb=document.querySelectorAll('[data-menu-price-id]'),ab=document.querySelectorAll('[data-menu-avail-id]'),j;
+      for(j=0;j<pb.length;j++)pb[j].addEventListener('click',function(){var id=this.getAttribute('data-menu-price-id'),e=document.getElementById('price_'+id);nativeCall('setMenuPrice',[id,e?e.value:'']);});
+      for(j=0;j<ab.length;j++)ab[j].addEventListener('click',function(){nativeCall('setMenuAvailability',[this.getAttribute('data-menu-avail-id'),this.getAttribute('data-menu-enabled')==='true']);});
     }catch(e){adminError('Menu display error: '+e.message);}
   }
   function loadMenu(){nativeCall('menuPrices');}
