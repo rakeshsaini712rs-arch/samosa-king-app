@@ -10,9 +10,22 @@ public class AdminActivity extends Activity{
    FirebaseOptions o=new FirebaseOptions.Builder().setProjectId(PROJECT).setApplicationId(APP_ID).setApiKey(API_KEY).build();
    if(FirebaseApp.getApps(this).isEmpty()){FirebaseApp.initializeApp(this,o);} FirebaseApp app=FirebaseApp.getInstance(); auth=FirebaseAuth.getInstance(app); db=FirebaseFirestore.getInstance(app);
    w=new WebView(this);w.setBackgroundColor(Color.WHITE);WebSettings s=w.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setAllowFileAccess(true);s.setAllowContentAccess(true);
-   w.setWebChromeClient(new WebChromeClient(){@Override public boolean onConsoleMessage(ConsoleMessage m){android.util.Log.e("SAMOSA_ADMIN_JS",""+m.message()+" @ line "+m.lineNumber());return true;}});w.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String u){if(auth.getCurrentUser()!=null)checkAdmin();else v.evaluateJavascript("window.showLogin()",null);}@Override public void onReceivedError(WebView v,int code,String desc,String url){showRuntimeError("WebView error "+code+": "+desc+"\n"+url);} @Override public boolean shouldOverrideUrlLoading(WebView v,String u){try{if(u.startsWith("tel:")||u.startsWith("https://wa.me/")){startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(u)));return true;}}catch(Exception ignored){}return false;}});
+   w.setWebChromeClient(new WebChromeClient(){@Override public boolean onConsoleMessage(ConsoleMessage m){android.util.Log.e("SAMOSA_ADMIN_JS",""+m.message()+" @ line "+m.lineNumber());return true;}});w.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String u){if(auth.getCurrentUser()!=null)checkAdmin();else v.evaluateJavascript("window.showLogin()",null);}@Override public void onReceivedError(WebView v,int code,String desc,String url){showRuntimeError("WebView error "+code+": "+desc+"\n"+url);} @Override public boolean shouldOverrideUrlLoading(WebView v,String u){try{if(u.startsWith("samosa://admin/")){handleAdminUrl(u);return true;}if(u.startsWith("tel:")||u.startsWith("https://wa.me/")){startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(u)));return true;}}catch(Exception e){message("Action failed: "+e.getMessage());}return false;}});
    w.addJavascriptInterface(new Bridge(),"AdminNative");setContentView(w);w.loadUrl("file:///android_asset/admin.html");
  }catch(Throwable e){fatal(e);}}
+ private void handleAdminUrl(String u){
+  try{
+    Uri x=Uri.parse(u); String action=x.getHost(); String id=x.getQueryParameter("id"); String value=x.getQueryParameter("value");
+    if("refresh".equals(action)){refresh();return;}
+    if("logout".equals(action)){if(ordersListener!=null)ordersListener.remove();auth.signOut();js("window.showLogin()");return;}
+    if("status".equals(action)){updateStatus(id,value);return;}
+    if("reject".equals(action)){reject(id);return;}
+    if("call".equals(action)){call(value);return;}
+    if("whatsapp".equals(action)){whatsapp(value);return;}
+    if("navigate".equals(action)){nav(value);return;}
+    message("Unknown admin action.");
+  }catch(Exception e){message("Action error: "+e.getMessage());}
+ }
  private void showRuntimeError(String x){js("window.nativeError&&window.nativeError("+JSONObject.quote(x)+")");}
  private void fatal(Throwable e){TextView t=new TextView(this);t.setText("Samosa King ADMIN\n\nStartup error: "+e.getClass().getSimpleName()+"\n"+String.valueOf(e.getMessage()));t.setTextSize(17);t.setTextColor(Color.DKGRAY);t.setPadding(40,80,40,40);setContentView(t);}
  private void js(String code){runOnUiThread(()->{if(w!=null)w.evaluateJavascript("(function(){try{"+code+"}catch(e){}})()",null);});}
