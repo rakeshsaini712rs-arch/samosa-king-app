@@ -43,7 +43,68 @@ public class AdminActivity extends Activity{
  private void checkAdmin(){if(auth==null||auth.getCurrentUser()==null){js("window.showLogin()");return;}String uid=auth.getCurrentUser().getUid();if(isConfiguredAdmin()){js("window.showDashboard("+JSONObject.quote("Admin")+")");listenOrders();}else{deny(uid);}}
  private void listenOrders(){if(db==null){message("Firestore is not initialized.");return;}if(ordersListener!=null)ordersListener.remove();ordersListener=db.collection("orders").addSnapshotListener((snap,e)->{if(e!=null){message("Could not load live orders: "+e.getClass().getSimpleName()+" — "+e.getMessage());return;}sendOrders(snap);});}
  private void refresh(){if(auth==null){message("Firebase is not initialized.");return;}if(auth.getCurrentUser()==null){js("window.showLogin()");return;}checkAdmin();}
- private void sendOrders(QuerySnapshot snap){try{JSONArray out=new JSONArray();for(DocumentSnapshot d:snap.getDocuments()){JSONObject o=new JSONObject();o.put("id",d.getId());o.put("name",d.getString("customerName"));o.put("mobile",d.getString("mobile"));o.put("address",d.getString("address"));o.put("payment",d.getString("paymentMethod"));o.put("subtotal",num(d.get("subtotal")));o.put("delivery",num(d.get("deliveryFee")));o.put("discount",num(d.get("discount")));o.put("total",num(d.get("total")));o.put("status",d.getString("status"));o.put("date",dateText(d.get("createdAt"))); if(d.get("createdAt") instanceof com.google.firebase.Timestamp)o.put("createdAtMs",((com.google.firebase.Timestamp)d.get("createdAt")).toDate().getTime());JSONArray items=new JSONArray();Object im=d.get("items");if(im instanceof Map){for(Object v:((Map<?,?>)im).values()){if(v instanceof Map){Map<?,?> m=(Map<?,?>)v;JSONObject it=new JSONObject();it.put("name",String.valueOf(m.get("name")));it.put("qty",num(m.get("qty")));items.put(it);}else{JSONObject it=new JSONObject();it.put("name","Item");it.put("qty",num(v));items.put(it);}}}o.put("items",items);out.put(o);}js("window.ordersResult("+JSONObject.quote(out.toString())+")");}catch(Exception e){message("Order data error: "+e.getMessage());}}
+ private String itemName(String id){
+  if(id==null)return "Item";
+  String x=id.trim().toLowerCase(Locale.US);
+  if(x.equals("samosa"))return "Samosa";
+  if(x.equals("kachori"))return "Kachori";
+  if(x.equals("mirchi")||x.equals("mirchibada")||x.equals("mirchi-bada"))return "Mirchi Bada";
+  if(x.equals("dahi1")||x.equals("dahibhalla1"))return "Dahi Bhalla Plate 1";
+  if(x.equals("dahi2")||x.equals("dahibhalla2"))return "Dahi Bhalla Plate 2";
+  if(x.equals("pizza"))return "Pizza";
+  if(x.equals("wraps")||x.equals("wrap"))return "Wraps";
+  if(x.equals("momos"))return "Momos";
+  if(x.equals("burger"))return "Burger";
+  if(x.equals("pasta"))return "Pasta";
+  if(x.equals("manchurian"))return "Manchurian";
+  if(x.equals("kajukatli")||x.equals("kaju-katli"))return "Kaju Katli";
+  if(x.equals("rasgulla"))return "Rasgulla";
+  if(x.equals("rajbhog"))return "Rajbhog";
+  if(x.equals("gulabjamun")||x.equals("gulab-jamun"))return "Gulab Jamun";
+  if(x.equals("sohanpapdi")||x.equals("sohan-papdi"))return "Sohan Papdi";
+  if(x.equals("milkcake")||x.equals("milk-cake"))return "Milk Cake";
+  if(x.equals("kalakand"))return "Kalakand";
+  if(x.equals("dilkushal"))return "Dilkushal";
+  if(x.equals("peda"))return "Peda";
+  if(x.equals("petha"))return "Petha";
+  if(x.equals("namkin"))return "Namkin";
+  if(x.equals("rasmalai"))return "Rasmalai";
+  if(x.equals("curd")||x.equals("dahi"))return "Dahi (Curd)";
+  return id;
+ }
+ private void sendOrders(QuerySnapshot snap){
+  try{
+   JSONArray out=new JSONArray();
+   for(DocumentSnapshot d:snap.getDocuments()){
+    JSONObject o=new JSONObject();
+    o.put("id",d.getId());o.put("name",d.getString("customerName"));o.put("mobile",d.getString("mobile"));
+    o.put("address",d.getString("address"));o.put("payment",d.getString("paymentMethod"));
+    o.put("subtotal",num(d.get("subtotal")));o.put("delivery",num(d.get("deliveryFee")));o.put("discount",num(d.get("discount")));
+    o.put("total",num(d.get("total")));o.put("status",d.getString("status"));o.put("date",dateText(d.get("createdAt")));
+    if(d.get("createdAt") instanceof com.google.firebase.Timestamp)o.put("createdAtMs",((com.google.firebase.Timestamp)d.get("createdAt")).toDate().getTime());
+    JSONArray items=new JSONArray();
+    Object im=d.get("items");
+    if(im instanceof Map){
+     for(Map.Entry<?,?> entry:((Map<?,?>)im).entrySet()){
+      String key=String.valueOf(entry.getKey());
+      Object v=entry.getValue();
+      JSONObject it=new JSONObject();
+      if(v instanceof Map){
+       Map<?,?> m=(Map<?,?>)v;
+       Object n=m.get("name");
+       String name=n==null||"null".equals(String.valueOf(n))?itemName(key):String.valueOf(n);
+       it.put("name",name);it.put("qty",num(m.get("qty")));
+      }else{
+       it.put("name",itemName(key));it.put("qty",num(v));
+      }
+      items.put(it);
+     }
+    }
+    o.put("items",items);out.put(o);
+   }
+   js("window.ordersResult("+JSONObject.quote(out.toString())+")");
+  }catch(Exception e){message("Order data error: "+e.getMessage());}
+ }
  private String dateText(Object x){if(x instanceof com.google.firebase.Timestamp)return ((com.google.firebase.Timestamp)x).toDate().toString();return x==null?"":String.valueOf(x);}
  private long num(Object x){if(x instanceof Number)return ((Number)x).longValue();try{return Long.parseLong(String.valueOf(x));}catch(Exception e){return 0;}}
  private boolean isAdmin(Runnable yes){if(auth==null||auth.getCurrentUser()==null){message("Admin login required.");return false;}if(!isConfiguredAdmin()){deny(auth.getCurrentUser().getUid());return false;}yes.run();return true;}
