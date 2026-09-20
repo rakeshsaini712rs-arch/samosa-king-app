@@ -33,7 +33,7 @@ service cloud.firestore {
         && couponValid() && request.resource.data.status == 'PLACED';
       allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || admin());
       allow update: if signedIn() && ((resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) && request.resource.data.status == 'CANCELLED') || admin());
-      allow delete: if false;
+      allow delete: if admin();
     }
     match /users/{uid} { allow read, write: if signedIn() && request.auth.uid == uid; match /addresses/{addressId} { allow read, create, update, delete: if signedIn() && request.auth.uid == uid; } }
     match /reviews/{reviewId} { allow create: if signedIn() && request.resource.data.userId == request.auth.uid && exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == 'DELIVERED' && request.resource.data.rating >= 1 && request.resource.data.rating <= 5; allow read: if signedIn() && (resource.data.userId == request.auth.uid || admin()); allow update, delete: if false; }
