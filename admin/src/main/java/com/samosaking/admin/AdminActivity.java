@@ -52,12 +52,46 @@ public class AdminActivity extends Activity{
   if(x.equals("mirchi")||x.equals("mirchibada")||x.equals("mirchi-bada"))return "Mirchi Bada";
   if(x.equals("dahi1")||x.equals("dahibhalla1"))return "Dahi Bhalla Plate 1";
   if(x.equals("dahi2")||x.equals("dahibhalla2"))return "Dahi Bhalla Plate 2";
-  if(x.equals("pizza"))return "Pizza";
+  if(x.equals("cholebhature"))return "Chole Bhature";
+  if(x.equals("pizza"))return "Margherita Pizza";
+  if(x.equals("cheesepizza"))return "Cheese Pizza";
+  if(x.equals("corncheesepizza"))return "Corn Cheese Pizza";
+  if(x.equals("paneerpizza"))return "Paneer Pizza";
+  if(x.equals("farmhousepizza"))return "Farmhouse Pizza";
+  if(x.equals("vegloadedpizza"))return "Veg Loaded Pizza";
+  if(x.equals("doublecheesepizza"))return "Double Cheese Pizza";
+  if(x.equals("peppypaneerpizza"))return "Peppy Paneer Pizza";
   if(x.equals("wraps")||x.equals("wrap"))return "Wraps";
   if(x.equals("momos"))return "Momos";
   if(x.equals("burger"))return "Burger";
   if(x.equals("pasta"))return "Pasta";
   if(x.equals("manchurian"))return "Manchurian";
+  if(x.equals("maggi"))return "Maggi";
+  if(x.equals("cholekulcha"))return "Chole Kulcha";
+  if(x.equals("birthdaycake"))return "Birthday Cake";
+  if(x.equals("balloons"))return "Balloons";
+  if(x.equals("birthdaycandles"))return "Birthday Candles";
+  if(x.equals("happybirthdaybanner"))return "Happy Birthday Banner";
+  if(x.equals("partyhats"))return "Party Hats";
+  if(x.equals("returngifts"))return "Return Gifts";
+  if(x.equals("birthdaydecoration"))return "Birthday Decoration";
+  if(x.equals("birthdayribbons"))return "Birthday Ribbons";
+  if(x.equals("cakecuttingknife"))return "Cake cutting knife";
+  if(x.equals("cupcakes"))return "Cupcakes";
+  if(x.equals("caketopper"))return "Cake Topper";
+  if(x.equals("birthdaygiftpack"))return "Birthday Gift Pack";
+  if(x.equals("colddrink200"))return "Cold Drink 200 ml";
+  if(x.equals("colddrink500"))return "Cold Drink 500 ml";
+  if(x.equals("colddrink1l"))return "Cold Drink 1 Litre";
+  if(x.equals("colddrink2l"))return "Cold Drink 2 Litre";
+  if(x.equals("waterbottle"))return "Water Bottle";
+  if(x.equals("mangojuice"))return "Mango Juice";
+  if(x.equals("orangejuice"))return "Orange Juice";
+  if(x.equals("lemonsoda"))return "Lemon Soda";
+  if(x.equals("freshlemonwater"))return "Fresh Lemon Water";
+  if(x.equals("mangoshake"))return "Mango Shake";
+  if(x.equals("bananashake"))return "Banana Shake";
+  if(x.equals("papayashake"))return "Papaya Shake";
   if(x.equals("kajukatli")||x.equals("kaju-katli"))return "Kaju Katli";
   if(x.equals("rasgulla"))return "Rasgulla";
   if(x.equals("rajbhog"))return "Rajbhog";
@@ -114,7 +148,7 @@ public class AdminActivity extends Activity{
  private void call(String n){try{startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+n)));}catch(Exception e){message("Could not open phone dialer.");}}
  private void whatsapp(String n){try{String x=n.replaceAll("[^0-9]","");if(x.length()==10)x="91"+x;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://wa.me/"+x)));}catch(Exception e){message("Could not open WhatsApp.");}}
  private void nav(String a){try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com/maps/dir/?api=1&destination="+Uri.encode(a)+"&travelmode=driving")));}catch(Exception e){message("Could not open Maps.");}}
- private void loadMenuPrices(){if(!isAdmin(()->{}))return;final String[] ids={"samosa","kachori","mirchi","dahi1","dahi2","pizza","wraps","momos","burger","pasta","manchurian","kajukatli","rasgulla","rajbhog","gulabjamun","sohanpapdi","milkcake","kalakand","dilkushal","peda","petha","namkin","rasmalai","curd"};final long[] prices={20,30,30,40,80,120,100,60,50,60,100,600,12,20,15,150,500,500,500,500,250,300,80,80};db.collection("menu").get().addOnSuccessListener(s->{try{Map<String,DocumentSnapshot> saved=new HashMap<>();for(DocumentSnapshot d:s)saved.put(d.getId(),d);JSONArray a=new JSONArray();for(int i=0;i<ids.length;i++){DocumentSnapshot d=saved.get(ids[i]);JSONObject o=new JSONObject();o.put("id",ids[i]);o.put("name",d!=null&&d.getString("name")!=null?d.getString("name"):itemName(ids[i]));o.put("price",d!=null&&d.get("price")!=null?num(d.get("price")):prices[i]);boolean enabled=true; if(d!=null){ try{ Boolean ev=d.getBoolean("enabled"); enabled=ev==null||ev.booleanValue(); }catch(Exception ignored){ enabled=true; } } o.put("enabled",enabled);a.put(o);}js("window.menuResult("+JSONObject.quote(a.toString())+")");}catch(Exception e){message("Menu data error: "+e.getMessage());}}).addOnFailureListener(e->message("Could not load menu: "+e.getMessage()));}
+ private void loadMenuPrices(){if(!isAdmin(()->{}))return;final String[] ids={"samosa","kachori","mirchi","dahi1","dahi2","cholebhature","pizza","cheesepizza","corncheesepizza","paneerpizza","farmhousepizza","vegloadedpizza","doublecheesepizza","peppypaneerpizza","wraps","momos","burger","pasta","manchurian","maggi","cholekulcha","birthdaycake","balloons","birthdaycandles","happybirthdaybanner","partyhats","returngifts","birthdaydecoration","birthdayribbons","cakecuttingknife","cupcakes","caketopper","birthdaygiftpack","colddrink200","colddrink500","colddrink1l","colddrink2l","waterbottle","mangojuice","orangejuice","lemonsoda","freshlemonwater","mangoshake","bananashake","papayashake","kajukatli","rasgulla","rajbhog","gulabjamun","sohanpapdi","milkcake","kalakand","dilkushal","peda","petha","namkin","rasmalai","curd"};final long[] prices={20,30,30,40,80,80,100,120,120,140,150,160,150,160,100,60,50,60,100,50,60,350,80,10,100,50,300,400,20,0,30,50,300,20,40,60,90,20,40,40,40,30,80,70,80,600,12,20,15,150,500,500,500,500,250,300,80,80};db.collection("menu").get().addOnSuccessListener(s->{try{Map<String,DocumentSnapshot> saved=new HashMap<>();for(DocumentSnapshot d:s)saved.put(d.getId(),d);JSONArray a=new JSONArray();for(int i=0;i<ids.length;i++){DocumentSnapshot d=saved.get(ids[i]);JSONObject o=new JSONObject();o.put("id",ids[i]);o.put("name",d!=null&&d.getString("name")!=null?d.getString("name"):itemName(ids[i]));o.put("price",d!=null&&d.get("price")!=null?num(d.get("price")):prices[i]);boolean enabled=true; if(d!=null){ try{ Boolean ev=d.getBoolean("enabled"); enabled=ev==null||ev.booleanValue(); }catch(Exception ignored){ enabled=true; } } o.put("enabled",enabled);a.put(o);}js("window.menuResult("+JSONObject.quote(a.toString())+")");}catch(Exception e){message("Menu data error: "+e.getMessage());}}).addOnFailureListener(e->message("Could not load menu: "+e.getMessage()));}
  private void saveMenuPrice(String id,String price){if(id==null||id.trim().isEmpty()){message("Invalid item.");return;}long p;try{p=Long.parseLong(price.trim());}catch(Exception e){message("Invalid price.");return;}if(p<0){message("Price cannot be negative.");return;}if(!isAdmin(()->{}))return;Map<String,Object> m=new HashMap<>();m.put("price",p);db.collection("menu").document(id).set(m,SetOptions.merge()).addOnSuccessListener(v->{message("✓ Price updated for "+itemName(id)+" → ₹"+p);loadMenuPrices();}).addOnFailureListener(e->message("✗ Price update failed: "+e.getMessage()));}
  private void saveMenuAvailability(String id,boolean enabled){if(id==null||id.trim().isEmpty()){message("Invalid item.");return;}if(!isAdmin(()->{}))return;db.collection("menu").document(id).set(Collections.<String,Object>singletonMap("enabled",enabled),SetOptions.merge()).addOnSuccessListener(v->{message("✓ "+itemName(id)+(enabled?" available":"sold out"));loadMenuPrices();}).addOnFailureListener(e->message("✗ Availability update failed: "+e.getMessage()));}
  private String htmlEsc(String x){if(x==null)return "";return x.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\"","&quot;").replace("'","&#39;");}
