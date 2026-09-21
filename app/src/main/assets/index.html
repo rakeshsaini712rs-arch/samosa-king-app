@@ -86,6 +86,55 @@ function otpSent(){$('otpbox').style.display='block';$('loginMsg').textContent='
 function chooseCurrentLocation(){if(!window.AndroidBridge||typeof AndroidBridge.getCurrentLocationAddress!=='function'){alert('Current location service is not available in this APK.');return;}$('locationMsg').style.display='block';$('locationMsg').textContent='📍 Getting your current location…';AndroidBridge.getCurrentLocationAddress()}
 function currentAddressResult(address){$('address').value=address||'';$('locationMsg').style.display='block';$('locationMsg').textContent='✅ Current location selected. Please check the address before placing the order.'}
 function locationAddressError(t){$('locationMsg').style.display='block';$('locationMsg').textContent=t||'Could not get current location.'}
-const rajasthanDistricts=['Ajmer','Alwar','Balotra','Banswara','Baran','Barmer','Beawar','Bharatpur','Bhilwara','Bikaner','Bundi','Chittorgarh','Churu','Dausa','Deeg','Dholpur','Didwana-Kuchaman','Dungarpur','Hanumangarh','Jaipur','Jaisalmer','Jalore','Jhalawar','Jhunjhunu','Jodhpur','Karauli','Khairthal-Tijara','Kota','Kotputli-Behror','Nagaur','Pali','Phalodi','Pratapgarh','Rajsamand','Salumbar','Sawai Madhopur','Sikar','Sirohi','Sri Ganganagar','Tonk','Udaipur'];const cityMap={};function openRestaurants(){$('restaurantModal').style.display='block'}function closeRestaurants(){$('restaurantModal').style.display='none'}function loadDistricts(){var d=$('districtSelect'),c=$('citySelect');d.innerHTML='<option value="">Select District</option>'+rajasthanDistricts.map(x=>'<option>'+x+'</option>').join('');d.disabled=false;c.innerHTML='<option value="">Select City</option>';c.disabled=true;$('restaurantList').textContent='District select करें।'}function loadCities(){var d=$('districtSelect').value,c=$('citySelect');var cities=cityMap[d]||[];c.innerHTML='<option value="">Select City</option>'+cities.map(x=>'<option>'+x+'</option>').join('');c.disabled=false;$('restaurantList').textContent=cities.length?'City select करें।':'इस District की cities अभी restaurant directory में configured नहीं हैं।'}function loadRestaurants(){var d=$('districtSelect').value,c=$('citySelect').value;var list=[];if(d==='Jhunjhunu'&&c==='Nawalgarh')list=[{name:'Samosa King',type:'Restaurant',status:'Active'}];$('restaurantList').innerHTML=list.length?list.map(x=>'<div style="background:#fff;padding:12px;border-radius:12px;margin-top:8px"><b>👑 '+x.name+'</b><div class="small">'+x.type+'</div></div>').join(''):'इस City में अभी कोई agreement वाला Restaurant / Hotel उपलब्ध नहीं है।'}function updateFavouriteButton(){}function callShop(){location.href='tel:7891851475'}function waShop(){location.href='https://wa.me/917891851475'}
+const rajasthanDistricts=['Ajmer','Alwar','Balotra','Banswara','Baran','Barmer','Beawar','Bharatpur','Bhilwara','Bikaner','Bundi','Chittorgarh','Churu','Dausa','Deeg','Dholpur','Didwana-Kuchaman','Dungarpur','Hanumangarh','Jaipur','Jaisalmer','Jalore','Jhalawar','Jhunjhunu','Jodhpur','Karauli','Khairthal-Tijara','Kota','Kotputli-Behror','Nagaur','Pali','Phalodi','Pratapgarh','Rajsamand','Salumbar','Sawai Madhopur','Sikar','Sirohi','Sri Ganganagar','Tonk','Udaipur'];
+const cityMap={
+'Ajmer':['Ajmer','Kishangarh','Beawar'],
+'Alwar':['Alwar','Bhiwadi','Rajgarh','Khairthal'],
+'Balotra':['Balotra','Pachpadra'],
+'Banswara':['Banswara','Bagidora','Ghatol'],
+'Baran':['Baran','Anta','Chhabra'],
+'Barmer':['Barmer','Balotra','Baytu'],
+'Beawar':['Beawar','Masuda'],
+'Bharatpur':['Bharatpur','Bayana','Deeg'],
+'Bhilwara':['Bhilwara','Asind','Gulabpura','Shahpura'],
+'Bikaner':['Bikaner','Nokha','Dungargarh'],
+'Bundi':['Bundi','Keshoraipatan','Nainwa'],
+'Chittorgarh':['Chittorgarh','Nimbahera','Kapasan','Rawatbhata'],
+'Churu':['Churu','Ratangarh','Sujangarh','Taranagar','Rajgarh'],
+'Dausa':['Dausa','Bandikui','Lalsot','Mahwa'],
+'Deeg':['Deeg','Kaman','Nagar'],
+'Dholpur':['Dholpur','Bari','Rajakhera'],
+'Didwana-Kuchaman':['Didwana','Kuchaman City','Makrana','Ladnun'],
+'Dungarpur':['Dungarpur','Sagwara','Aspur'],
+'Hanumangarh':['Hanumangarh','Bhadra','Nohar','Pilibanga','Rawatsar'],
+'Jaipur':['Jaipur','Chomu','Amer','Sanganer','Bassi','Kotputli'],
+'Jaisalmer':['Jaisalmer','Pokaran'],
+'Jalore':['Jalore','Bhinmal','Sanchore'],
+'Jhalawar':['Jhalawar','Bhawani Mandi','Aklera','Khanpur'],
+'Jhunjhunu':['Jhunjhunu','Nawalgarh','Khetri','Chirawa','Surajgarh','Pilani','Buhana'],
+'Jodhpur':['Jodhpur','Bilara','Osian','Phalodi'],
+'Karauli':['Karauli','Hindaun','Todabhim','Sapotra'],
+'Khairthal-Tijara':['Khairthal','Tijara','Bhiwadi'],
+'Kota':['Kota','Ramganj Mandi','Sangod','Itawa'],
+'Kotputli-Behror':['Kotputli','Behror','Bansur','Neemrana'],
+'Nagaur':['Nagaur','Merta City','Didwana','Kuchaman City'],
+'Pali':['Pali','Sumerpur','Sojat','Jaitaran','Rohat'],
+'Phalodi':['Phalodi','Osian','Lohawat'],
+'Pratapgarh':['Pratapgarh','Dhariyawad','Arnod'],
+'Rajsamand':['Rajsamand','Nathdwara','Amet'],
+'Salumbar':['Salumbar','Sarada','Jhallara'],
+'Sawai Madhopur':['Sawai Madhopur','Gangapur City','Bonli','Khandar'],
+'Sikar':['Sikar','Fatehpur','Laxmangarh','Neem Ka Thana','Danta Ramgarh','Sri Madhopur'],
+'Sirohi':['Sirohi','Abu Road','Pindwara','Sheoganj'],
+'Sri Ganganagar':['Sri Ganganagar','Suratgarh','Raisinghnagar','Anupgarh','Padampur'],
+'Tonk':['Tonk','Deoli','Malpura','Niwai','Uniara'],
+'Udaipur':['Udaipur','Gogunda','Salumbar','Mavli','Vallabhnagar']
+};
+function openRestaurants(){$('restaurantModal').style.display='block'}
+function closeRestaurants(){$('restaurantModal').style.display='none'}
+function loadDistricts(){var d=$('districtSelect'),c=$('citySelect');d.innerHTML='<option value="">Select District</option>'+rajasthanDistricts.map(x=>'<option>'+x+'</option>').join('');d.disabled=false;c.innerHTML='<option value="">Select City</option>';c.disabled=true;$('restaurantList').textContent='District select करें।'}
+function loadCities(){var d=$('districtSelect').value,c=$('citySelect'),cities=cityMap[d]||[];c.innerHTML='<option value="">Select City</option>'+cities.map(x=>'<option>'+x+'</option>').join('');c.disabled=!cities.length;$('restaurantList').textContent=cities.length?'City select करें।':'इस District की cities अभी directory में configured नहीं हैं।'}
+function loadRestaurants(){var d=$('districtSelect').value,c=$('citySelect').value,list=[];if(d==='Jhunjhunu'&&c==='Nawalgarh')list=[{name:'Samosa King',type:'Restaurant',status:'Active'}];$('restaurantList').innerHTML=list.length?list.map(x=>'<div style="background:#fff;padding:12px;border-radius:12px;margin-top:8px"><b>👑 '+x.name+'</b><div class="small">'+x.type+'</div></div>').join(''):'इस City में अभी कोई agreement वाला Restaurant / Hotel उपलब्ध नहीं है।'}
+function updateFavouriteButton(){}function callShop(){location.href='tel:7891851475'}function waShop(){location.href='https://wa.me/917891851475'}
 function setHeaderHeight(){var h=$('search')?$('search').closest('.top'):document.querySelector('.top');if(h)document.documentElement.style.setProperty('--headerH',h.offsetHeight+'px')}window.addEventListener('resize',setHeaderHeight);setHeaderHeight();render();loadLastOrder();
 </script></body></html>
