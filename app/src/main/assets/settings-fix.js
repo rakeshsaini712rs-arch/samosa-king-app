@@ -1,32 +1,32 @@
 (function(){
-function el(id){return document.getElementById(id)}
-function show(id){var x=el(id);if(!x)return;x.style.display='block';x.style.zIndex='9999';x.style.pointerEvents='auto'}
-function hide(id){var x=el(id);if(x){x.style.display='none';x.style.pointerEvents='none'}}
-function bind(id,fn){var x=el(id);if(x&&!x.__skBound){x.__skBound=1;x.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fn()})}}
-function init(){
- bind('settingsOpenFix',function(){show('settingsModal')});
- var main=document.querySelector('.settingsMainBtn');if(main&&!main.__skBound){main.__skBound=1;main.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();show('settingsModal')})}
- var list=document.querySelectorAll('#settingsModal .settingsList button');
- list.forEach(function(b){if(b.__skBound)return;b.__skBound=1;b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var t=(b.textContent||'').trim();
-  if(t.indexOf('Payment')>=0){hide('settingsModal');show('paymentSettingsModal')}
-  else if(t.indexOf('About')>=0){hide('settingsModal');show('aboutModal')}
-  else if(t.indexOf('Log out')>=0){hide('settingsModal');if(window.AndroidBridge&&AndroidBridge.logout)AndroidBridge.logout();else{localStorage.clear();alert('Logged out successfully.')}} 
-  else if(t.indexOf('Profile')>=0){hide('settingsModal');if(typeof openProfile==='function')openProfile();else show('profileModal')}
-  else if(t.indexOf('Order')>=0){hide('settingsModal');if(typeof openHistory==='function')openHistory()}
-  else if(t.indexOf('Address')>=0){hide('settingsModal');show('addressBookModal')}
-  else if(t.indexOf('Collection')>=0){hide('settingsModal');show('collectionModal')}
-  else if(t.indexOf('Feedback')>=0){hide('settingsModal');show('feedbackModal')}
- })});
- var closeIds=['settingsModal','paymentSettingsModal','aboutModal','profileModal','addressBookModal','collectionModal','feedbackModal'];
- closeIds.forEach(function(mid){var m=el(mid);if(m){var b=m.querySelector('.close');if(b&&!b.__skBound){b.__skBound=1;b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();hide(mid)})}}});
- var pay=document.querySelectorAll('#paymentSettingsModal .payOptions button');
- pay.forEach(function(b){if(b.__skBound)return;b.__skBound=1;b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();var t=(b.textContent||'').toLowerCase();
-  if(t.indexOf('phonepe')>=0){if(window.AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('phonepe');}
-  else if(t.indexOf('cred')>=0){if(window.AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('cred');}
-  else if(t.indexOf('whatsapp')>=0){if(window.AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('whatsapp');}
-  else if(t.indexOf('qr')>=0){show('paymentQr');if(typeof showPaymentQr==='function')showPaymentQr()}
-  else if(t.indexOf('cash')>=0){localStorage.setItem('skPaymentMethod','COD');alert('Cash on Delivery selected.')}
- })});
+function q(s){return document.querySelector(s)} function id(s){return document.getElementById(s)}
+function show(s){var x=id(s);if(x){x.style.setProperty('display','block','important');x.style.setProperty('visibility','visible','important');x.style.setProperty('opacity','1','important');x.style.setProperty('pointer-events','auto','important');x.style.setProperty('z-index','999999','important')}}
+function hide(s){var x=id(s);if(x){x.style.setProperty('display','none','important');x.style.setProperty('pointer-events','none','important')}}
+function act(t){
+ t=(t||'').toLowerCase();
+ if(t.indexOf('payment')>=0){hide('settingsModal');show('paymentSettingsModal');return}
+ if(t.indexOf('about')>=0){hide('settingsModal');show('aboutModal');return}
+ if(t.indexOf('log out')>=0){hide('settingsModal');if(window.AndroidBridge&&AndroidBridge.logout)AndroidBridge.logout();else{localStorage.clear();alert('Logged out successfully.')}return}
+ if(t.indexOf('profile')>=0&&typeof openProfile==='function'){hide('settingsModal');openProfile();return}
+ if(t.indexOf('order')>=0&&typeof openHistoryFromSettings==='function'){hide('settingsModal');openHistoryFromSettings();return}
+ if(t.indexOf('address')>=0&&typeof openAddressBook==='function'){hide('settingsModal');openAddressBook();return}
+ if(t.indexOf('collection')>=0&&typeof openCollection==='function'){hide('settingsModal');openCollection();return}
+ if(t.indexOf('feedback')>=0&&typeof openFeedback==='function'){hide('settingsModal');openFeedback();return}
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+function install(){
+ document.addEventListener('click',function(e){
+  var t=e.target;
+  var main=t.closest&&t.closest('.settingsMainBtn'); if(main){e.preventDefault();e.stopImmediatePropagation();show('settingsModal');return}
+  var b=t.closest&&t.closest('#settingsModal .settingsList button');if(b){e.preventDefault();e.stopImmediatePropagation();act(b.textContent);return}
+  var p=t.closest&&t.closest('#paymentSettingsModal .payOptions button');if(p){e.preventDefault();e.stopImmediatePropagation();var z=(p.textContent||'').toLowerCase();
+   if(z.indexOf('phonepe')>=0&&AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('phonepe');
+   else if(z.indexOf('cred')>=0&&AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('cred');
+   else if(z.indexOf('whatsapp')>=0&&AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('whatsapp');
+   else if(z.indexOf('qr')>=0&&typeof showPaymentQr==='function')showPaymentQr();
+   else if(z.indexOf('cash')>=0){localStorage.setItem('skPaymentMethod','COD');alert('Cash on Delivery selected.')}
+   return}
+  var c=t.closest&&t.closest('.modal .close');if(c){e.preventDefault();e.stopImmediatePropagation();var mm=c.closest('.modal');if(mm)hide(mm.id)}
+ },true);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();
