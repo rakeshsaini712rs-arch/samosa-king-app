@@ -14,14 +14,17 @@ function act(t){
  if(t.indexOf('feedback')>=0&&typeof openFeedback==='function'){hide('settingsModal');openFeedback();return}
 }
 function install(){
+ document.querySelectorAll('.settingsMainBtn').forEach(function(b){b.style.setProperty('position','relative','important');b.style.setProperty('z-index','1000001','important');b.style.setProperty('pointer-events','auto','important')});
+ document.querySelectorAll('.settingsPanel,.settingsList,.settingsList button,.payOptions,.payOptions button').forEach(function(b){b.style.setProperty('pointer-events','auto','important')});
  document.addEventListener('click',function(e){
   var t=e.target;
   var main=t.closest&&t.closest('.settingsMainBtn'); if(main){e.preventDefault();e.stopImmediatePropagation();show('settingsModal');return}
   var b=t.closest&&t.closest('#settingsModal .settingsList button');if(b){e.preventDefault();e.stopImmediatePropagation();act(b.textContent);return}
   var p=t.closest&&t.closest('#paymentSettingsModal .payOptions button');if(p){e.preventDefault();e.stopImmediatePropagation();var z=(p.textContent||'').toLowerCase();
-   if(z.indexOf('phonepe')>=0&&AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('phonepe');
-   else if(z.indexOf('cred')>=0&&AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('cred');
-   else if(z.indexOf('whatsapp')>=0&&AndroidBridge&&AndroidBridge.openUpi)AndroidBridge.openUpi('whatsapp');
+   var bridge=window.AndroidBridge;
+   if(z.indexOf('phonepe')>=0&&bridge&&typeof bridge.openUpi==='function')bridge.openUpi('phonepe');
+   else if(z.indexOf('cred')>=0&&bridge&&typeof bridge.openUpi==='function')bridge.openUpi('cred');
+   else if(z.indexOf('whatsapp')>=0&&bridge&&typeof bridge.openUpi==='function')bridge.openUpi('whatsapp');
    else if(z.indexOf('qr')>=0&&typeof showPaymentQr==='function')showPaymentQr();
    else if(z.indexOf('cash')>=0){localStorage.setItem('skPaymentMethod','COD');alert('Cash on Delivery selected.')}
    return}
