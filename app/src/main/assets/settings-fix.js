@@ -1,3 +1,4 @@
+if(window.__skSettingsFixInstalled){return;}window.__skSettingsFixInstalled=true;
 (function(){
 function q(s){return document.querySelector(s)} function id(s){return document.getElementById(s)}
 function show(s){var x=id(s);if(x){x.style.setProperty('display','block','important');x.style.setProperty('visibility','visible','important');x.style.setProperty('opacity','1','important');x.style.setProperty('pointer-events','auto','important');x.style.setProperty('z-index','999999','important')}}
