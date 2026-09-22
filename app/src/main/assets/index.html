@@ -8,7 +8,7 @@
 </style><script>window.onerror=function(e){try{console.error(e)}catch(x){};return true};</script></head>
 <body>
 <header class="top"><div class="brand">👑 SAMOSA <b>KING</b></div><div class="sub">📍 Nansa Gate, Nawalgarh • 8:30 AM–6:00 PM</div><input id="search" class="search" placeholder="🔎 Search samosa, sweets, fast food..." oninput="render()"></header>
-<div id="cats" class="cats" style="display:none"></div>
+<div id="cats" class="cats"></div>
 <div id="sections"></div>
 <div id="hero" class="hero"><span class="badge">ROYAL TASTE • FRESHLY SERVED</span><h1>Order from Samosa King</h1><p>Minimum order ₹100 • Delivery ₹30 up to 5 km • <b>Cash on Delivery</b></p><button class="cat restaurantBtn" onclick="openRestaurants()">🏨 Restaurant / Hotel</button></div><div id="restaurantModal" class="modal"><div class="sheet"><button class="close" onclick="closeRestaurants()">✕</button><h2>🏨 Restaurant / Hotel</h2><select id="stateSelect" class="input" onchange="loadDistricts()"><option value="">🇮🇳 Select State</option><option value="rajasthan">Rajasthan</option></select><select id="districtSelect" class="input" disabled onchange="loadCities()"><option value="">Select District</option></select><select id="citySelect" class="input" disabled onchange="loadRestaurants()"><option value="">Select City</option></select><div id="restaurantList" class="hint"></div></div></div>
 <div id="info" class="info"><div>🚚 <b>Delivery</b>₹30 up to 5 km</div><div>💵 <b>Payment</b>Cash on Delivery</div><div>🕗 <b>Open</b>8:30 AM–6:00 PM</div><div>📞 <b>Help</b>7891851475</div></div>
@@ -41,7 +41,7 @@ returngifts:'https://kmartau.mo.cloudinary.net/ce9726db-c57d-4946-b5e2-dc3d1f3e3
 cakeknife:'https://www.artificii.md/uploads/cache/product-cards/7e/7e1d24e0af24b8ab72d1f79b41d67ec9d7bf05e6.webp'
 };
 const $=id=>document.getElementById(id);
-function renderCats(){}
+function renderCats(){$('cats').innerHTML='<button class="cat '+(active==='all'?'active':'')+'" onclick="selectCategory(\'all\')">🍽️ All</button>'+groups.map(g=>`<button class="cat ${active===g.key?'active':''}" onclick="selectCategory('${g.key}')">${g.ico} ${g.name}</button>`).join('')+'<button class="cat restaurantBtn" onclick="openRestaurants()">🏨 Restaurant / Hotel</button>'}
 function selectCategory(key){
   active=key;
   if(key==='all'){render();window.scrollTo({top:0,behavior:'auto'});return;}
