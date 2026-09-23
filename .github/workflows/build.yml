@@ -1,9 +1,10 @@
-name: Build Samosa King APKs
+name: Samosa King APKs
 
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -14,19 +15,17 @@ jobs:
     timeout-minutes: 30
     env:
       GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
-      ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Java 17
+      - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Gradle 8.7
+      - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
@@ -34,32 +33,42 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Build real product video
+      - name: Build product video
         shell: bash
         run: |
           set -e
           mkdir -p app/src/main/assets/video-segments
           rm -f app/src/main/assets/video-segments/*.mp4
+          images=(
+            app/src/main/assets/product-images/pizza.jpg
+            app/src/main/assets/product-images/burger.jpg
+            app/src/main/assets/product-images/samosa.jpg
+            app/src/main/assets/product-images/mirchi-bada.jpg
+            app/src/main/assets/product-images/momos.jpg
+            app/src/main/assets/product-images/pasta.jpg
+            app/src/main/assets/product-images/manchurian.jpg
+          )
           i=0
-          for img in             app/src/main/assets/product-images/pizza.jpg             app/src/main/assets/product-images/burger.jpg             app/src/main/assets/product-images/samosa.jpg             app/src/main/assets/product-images/mirchi-bada.jpg             app/src/main/assets/product-images/momos.jpg             app/src/main/assets/product-images/pasta.jpg             app/src/main/assets/product-images/manchurian.jpg; do
-            ffmpeg -y -loglevel error -loop 1 -i "$img" -t 2.4               -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(zoom+0.0018,1.08)':d=72:s=1280x720:fps=30"               -c:v libx264 -pix_fmt yuv420p -an "app/src/main/assets/video-segments/seg-$i.mp4"
+          for img in "${images[@]}"; do
+            test -s "$img"
+            ffmpeg -y -loglevel error -loop 1 -i "$img" -t 2.4 -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(zoom+0.0018,1.08)':d=72:s=1280x720:fps=30" -c:v libx264 -pix_fmt yuv420p -an "app/src/main/assets/video-segments/seg-$i.mp4"
             i=$((i+1))
           done
-for f in app/src/main/assets/video-segments/seg-*.mp4; do printf "file '%s'\n" "$(basename "$f")"; done > app/src/main/assets/video-segments/list.txt
-          ffmpeg -y -loglevel error -f concat -safe 0             -i app/src/main/assets/video-segments/list.txt             -c copy -movflags +faststart app/src/main/assets/product-video.mp4
+          printf "file 'seg-%s.mp4'\n" 0 1 2 3 4 5 6 > app/src/main/assets/video-segments/list.txt
+          ffmpeg -y -loglevel error -f concat -safe 0 -i app/src/main/assets/video-segments/list.txt -c copy -movflags +faststart app/src/main/assets/product-video.mp4
+          test -s app/src/main/assets/product-video.mp4
           rm -rf app/src/main/assets/video-segments
 
-      - name: Verify product video
-        run: test -s app/src/main/assets/product-video.mp4
+      - name: Build customer APK
+        run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
-      - name: Build customer and admin APKs
-        run: gradle clean :app:assembleDebug :admin:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+      - name: Build admin APK
+        run: gradle :admin:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
-      - name: Verify customer APK
-        run: test -s app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Verify admin APK
-        run: test -s admin/build/outputs/apk/debug/admin-debug.apk
+      - name: Verify APKs
+        run: |
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          test -s admin/build/outputs/apk/debug/admin-debug.apk
 
       - name: Upload customer APK
         uses: actions/upload-artifact@v4
