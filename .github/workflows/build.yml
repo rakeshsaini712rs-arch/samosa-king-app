@@ -33,22 +33,17 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Build product video
+      - name: Build premium pizza video
         shell: bash
         run: |
           set -e
           mkdir -p app/src/main/assets
-          curl -L --fail --retry 3 --retry-delay 2 \
-            -o app/src/main/assets/product-video-source.mp4 \
-            "https://videos.pexels.com/video-files/5820011/5820011-hd_1920_1080_25fps.mp4"
-          ffmpeg -y -loglevel error -i app/src/main/assets/product-video-source.mp4 \
-            -vf "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30" \
-            -t 12 -an -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
-            -movflags +faststart app/src/main/assets/product-video.mp4
+          curl -L --fail --retry 3 --retry-delay 2             -o app/src/main/assets/product-video-source.mp4             "https://videos.pexels.com/video-files/31528548/13438748_1920_1080_25fps.mp4"
+          ffmpeg -y -loglevel error -stream_loop -1 -i app/src/main/assets/product-video-source.mp4             -vf "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30,drawbox=x=0:y=0:w=iw:h=150:color=black@0.30:t=fill,drawtext=text='SAMOSA KING':fontcolor=white:fontsize=58:font='DejaVu Sans':x=70:y=55,drawtext=text='Fresh • Hot • Delicious':fontcolor=white:fontsize=30:font='DejaVu Sans':x=70:y=120"             -t 15 -an -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p             -movflags +faststart app/src/main/assets/product-video.mp4
           rm -f app/src/main/assets/product-video-source.mp4
           test -s app/src/main/assets/product-video.mp4
-          ffprobe -v error -select_streams v:0 -show_entries stream=width,height \
-            -of csv=p=0 app/src/main/assets/product-video.mp4
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,duration             -of csv=p=0 app/src/main/assets/product-video.mp4
+
       - name: Build customer APK
         run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
