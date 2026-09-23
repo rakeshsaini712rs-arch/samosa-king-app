@@ -45,7 +45,7 @@ jobs:
             ffmpeg -y -loglevel error -loop 1 -i "$img" -t 2.4               -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(zoom+0.0018,1.08)':d=72:s=1280x720:fps=30"               -c:v libx264 -pix_fmt yuv420p -an "app/src/main/assets/video-segments/seg-$i.mp4"
             i=$((i+1))
           done
-          printf "file '%s'\n" app/src/main/assets/video-segments/seg-*.mp4 > app/src/main/assets/video-segments/list.txt
+for f in app/src/main/assets/video-segments/seg-*.mp4; do printf "file '%s'\n" "$(basename "$f")"; done > app/src/main/assets/video-segments/list.txt
           ffmpeg -y -loglevel error -f concat -safe 0             -i app/src/main/assets/video-segments/list.txt             -c copy -movflags +faststart app/src/main/assets/product-video.mp4
           rm -rf app/src/main/assets/video-segments
 
