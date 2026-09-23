@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Samosa King Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff}.btn.status-done{box-shadow:0 0 0 2px #b7e4c7}
+*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff} .btn.status-done{box-shadow:0 0 0 2px #b7e4c7}.paymentBox{margin:10px 0;padding:11px;border-radius:12px;background:#fffaf1;border:1px solid #eadfd3}.paymentPaid{color:#16803c;font-weight:900}.paymentPending{color:#b36b00;font-weight:900}
 </style>
 </head>
 <body>
@@ -119,12 +119,18 @@
       '<p>📍 <b>Delivery address</b><br>'+esc(o.address||'')+'</p>'+
       '<div class="items"><div class="itemhead">🛒 ORDER ITEMS</div>'+items+'</div>'+
       '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
-      '<br><b>💰 Total ₹'+esc(o.total)+'</b><br>💵 '+esc(o.payment)+'</p>'+
+      '<br><b>💰 Total ₹'+esc(o.total)+'</b></p>'+paymentHtml(o)+
       '<div class="row"><a class="btn" href="'+actionUrl('call','',o.mobile||'')+'">📞 Call</a>'+
       '<a class="btn" href="'+actionUrl('whatsapp','',o.mobile||'')+'">WhatsApp</a>'+
       '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a>'+
       '<a class="btn goldbtn" href="'+actionUrl('print',o.id,'')+'">🧾 Print Bill</a></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
+  }
+  function paymentHtml(o){
+    var p=String(o.payment||'COD'),st=String(o.paymentStatus||'');
+    if(p==='COD')return '<div class="paymentBox">💵 <b>COD</b><br><span class="muted">Payment delivery ke time collect hoga.</span></div>';
+    var paid=st==='PAID';
+    return '<div class="paymentBox">📱 <b>UPI / ONLINE PAYMENT</b><br>'+(paid?'<span class="paymentPaid">✅ PAYMENT RECEIVED</span>':'<span class="paymentPending">🟠 PAYMENT PENDING</span><br><a class="btn goldbtn" href="'+actionUrl('payment',o.id,'PAID')+'">💳 Mark Payment Received</a>')+'</div>';
   }
   function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}
   function statusDone(id,st){var a=document.querySelectorAll('.btn[data-order-id]'),i,b;for(i=0;i<a.length;i++){b=a[i];if(b.getAttribute('data-order-id')===String(id)&&b.getAttribute('data-status')===String(st)){b.classList.add('status-done');b.textContent='✓ '+String(st).replace(/_/g,' ');}}}
