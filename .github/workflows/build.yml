@@ -3,7 +3,7 @@ name: Build Samosa King APKs
 on:
   workflow_dispatch:
   push:
-    branches: [main]:
+    branches: [main]
 
 permissions:
   contents: read
