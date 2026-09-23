@@ -23,6 +23,7 @@ public class AdminActivity extends Activity{
     if(action==null||action.isEmpty()){message("Invalid admin action.");return;}
     if("refresh".equals(action)){refresh();return;}
     if("logout".equals(action)){if(ordersListener!=null)ordersListener.remove();auth.signOut();js("window.showLogin()");return;}
+    if("payment".equals(action)){ if(id==null||id.trim().isEmpty()){message("Invalid payment action data.");return;} updatePaymentStatus(id,value);return;}
     if("status".equals(action)){
       if(id==null||id.trim().isEmpty()||value==null||value.trim().isEmpty()){message("Invalid status action data.");return;}
       updateStatus(id,value);return;
@@ -113,7 +114,7 @@ public class AdminActivity extends Activity{
    for(DocumentSnapshot d:snap.getDocuments()){
     JSONObject o=new JSONObject();
     o.put("id",d.getId());o.put("name",d.getString("customerName"));o.put("mobile",d.getString("mobile"));
-    o.put("address",d.getString("address"));o.put("payment",d.getString("paymentMethod"));
+    o.put("address",d.getString("address"));o.put("payment",d.getString("paymentMethod"));o.put("paymentStatus",d.getString("paymentStatus"));
     o.put("subtotal",num(d.get("subtotal")));o.put("delivery",num(d.get("deliveryFee")));o.put("discount",num(d.get("discount")));
     o.put("total",num(d.get("total")));o.put("status",d.getString("status"));o.put("date",dateText(d.get("createdAt")));
     if(d.get("createdAt") instanceof com.google.firebase.Timestamp)o.put("createdAtMs",((com.google.firebase.Timestamp)d.get("createdAt")).toDate().getTime());
@@ -144,6 +145,7 @@ public class AdminActivity extends Activity{
  private long num(Object x){if(x instanceof Number)return ((Number)x).longValue();try{return Long.parseLong(String.valueOf(x));}catch(Exception e){return 0;}}
  private boolean isAdmin(Runnable yes){if(auth==null||auth.getCurrentUser()==null){message("Admin login required.");return false;}if(!isConfiguredAdmin()){deny(auth.getCurrentUser().getUid());return false;}yes.run();return true;}
  private void updateStatus(String id,String st){if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}if(st==null||st.trim().isEmpty()){message("Invalid status.");return;}message("Updating order "+id+" → "+st+" …");isAdmin(()->db.collection("orders").document(id).update("status",st).addOnSuccessListener(v->{js("window.statusDone("+JSONObject.quote(id)+","+JSONObject.quote(st)+")");message("✓ Order "+id+" → "+st);}).addOnFailureListener(e->message("✗ Status update failed: "+e.getClass().getSimpleName()+" — "+e.getMessage())));}
+ private void updatePaymentStatus(String id,String st){if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}if(!"PAID".equals(st)){message("Invalid payment status.");return;}message("Payment status update ho raha hai…");isAdmin(()->db.collection("orders").document(id).update("paymentStatus","PAID","paymentVerifiedAt",FieldValue.serverTimestamp()).addOnSuccessListener(v->{message("✓ Payment received marked for order "+id);}).addOnFailureListener(e->message("✗ Payment status update failed: "+e.getClass().getSimpleName()+" — "+e.getMessage())));}
  private void reject(String id){updateStatus(id,"REJECTED");}
  private void call(String n){try{startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+n)));}catch(Exception e){message("Could not open phone dialer.");}}
  private void whatsapp(String n){try{String x=n.replaceAll("[^0-9]","");if(x.length()==10)x="91"+x;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://wa.me/"+x)));}catch(Exception e){message("Could not open WhatsApp.");}}
