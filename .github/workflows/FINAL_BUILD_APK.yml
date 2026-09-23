@@ -37,28 +37,18 @@ jobs:
         shell: bash
         run: |
           set -e
-          mkdir -p app/src/main/assets/video-segments
-          rm -f app/src/main/assets/video-segments/*.mp4
-          images=(
-            app/src/main/assets/product-images/pizza.jpg
-            app/src/main/assets/product-images/burger.jpg
-            app/src/main/assets/product-images/samosa.jpg
-            app/src/main/assets/product-images/mirchi-bada.jpg
-            app/src/main/assets/product-images/momos.jpg
-            app/src/main/assets/product-images/pasta.jpg
-            app/src/main/assets/product-images/manchurian.jpg
-          )
-          i=0
-          for img in "${images[@]}"; do
-            test -s "$img"
-            ffmpeg -y -loglevel error -loop 1 -i "$img" -t 2.4 -vf "scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,zoompan=z='min(zoom+0.0018,1.08)':d=72:s=1280x720:fps=30" -c:v libx264 -pix_fmt yuv420p -an "app/src/main/assets/video-segments/seg-$i.mp4"
-            i=$((i+1))
-          done
-          printf "file 'seg-%s.mp4'\n" 0 1 2 3 4 5 6 > app/src/main/assets/video-segments/list.txt
-          ffmpeg -y -loglevel error -f concat -safe 0 -i app/src/main/assets/video-segments/list.txt -c copy -movflags +faststart app/src/main/assets/product-video.mp4
+          mkdir -p app/src/main/assets
+          curl -L --fail --retry 3 --retry-delay 2 \
+            -o app/src/main/assets/product-video-source.mp4 \
+            "https://videos.pexels.com/video-files/5820011/5820011-hd_1920_1080_25fps.mp4"
+          ffmpeg -y -loglevel error -i app/src/main/assets/product-video-source.mp4 \
+            -vf "scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080,fps=30" \
+            -t 12 -an -c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p \
+            -movflags +faststart app/src/main/assets/product-video.mp4
+          rm -f app/src/main/assets/product-video-source.mp4
           test -s app/src/main/assets/product-video.mp4
-          rm -rf app/src/main/assets/video-segments
-
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height \
+            -of csv=p=0 app/src/main/assets/product-video.mp4
       - name: Build customer APK
         run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
