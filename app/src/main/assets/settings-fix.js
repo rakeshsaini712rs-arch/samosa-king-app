@@ -35,3 +35,26 @@ function install(){
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();
 }
+(function(){
+  function installPromoFix(){
+    var v=document.getElementById('promoVideoEl'),s=document.getElementById('promoSource'),t=document.getElementById('promoText');
+    if(!v||!s||!t||window.__skPromoFixInstalled)return;
+    window.__skPromoFixInstalled=true;
+    var slides=[
+      {url:'https://videos.pexels.com/video-files/6603837/6603837-hd_1920_1080_25fps.mp4',tag:'🔥 FRESH & HOT',title:'Pizza Made Fresh',sub:'Chef-made pizza at Samosa King'},
+      {url:'https://videos.pexels.com/video-files/6603839/6603839-hd_1920_1080_25fps.mp4',tag:'👨‍🍳 MADE FRESH',title:'Pizza Special',sub:'Hot • Fresh • Delicious'},
+      {url:'https://videos.pexels.com/video-files/6603825/6603825-hd_1920_1080_25fps.mp4',tag:'👑 SAMOSA KING',title:'Fresh Food',sub:'Order your favourite food now'}
+    ];
+    var i=0,loading=false,retries=0;
+    function setText(x){t.innerHTML='<span>'+x.tag+'</span><b>'+x.title+'</b><small>'+x.sub+'</small>'}
+    function play(){var p=v.play();if(p&&p.catch)p.catch(function(){})}
+    function show(n){if(loading)return;loading=true;var x=slides[n%slides.length];i=n%slides.length;setText(x);s.src=x.url;v.load();retries=0;setTimeout(function(){loading=false;play()},80)}
+    function next(){show((i+1)%slides.length)}
+    v.addEventListener('ended',next);
+    v.addEventListener('error',function(){if(retries<1){retries++;setTimeout(function(){v.load();play()},1000)}else{retries=0;next()}});
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)play()});
+    setInterval(function(){if(!document.hidden&&!v.ended&&v.readyState>=2&&v.paused)play()},5000);
+    show(0);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installPromoFix);else installPromoFix();
+})();
