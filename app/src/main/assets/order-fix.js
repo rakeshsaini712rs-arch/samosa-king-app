@@ -21,9 +21,9 @@ function validateAndOpenPayment(){
   return true;
 }
 window.SKOrderFix={submit:validateAndOpenPayment};
-document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('.order'):null;if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();validateAndOpenPayment();},true);
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('#modal .order'):null;if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();validateAndOpenPayment();},true);
 function installOrderFix(){
-  var b=document.querySelector('.order');
+  var b=document.querySelector('#modal .order');
   if(!b || b.dataset.skFixed==='1') return;
   b.dataset.skFixed='1'; b.removeAttribute('onclick');
   b.onclick=validateAndOpenPayment;
