@@ -1,24 +1,31 @@
 (function(){
+function validateAndOpenPayment(){
+  var c=(typeof cart!=='undefined')?cart:{};
+  var sub=typeof subtotal==='function'?Number(subtotal()):0;
+  var n=(document.getElementById('name')?.value||'').trim();
+  var p=(document.getElementById('phone')?.value||'').trim();
+  var ad=(document.getElementById('address')?.value||'').trim();
+  var msg=document.getElementById('msg');
+  function error(t){if(msg){msg.textContent=t;msg.style.color='#c62828';msg.style.fontWeight='800';}return false;}
+  if(!Object.keys(c).length)return error('Cart is empty.');
+  if(sub<100)return error('Minimum order is ₹100.');
+  if(!/^[\p{L} ]{2,50}$/u.test(n))return error('Please enter a valid name (letters and spaces only).');
+  if(!/^[6-9]\d{9}$/.test(p))return error('Please enter a valid 10-digit mobile number.');
+  if(!ad)return error('Please enter the delivery address.');
+  if(msg){msg.textContent='';msg.style.color='';}
+  if(typeof closeCart==='function')closeCart();
+  var pm=document.getElementById('paymentChoiceModal');
+  var op=document.getElementById('onlinePaymentBox');
+  if(pm)pm.style.display='block';
+  if(op)op.style.display='none';
+  return true;
+}
+window.SKOrderFix={submit:validateAndOpenPayment};
 function installOrderFix(){
   var b=document.querySelector('.order');
   if(!b || b.dataset.skFixed==='1') return;
   b.dataset.skFixed='1'; b.removeAttribute('onclick');
-  b.onclick=function(){
-    var c=(typeof cart!=='undefined')?cart:{};
-    var sub=typeof subtotal==='function'?Number(subtotal()):0;
-    var n=(document.getElementById('name')?.value||'').trim();
-    var p=(document.getElementById('phone')?.value||'').trim();
-    var ad=(document.getElementById('address')?.value||'').trim();
-    var code=(document.getElementById('skorderCoupon')?.value||'').trim().toUpperCase();
-    var msg=document.getElementById('msg');
-    if(!Object.keys(c).length){if(msg)msg.textContent='Cart is empty.';return;}
-    if(sub<100){if(msg)msg.textContent='Minimum order is ₹100.';return;}
-    if(!/^[\p{L} ]{2,50}$/u.test(n)){if(msg)msg.textContent='Please enter a valid name (letters and spaces only).';return;}if(!/^[6-9]\d{9}$/.test(p)){if(msg)msg.textContent='Please enter a valid 10-digit mobile number.';return;}if(!ad){if(msg)msg.textContent='Please enter name, phone and delivery address.';return;}if(!window.AndroidBridge||typeof AndroidBridge.isPhoneVerified!=='function'){if(msg)msg.textContent='Mobile verification service is not available.';return;}if(!AndroidBridge.isPhoneVerified(p)){if(msg)msg.textContent='Please verify this mobile number with OTP before placing the order.';return;}
-    var items=Object.entries(c).map(function(e){return{id:e[0],qty:Number(e[1])}});
-    if(!window.AndroidBridge||typeof AndroidBridge.placeOrderWithCoupon!=='function'){if(msg)msg.textContent='Order service is not available.';return;}
-    if(msg)msg.textContent=code==='DIWALI'?'Applying DIWALI 10% discount and placing COD order…':'Checking delivery area and placing COD order…';
-    try{AndroidBridge.placeOrderWithCoupon(n,p,ad,JSON.stringify(items),sub,code);}catch(e){if(msg)msg.textContent='Could not start order: '+e.message;}
-  };
+  b.onclick=validateAndOpenPayment;
 }
 function addCoupon(){
   var sheet=document.querySelector('.sheet');
