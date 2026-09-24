@@ -11,7 +11,7 @@ function validateAndOpenPayment(){
   if(sub<100)return error('Minimum order is ₹100.');
   if(!/^[\p{L} ]{2,50}$/u.test(n))return error('Please enter a valid name (letters and spaces only).');
   if(!/^[6-9]\d{9}$/.test(p))return error('Please enter a valid 10-digit mobile number.');
-  if(!ad)return error('Please enter the delivery address.');
+  if(!/^(?=.{10,200}$)(?=(?:.*[\p{L}]){3,}).+/u.test(ad))return error('Please enter a complete delivery address (at least 10 characters).');
   if(msg){msg.textContent='';msg.style.color='';}
   if(typeof closeCart==='function')closeCart();
   var pm=document.getElementById('paymentChoiceModal');
