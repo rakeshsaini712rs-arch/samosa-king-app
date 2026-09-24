@@ -1,5 +1,4 @@
-var m=b.getAttribute('onclick')||'';
-  var hit=m.match(/changeQty\(['"]([^'"]+)['"],\s*([-+]?\d+)\)/);(function(){
+(function(){
 'use strict';
 function install(){
  if(window.__SK_CART_FIX)return;
@@ -20,7 +19,7 @@ function install(){
   var b=e.target.closest&&e.target.closest('.qty button,.cartcontrols button');
   if(!b)return;
   var m=b.getAttribute('onclick')||'';
-  var hit=m.match(/changeQty\\(['"]([^'"]+)['"],\\s*([-+]?\\d+)\\)/);
+  var hit=m.match(/changeQty\(['"]([^'"]+)['"],\s*([-+]?\d+)\)/);
   if(!hit)return;
   e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
   change(hit[1],Number(hit[2]));
