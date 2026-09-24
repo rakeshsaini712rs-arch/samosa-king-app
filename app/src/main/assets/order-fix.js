@@ -13,7 +13,7 @@ function installOrderFix(){
     var msg=document.getElementById('msg');
     if(!Object.keys(c).length){if(msg)msg.textContent='Cart is empty.';return;}
     if(sub<100){if(msg)msg.textContent='Minimum order is ₹100.';return;}
-    if(!n||!p||!ad){if(msg)msg.textContent='Please enter name, phone and delivery address.';return;}
+    if(!/^[\p{L} ]{2,50}$/u.test(n)){if(msg)msg.textContent='Please enter a valid name (letters and spaces only).';return;}if(!/^[6-9]\d{9}$/.test(p)){if(msg)msg.textContent='Please enter a valid 10-digit mobile number.';return;}if(!ad){if(msg)msg.textContent='Please enter name, phone and delivery address.';return;}if(!window.AndroidBridge||typeof AndroidBridge.isPhoneVerified!=='function'){if(msg)msg.textContent='Mobile verification service is not available.';return;}if(!AndroidBridge.isPhoneVerified(p)){if(msg)msg.textContent='Please verify this mobile number with OTP before placing the order.';return;}
     var items=Object.entries(c).map(function(e){return{id:e[0],qty:Number(e[1])}});
     if(!window.AndroidBridge||typeof AndroidBridge.placeOrderWithCoupon!=='function'){if(msg)msg.textContent='Order service is not available.';return;}
     if(msg)msg.textContent=code==='DIWALI'?'Applying DIWALI 10% discount and placing COD order…':'Checking delivery area and placing COD order…';
