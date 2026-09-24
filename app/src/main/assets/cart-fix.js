@@ -1,4 +1,5 @@
-(function(){
+var m=b.getAttribute('onclick')||'';
+  var hit=m.match(/changeQty\(['"]([^'"]+)['"],\s*([-+]?\d+)\)/);(function(){
 'use strict';
 function install(){
  if(window.__SK_CART_FIX)return;
