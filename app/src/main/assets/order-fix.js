@@ -21,6 +21,7 @@ function validateAndOpenPayment(){
   return true;
 }
 window.SKOrderFix={submit:validateAndOpenPayment};
+document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('.order'):null;if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();validateAndOpenPayment();},true);
 function installOrderFix(){
   var b=document.querySelector('.order');
   if(!b || b.dataset.skFixed==='1') return;
