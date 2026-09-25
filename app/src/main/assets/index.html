@@ -208,6 +208,45 @@ function openHistoryFromSettings(){closeSettings();openHistory()}function openAd
 applyTheme();restoreCart();updateCart();function startPromoRotation(){var v=$('promoVideoEl'),s=$('promoSource'),t=$('promoText');if(!v||!s)return;var slides=[['https://videos.pexels.com/video-files/6603825/6603825-hd_1920_1080_25fps.mp4','🔥 FRESH & HOT','Pizza Special','Order now from Samosa King'],['https://videos.pexels.com/video-files/6603837/6603837-hd_1920_1080_25fps.mp4','👨‍🍳 MADE FRESH','Pizza Made Fresh','Hot • Fresh • Delicious'],['https://videos.pexels.com/video-files/6603839/6603839-hd_1920_1080_25fps.mp4','👑 SAMOSA KING','Fresh Food','Order your favourite food now']];var i=0,busy=false;function show(){if(busy)return;busy=true;var x=slides[i];if(t)t.innerHTML='<span>'+x[1]+'</span><b>'+x[2]+'</b><small>'+x[3]+'</small>';s.src=x[0];v.load();var p=v.play();if(p&&p.catch)p.catch(function(){});setTimeout(function(){busy=false},500)}v.addEventListener('ended',function(){i=(i+1)%slides.length;show()});v.addEventListener('error',function(){i=(i+1)%slides.length;setTimeout(show,800)});document.addEventListener('visibilitychange',function(){if(!document.hidden){var p=v.play();if(p&&p.catch)p.catch(function(){})}});show()}function setHeaderHeight(){var h=$('search')?$('search').closest('.top'):document.querySelector('.top');if(h)document.documentElement.style.setProperty('--headerH',h.offsetHeight+'px')}window.addEventListener('resize',setHeaderHeight);setHeaderHeight();render();updateFavouriteButton();loadLastOrder();startPromoRotation();
 </script><style>/* ZOMATO-STYLE PREMIUM CATEGORY CARDS */
 .cats{display:flex!important;overflow-x:auto!important;gap:12px!important;padding:10px 14px 12px!important;background:#fff!important;border-bottom:1px solid #eee4d6!important;box-shadow:0 3px 12px #0000000a!important;scrollbar-width:none!important;align-items:flex-start!important}.cats::-webkit-scrollbar{display:none!important}.cats .cat{flex:0 0 78px!important;min-width:78px!important;width:78px!important;height:96px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#3a2a1d!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:7px!important;box-shadow:none!important;white-space:normal!important;font-size:11px!important;font-weight:800!important;transition:transform .18s ease!important}.cats .cat:before{display:none!important}.cats .catImg{width:64px!important;height:64px!important;border-radius:50%!important;padding:3px!important;background:#fff!important;border:2px solid #eee3d5!important;box-shadow:0 4px 12px #00000012!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important}.cats .catImg img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important;display:block!important}.cats .catImg.fallback:after{content:'🍽️';font-size:27px!important}.cats .catName{display:block!important;line-height:1.15!important;text-align:center!important;max-width:78px!important}.cats .cat.active .catImg{border-color:#e0a72b!important;box-shadow:0 0 0 3px #f6c94a33,0 6px 15px #d99d1840!important;transform:scale(1.04)!important}.cats .cat.active .catName{color:#9a6900!important;font-weight:900!important}.cats .cat:active{transform:scale(.94)!important;box-shadow:none!important}.cats .restaurantBtn .catImg{border-color:#d7c19e!important}@media(max-width:370px){.cats .cat{flex-basis:72px!important;min-width:72px!important;width:72px!important}.cats .catImg{width:58px!important;height:58px!important}.cats .catName{max-width:72px!important}}
+/* PREMIUM DARK THEME POLISH */
+body.skDark{background:#12100e!important;color:#f7efe6!important}
+body.skDark .top{background:linear-gradient(145deg,#0d0b0a,#1c1510 65%,#2b1a0d)!important}
+body.skDark .cats{background:#171411!important;border-bottom-color:#30261f!important;box-shadow:0 3px 14px #0008!important}
+body.skDark .cats .cat{color:#ddd2c8!important}
+body.skDark .cats .catImg{background:#211a15!important;border-color:#44362d!important;box-shadow:0 4px 12px #0008!important}
+body.skDark .cats .cat.active .catImg{border-color:#f0b82d!important;box-shadow:0 0 0 3px #f6c94a22,0 6px 15px #0009!important}
+body.skDark .cats .cat.active .catName{color:#f6c94a!important}
+body.skDark .hero{background:linear-gradient(145deg,#2b2118,#211914)!important;border-color:#49392e!important;box-shadow:0 7px 22px #0008!important}
+body.skDark .hero .badge{background:#f6c94a!important;color:#17100b!important}
+body.skDark .card{background:#211914!important;border-color:#49392e!important;box-shadow:0 6px 18px #0009!important}
+body.skDark .visual{background:radial-gradient(circle at 50% 25%,#3a2b21,#211914)!important;border-color:#4b3a2f!important}
+body.skDark .skProductTicker{background:linear-gradient(90deg,#302319,#211914,#302319)!important;border-color:#4a382a!important}
+body.skDark .skTickerItem{color:#e4bd67!important}
+body.skDark .section h2{color:#fff7ef!important}
+body.skDark .price{color:#5fe09a!important}
+body.skDark .add{background:#f6c94a!important;color:#17100b!important}
+body.skDark .buyNow{background:#f2e9df!important;color:#17100b!important}
+body.skDark .qty button{background:#2d231c!important;color:#fff!important;border-color:#564338!important}
+body.skDark .info div,body.skDark .historyRow,body.skDark .servicesSub{background:#2a211b!important}
+body.skDark .info,.body.skDark .track{background:#211914!important}
+body.skDark .services{background:#211914!important;border-color:#49392e!important}
+body.skDark .serviceBtn{background:#2a211b!important;color:#f5eee5!important;border-color:#554338!important}
+body.skDark .cartbar{background:#1b1612!important;border-top-color:#49392e!important;box-shadow:0 -5px 20px #000b!important}
+body.skDark .cartTotal small{color:#b9aaa0!important}
+body.skDark .sheet{background:#211914!important;color:#f5eee5!important;border-top:1px solid #49392e!important}
+body.skDark .close{background:#30261f!important;color:#fff!important}
+body.skDark .settingsList button,body.skDark .payOptions button{background:#2a211b!important;color:#f5eee5!important;border-color:#554338!important}
+body.skDark .appearanceSettingsBtn{background:linear-gradient(145deg,#332719,#292019)!important;border-color:#6a5137!important;color:#f6c94a!important}
+body.skDark .currentLocation{background:#192731!important;color:#8fd2ff!important;border-color:#31576e!important}
+body.skDark .order{background:#f6c94a!important;color:#17100b!important}
+body.skDark .cancel{background:#2a1b1a!important;border-color:#6d3b38!important}
+body.skDark .promoVideo{box-shadow:0 7px 24px #000b!important}
+body.skDark .promoShade{background:linear-gradient(90deg,#000d 0%,#0006 55%,#0002)!important}
+body.skDark .termsLink{color:#f6c94a!important}
+body.skDark .termsText b{color:#f6c94a!important}
+body.skDark .empty{background:#211914!important;border-color:#554338!important}
+body.skDark .notice{color:#ddd2c8!important}
+body.skDark ::placeholder{color:#a99a90!important}
 /* FINAL STABILITY: keep customer header/category menu above scrolling products and make modal controls tappable */
 .top{position:sticky!important;top:0!important;z-index:1000!important}
 .cats{position:sticky!important;top:var(--headerH,0px)!important;z-index:999!important;background:#fff!important;isolation:isolate!important}
