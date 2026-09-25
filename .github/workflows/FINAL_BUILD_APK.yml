@@ -15,6 +15,7 @@ jobs:
     timeout-minutes: 30
     env:
       GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
+      GRADLE_USER_HOME: ${{ runner.temp }}/samosa-gradle-home
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,7 +32,7 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build customer APK
-        run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+        run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace --refresh-dependencies -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
       - name: Build admin APK
         run: gradle :admin:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
