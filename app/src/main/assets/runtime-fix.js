@@ -9,8 +9,37 @@ var imageMap={
  'Dilkushal':'dilkushal.jpg','Peda':'milk-cake.jpg','Petha':'kalakand.jpg',
  'Namkin':'sohan-papdi.jpg','Rasmalai':'dahi-bhalla-1.jpg','Dahi (Curd)':'dahi-bhalla-2.jpg'
 };
-function paintImages(){document.querySelectorAll('.card').forEach(function(card){var h=card.querySelector('h3'),v=card.querySelector('.visual');if(!h||!v)return;var file=imageMap[h.textContent.trim()];if(!file)return;var img=v.querySelector('img');if(!img){img=document.createElement('img');v.innerHTML='';v.appendChild(img)}img.className='photo';img.alt=h.textContent.trim();img.loading='eager';img.decoding='async';img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:13px;display:block;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0)';img.src='product-images/'+file;});}
-function bindOrder(){}function bind(){paintImages();bindOrder();}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
-setTimeout(bind,500);setTimeout(bind,1500);new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});
+var scheduled=false;
+function paintImages(){
+ scheduled=false;
+ var cards=document.querySelectorAll('.card');
+ for(var i=0;i<cards.length;i++){
+  var card=cards[i],h=card.querySelector('h3'),v=card.querySelector('.visual');
+  if(!h||!v)continue;
+  var file=imageMap[h.textContent.trim()];
+  if(!file)continue;
+  var img=v.querySelector('img');
+  if(!img){
+   img=document.createElement('img');
+   img.className='photo';
+   img.alt=h.textContent.trim();
+   img.loading='lazy';
+   img.decoding='async';
+   img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:13px;display:block;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0)';
+   v.innerHTML='';
+   v.appendChild(img);
+  }
+  var src='product-images/'+file;
+  if(img.getAttribute('src')!==src)img.src=src;
+ }
+}
+function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(paintImages);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+setTimeout(schedule,700);
+var observer=new MutationObserver(function(mutations){
+ for(var i=0;i<mutations.length;i++){
+  if(mutations[i].addedNodes&&mutations[i].addedNodes.length){schedule();break;}
+ }
+});
+observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
