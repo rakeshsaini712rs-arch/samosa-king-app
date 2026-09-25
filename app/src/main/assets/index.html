@@ -38,7 +38,13 @@ body.skDark .bottom .qty button,body.skDark .cartcontrols button,body.skDark .se
 body.skDark .hint{background:#2a211b!important;color:#d8ccc2!important;border-color:#554338!important}
 </style><style id="skAppearanceVisibleFix">
 .appearanceSettingsBtn{display:block!important;visibility:visible!important;opacity:1!important;min-height:48px!important;font-size:15px!important;font-weight:900!important;cursor:pointer!important}
-</style></head>
+</style>
+<style id="skHeaderBrandFix">
+body.skDark .top .brand{color:#ffffff!important;opacity:1!important;visibility:visible!important;text-shadow:0 2px 5px #000!important}
+body.skDark .top .brand b{color:#f6c94a!important;opacity:1!important;visibility:visible!important}
+body.skDark .top .brand::first-letter{color:#ffffff!important}
+</style>
+</head>
 <body><div id="settingsModal" class="modal"><div class="sheet"><button class="close" onclick="closeSettings()">✕</button><h2>⚙️ Setting</h2><div class="settingsList">
 <button type="button" class="appearanceSettingsBtn" onclick="openAppearance()">🎨 Appearance</button>
 <button type="button" onclick="openProfile()">👤 Profile</button>
