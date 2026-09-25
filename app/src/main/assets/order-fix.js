@@ -37,5 +37,8 @@ function addCoupon(){
   box.querySelector('button').onclick=function(){var v=document.getElementById('skorderCoupon').value.trim().toUpperCase();var m=document.getElementById('skorderCouponMsg');if(v==='DIWALI'){var s=Number(typeof subtotal==='function'?subtotal():0),d=Math.floor(s*.10);m.textContent=d?'✅ DIWALI applied: ₹'+d+' discount. Final amount will be verified securely.':'Minimum order is ₹100.';}else m.textContent=v?'Coupon will be validated securely when the order is submitted.':'Enter a coupon code.';};
 }
 function run(){addCoupon();installOrderFix();}
-setInterval(run,800);document.addEventListener('DOMContentLoaded',run);
+var scheduled=false;
+function schedule(){if(scheduled)return;scheduled=true;setTimeout(function(){scheduled=false;run()},120)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+new MutationObserver(function(m){for(var i=0;i<m.length;i++){if(m[i].addedNodes&&m[i].addedNodes.length){schedule();break}}}).observe(document.documentElement,{childList:true,subtree:true});
 })();
