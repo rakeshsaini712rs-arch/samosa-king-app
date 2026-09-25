@@ -23,7 +23,7 @@ function init(){
     if(a==='settings'){close();alert('App settings');return}
     if(a==='logout'){close();try{localStorage.removeItem('sk_profile_v1')}catch(e){}alert('Local profile data cleared.');return}
   }
-  b.onclick=function(e){e.preventDefault();e.stopPropagation();if(typeof window.openSettings==='function'){window.openSettings()}else{d.classList.add('open')}};
+  b.onclick=function(e){e.preventDefault();e.stopPropagation();d.classList.add('open')};
   document.getElementById('skfixClose').onclick=close;
   d.onclick=function(e){if(e.target===d)close()};
   d.querySelectorAll('.skfix-item').forEach(function(x){x.onclick=function(e){e.preventDefault();e.stopPropagation();action(x.getAttribute('data-a'))}});
