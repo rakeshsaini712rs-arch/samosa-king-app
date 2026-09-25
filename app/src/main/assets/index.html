@@ -201,8 +201,8 @@ function hideModal(id){var x=$(id);if(x){x.style.display='none';x.style.pointerE
 function openAppearance(){closeSettings();showModal('appearanceModal');}
 function closeAppearance(){hideModal('appearanceModal');}
 function setTheme(mode){localStorage.setItem('skTheme',mode);applyTheme();var m=document.getElementById('appearanceMsg');if(m)m.textContent=mode==='light'?'☀️ Light Theme selected.':mode==='dark'?'🌙 Dark Theme selected.':'📱 Device Theme selected.';}
-function applyTheme(){var mode=localStorage.getItem('skTheme')||'device';var dark=mode==='dark'||(mode==='device'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.body.classList.toggle('skDark',dark);}
-if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',function(){if((localStorage.getItem('skTheme')||'device')==='device')applyTheme();});}
+function applyTheme(){var mode=localStorage.getItem('skTheme')||'dark';var dark=mode==='dark'||(mode==='device'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.body.classList.toggle('skDark',dark);}
+if(window.matchMedia){var mq=window.matchMedia('(prefers-color-scheme: dark)');if(mq.addEventListener)mq.addEventListener('change',function(){if((localStorage.getItem('skTheme')||'dark')==='device')applyTheme();});}
 function openSettings(){showModal('settingsModal')}
 function closeSettings(){hideModal('settingsModal')}
 function openPaymentSettings(){closeSettings();showModal('paymentSettingsModal')}
