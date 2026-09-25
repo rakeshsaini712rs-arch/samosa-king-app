@@ -19,7 +19,7 @@ function init(){
     if(a==='feedback'){close();alert('Feedback can be submitted after an order is delivered.');return}
     if(a==='phonepe'||a==='cred'||a==='whatsapp'){alert('Real merchant UPI ID: rakeshlist@ybl\nOnline payment verification is not connected yet. COD remains the active checkout method.');return}
     if(a==='cod'){close();alert('Pay on delivery (COD) is active.');return}
-    if(a==='about'){close();alert('Samosa King – Nawalgarh\nNansa Gate, Nawalgarh\n8:30 AM–6:00 PM\nDelivery ₹30 up to 5 km\nMinimum order ₹100');return}
+    if(a==='about'){close();alert('Samosa King – Nawalgarh\nNansa Gate, Nawalgarh\n8:30 AM–6:00 PM\nDelivery ₹30\nMinimum order ₹100');return}
     if(a==='settings'){close();alert('App settings');return}
     if(a==='logout'){close();try{localStorage.removeItem('sk_profile_v1')}catch(e){}alert('Local profile data cleared.');return}
   }
