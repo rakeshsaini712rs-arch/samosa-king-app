@@ -27,7 +27,7 @@ tasks.register('patchProductImages') {
     doLast {
         def f = file('src/main/assets/index.html')
         def s = f.getText('UTF-8')
-        def scripts = '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script><script src="navigation-fix.js"></script><script src="live-order-fix.js"></script><script src="order-fix.js"></script><script src="runtime-fix.js"></script><script src="cart-fix.js"></script>'
+        def scripts = '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script><script src="navigation-fix.js"></script><script src="live-order-fix.js"></script><script src="order-fix.js"></script><script src="runtime-fix.js"></script><script src="cart-fix.js"></script><script src="product-video.js"></script>'
         if (!s.contains('<script src="admin.js"></script>')) {
             s = s.replace('</body>', scripts + '</body>')
         } else if (!s.contains('<script src="runtime-fix.js"></script>')) {
