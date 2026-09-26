@@ -126,18 +126,28 @@ function selectCategory(key){
   active=key;
   var search=$('search');
   if(search)search.value='';
-  document.body.classList.toggle('categoryMode',key!=='all');
+  document.body.classList.remove('categoryMode');
   render();
   requestAnimationFrame(function(){
+    if(key==='all'){window.scrollTo(0,0);return;}
+    var section=$('cat-'+key);
+    if(!section)return;
+    var top=document.querySelector('.top');
+    var cats=document.querySelector('.cats');
+    var offset=(top?top.getBoundingClientRect().height:0)+(cats?cats.getBoundingClientRect().height:0)+8;
     var sc=document.scrollingElement||document.documentElement||document.body;
-    try{sc.scrollTop=0;document.documentElement.scrollTop=0;document.body.scrollTop=0;window.scrollTo(0,0)}catch(e){}
-    if(key!=='all'){
-      var section=$('cat-'+key),first=section&&section.querySelector('.card');
-      if(first){
-        try{first.scrollIntoView({block:'start',inline:'nearest',behavior:'auto'})}catch(e){}
-        first.classList.remove('categorySwitch');void first.offsetWidth;first.classList.add('categorySwitch');
+    var y=section.getBoundingClientRect().top+(sc.scrollTop||window.pageYOffset||0)-offset;
+    if(y<0)y=0;
+    try{sc.scrollTo({top:y,left:0,behavior:'auto'});}catch(e){window.scrollTo(0,y);}
+    setTimeout(function(){
+      var s=document.querySelector('.section#cat-'+key);
+      if(s){
+        var yy=s.getBoundingClientRect().top+(sc.scrollTop||window.pageYOffset||0)-offset;
+        if(yy<0)yy=0;
+        try{sc.scrollTo({top:yy,left:0,behavior:'auto'});}catch(e){window.scrollTo(0,yy);}
+        s.classList.remove('categorySwitch');void s.offsetWidth;s.classList.add('categorySwitch');
       }
-    }
+    },80);
   });
 }
 let searchTimer=null;function debounceSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(function(){render();},120);}
