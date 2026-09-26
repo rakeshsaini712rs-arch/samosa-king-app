@@ -128,33 +128,34 @@ function selectCategory(key){
   if(search)search.value='';
   render();
   if(key==='all'){
-    requestAnimationFrame(function(){window.scrollTo({top:0,left:0,behavior:'smooth'});});
+    var root=document.scrollingElement||document.documentElement;
+    root.scrollTop=0;
     return;
   }
   requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      var section=document.getElementById('cat-'+key);
-      if(!section)return;
-      var header=document.querySelector('.top');
-      var cats=document.querySelector('.cats');
-      var headerH=header?header.getBoundingClientRect().height:0;
-      var catsH=cats?cats.getBoundingClientRect().height:0;
-      var gap=8;
-      var y=section.getBoundingClientRect().top+(window.pageYOffset||document.documentElement.scrollTop||0)-headerH-catsH-gap;
-      if(y<0)y=0;
-      window.scrollTo({top:y,left:0,behavior:'smooth'});
-      setTimeout(function(){
-        var now=section.getBoundingClientRect().top;
-        var desired=headerH+catsH+gap;
-        var correction=now-desired;
-        if(Math.abs(correction)>3){
-          window.scrollBy({top:correction,left:0,behavior:'auto'});
-        }
-        section.classList.remove('categorySwitch');
-        void section.offsetWidth;
-        section.classList.add('categorySwitch');
-      },450);
-    });
+    var section=document.getElementById('cat-'+key);
+    if(!section)return;
+    var top=document.querySelector('.top');
+    var cats=document.querySelector('.cats');
+    var headerH=top?Math.ceil(top.getBoundingClientRect().height):0;
+    var catsH=cats?Math.ceil(cats.getBoundingClientRect().height):0;
+    var root=document.scrollingElement||document.documentElement;
+    var pageY=window.pageYOffset||root.scrollTop||0;
+    var sectionY=section.getBoundingClientRect().top+pageY;
+    var target=Math.max(0,sectionY-headerH-catsH-4);
+    root.scrollTop=target;
+    window.scrollTo(0,target);
+    setTimeout(function(){
+      var current=section.getBoundingClientRect().top;
+      var desired=headerH+catsH+4;
+      var correction=current-desired;
+      if(Math.abs(correction)>2){
+        root.scrollTop=Math.max(0,root.scrollTop+correction);
+      }
+      section.classList.remove('categorySwitch');
+      void section.offsetWidth;
+      section.classList.add('categorySwitch');
+    },80);
   });
 }
 let searchTimer=null;function debounceSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(function(){render();},120);}
