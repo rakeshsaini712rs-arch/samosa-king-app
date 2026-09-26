@@ -121,28 +121,30 @@ returngifts:'https://kmartau.mo.cloudinary.net/ce9726db-c57d-4946-b5e2-dc3d1f3e3
 samosa:'https://images.unsplash.com/photo-1572099107898-46f22b3af4f9?auto=format&fit=crop&w=800&q=85',kachori:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Kachori-1.jpg',mirchi:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Mirchi_Bada_from_Jodhpur.jpg',dahi1:'https://static.wixstatic.com/media/485dec_d444b342cbca4316b0f13c41a2fd6600~mv2.jpg/v1/fill/w_980,h_982,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/485dec_d444b342cbca4316b0f13c41a2fd6600~mv2.jpg',dahi2:'https://static.wixstatic.com/media/485dec_d444b342cbca4316b0f13c41a2fd6600~mv2.jpg/v1/fill/w_980,h_982,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/485dec_d444b342cbca4316b0f13c41a2fd6600~mv2.jpg',wraps:'https://images.unsplash.com/photo-1521305916504-4a1121187239?auto=format&fit=crop&w=800&q=85',momos:'https://b.zmtcdn.com/data/pictures/chains/2/18669712/edd0cf76488afa465d80ab0093246a2d_featured_v2.jpg?crop=750%3A500%3B%2A%2C%2A&fit=around%7C750%3A500',burger:'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=800&q=85',pasta:'https://images.unsplash.com/photo-1598504775866-e842291dbe10?auto=format&fit=crop&w=800&q=85',manchurian:'https://b.zmtcdn.com/data/pictures/chains/2/18669712/edd0cf76488afa465d80ab0093246a2d_featured_v2.jpg?crop=750%3A500%3B%2A%2C%2A&fit=around%7C750%3A500',kajukatli:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',rasgulla:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',rajbhog:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',gulabjamun:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',sohanpapdi:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',milkcake:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',kalakand:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',dilkushal:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',peda:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',petha:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',namkin:'https://images.unsplash.com/photo-1572099107898-46f22b3af4f9?auto=format&fit=crop&w=800&q=85',rasmalai:'https://media-assets.swiggy.com/swiggy/image/upload/f_auto,q_auto,fl_lossy/bllaxo3bzthgcuwg1k5e',curd:'https://static.wixstatic.com/media/485dec_d444b342cbca4316b0f13c41a2fd6600~mv2.jpg/v1/fill/w_980,h_982,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/485dec_d444b342cbca4316b0f13c41a2fd6600~mv2.jpg',cakeknife:'https://www.artificii.md/uploads/cache/product-cards/7e/7e1d24e0af24b8ab72d1f79b41d67ec9d7bf05e6.webp'
 };
 const $=id=>document.getElementById(id);
-function renderCats(){var catImgs={all:'product-images/samosa.jpg',snacks:'product-images/samosa.jpg',chaat:'product-images/dahi-bhalla-1.jpg',fast:'product-images/pizza.jpg',birthday:'https://images.pexels.com/photos/8015241/pexels-photo-8015241.jpeg?cs=srgb&dl=pexels-cup-of-couple-8015241.jpg&fm=jpg',beverages:'https://images.unsplash.com/photo-1617814192855-5bd13c3f0977?auto=format&fit=crop&w=900&q=90',sweets:'product-images/kaju-katli.jpg',thali:'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1200&q=95',desirsoi:'https://www.haveli.uk/menu/CurryHouse4.webp',restaurant:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=90'};$('cats').innerHTML='<button class="cat '+(active==='all'?'active':'')+'" onclick="selectCategory(\'all\')"><span class="catImg"><img src="'+catImgs.all+'" alt="All"></span><span class="catName">All</span></button>'+groups.map(g=>'<button class="cat '+(active===g.key?'active':'')+'" onclick="selectCategory(\''+g.key+'\')"><span class="catImg"><img src="'+catImgs[g.key]+'" alt="'+g.name+'" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'fallback\')"></span><span class="catName">'+g.name+'</span></button>').join('')+'<button class="cat restaurantBtn" onclick="openRestaurants()"><span class="catImg"><img src="'+catImgs.restaurant+'" alt="Restaurant / Hotel"></span><span class="catName">Restaurant / Hotel</span></button>'}
+function renderCats(){var catImgs={all:'product-images/samosa.jpg',snacks:'product-images/samosa.jpg',chaat:'product-images/dahi-bhalla-1.jpg',fast:'product-images/pizza.jpg',birthday:'https://images.pexels.com/photos/8015241/pexels-photo-8015241.jpeg?cs=srgb&dl=pexels-cup-of-couple-8015241.jpg&fm=jpg',beverages:'https://images.unsplash.com/photo-1617814192855-5bd13c3f0977?auto=format&fit=crop&w=900&q=90',sweets:'product-images/kaju-katli.jpg',thali:'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1200&q=95',desirsoi:'https://www.haveli.uk/menu/CurryHouse4.webp',restaurant:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=90'};$('cats').innerHTML='<button class="cat '+(active==='all'?'active':'')+'" onclick="selectCategory(\'all\')"><span class="catImg"><img src="'+catImgs.all+'" alt="All"></span><span class="catName">All</span></button>'+groups.map(g=>'<button type="button" data-sk-category="'+g.key+'" class="cat '+(active===g.key?'active':'')+'" onclick="selectCategory(\''+g.key+'\')"><span class="catImg"><img src="'+catImgs[g.key]+'" alt="'+g.name+'" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'fallback\')"></span><span class="catName">'+g.name+'</span></button>').join('')+'<button class="cat restaurantBtn" onclick="openRestaurants()"><span class="catImg"><img src="'+catImgs.restaurant+'" alt="Restaurant / Hotel"></span><span class="catName">Restaurant / Hotel</span></button>'}
 function selectCategory(key){
   active=key;
   var search=$('search');
   if(search)search.value='';
-  render();
   var sections=$('sections');
   var banner=$('skBannerCarousel');
   var cats=$('cats');
   if(!sections||!cats)return;
 
-  /*
-   * Android WebView-safe category navigation:
-   * Do not depend on scroll calculations. When a category is selected,
-   * put its already-filtered section immediately below the sticky category
-   * bar. The home view keeps the original banner -> sections order.
-   */
+  /* Render exactly one category for a deterministic Android WebView view. */
+  var g=groups.find(function(x){return x.key===key});
+  if(key!=='all'&&!g)return;
+
+  renderCats();
   if(key==='all'){
-    if(banner)cats.parentNode.insertBefore(banner,sections);
+    sections.innerHTML=groups.map(function(v){
+      return '<div class="section" id="cat-'+v.key+'"><h2>'+v.ico+' '+v.name+'</h2><div class="cards">'+v.items.map(function(x){return card(x)}).join('')+'</div></div>';
+    }).join('');
+    if(banner)cats.parentNode.insertBefore(banner,cats.nextSibling);
     if(banner)banner.parentNode.insertBefore(sections,banner.nextSibling);
     document.body.classList.remove('categoryMode');
   }else{
+    sections.innerHTML='<div class="section categoryFocus" id="cat-'+g.key+'"><h2>'+g.ico+' '+g.name+'</h2><div class="cards">'+g.items.map(function(x){return card(x)}).join('')+'</div></div>';
     cats.parentNode.insertBefore(sections,cats.nextSibling);
     document.body.classList.add('categoryMode');
   }
@@ -157,6 +159,21 @@ function selectCategory(key){
     void section.offsetWidth;
     section.classList.add('categorySwitch');
   }
+}
+
+/* Android touch/click fallback: category taps are handled even if WebView drops inline onclick. */
+function bindCategoryTouch(){
+  var c=$('cats');
+  if(!c||c.__skBound)return;
+  c.__skBound=true;
+  c.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('button[data-sk-category]');
+    if(b){e.preventDefault();selectCategory(b.getAttribute('data-sk-category'));}
+  },false);
+  c.addEventListener('touchend',function(e){
+    var b=e.target.closest&&e.target.closest('button[data-sk-category]');
+    if(b){e.preventDefault();selectCategory(b.getAttribute('data-sk-category'));}
+  },false);
 }
 
 let searchTimer=null;function debounceSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(function(){render();},120);}
