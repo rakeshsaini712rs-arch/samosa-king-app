@@ -124,29 +124,24 @@ const $=id=>document.getElementById(id);
 function renderCats(){var catImgs={all:'product-images/samosa.jpg',snacks:'product-images/samosa.jpg',chaat:'product-images/dahi-bhalla-1.jpg',fast:'product-images/pizza.jpg',birthday:'https://images.pexels.com/photos/8015241/pexels-photo-8015241.jpeg?cs=srgb&dl=pexels-cup-of-couple-8015241.jpg&fm=jpg',beverages:'https://images.unsplash.com/photo-1617814192855-5bd13c3f0977?auto=format&fit=crop&w=900&q=90',sweets:'product-images/kaju-katli.jpg',thali:'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1200&q=95',desirsoi:'https://www.haveli.uk/menu/CurryHouse4.webp',restaurant:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=90'};$('cats').innerHTML='<button class="cat '+(active==='all'?'active':'')+'" onclick="selectCategory(\'all\')"><span class="catImg"><img src="'+catImgs.all+'" alt="All"></span><span class="catName">All</span></button>'+groups.map(g=>'<button class="cat '+(active===g.key?'active':'')+'" onclick="selectCategory(\''+g.key+'\')"><span class="catImg"><img src="'+catImgs[g.key]+'" alt="'+g.name+'" onerror="this.style.display=\'none\';this.parentNode.classList.add(\'fallback\')"></span><span class="catName">'+g.name+'</span></button>').join('')+'<button class="cat restaurantBtn" onclick="openRestaurants()"><span class="catImg"><img src="'+catImgs.restaurant+'" alt="Restaurant / Hotel"></span><span class="catName">Restaurant / Hotel</span></button>'}
 function selectCategory(key){
   active=key;
-  if(key==='all'){render();window.scrollTo({top:0,behavior:'auto'});return;}
   var search=$('search');
   if(search)search.value='';
+  document.body.classList.toggle('categoryMode',key!=='all');
   render();
-  var el=$('cat-'+key);
-  if(!el)return;
-  var top=document.querySelector('.top');
-  var cats=$('cats');
-  var offset=(top?top.getBoundingClientRect().height:0)+(cats?cats.getBoundingClientRect().height:0)+6;
-  function jump(){
+  requestAnimationFrame(function(){
     var sc=document.scrollingElement||document.documentElement||document.body;
-    var y=el.getBoundingClientRect().top+(sc.scrollTop||window.pageYOffset||0)-offset;
-    if(y<0)y=0;
-    if(sc.scrollTo)sc.scrollTo({top:y,left:0,behavior:'auto'});
-    else window.scrollTo(0,y);
-    el.classList.remove('categorySwitch');
-    void el.offsetWidth;
-    el.classList.add('categorySwitch');
-  }
-  requestAnimationFrame(function(){jump();requestAnimationFrame(jump);});
+    try{sc.scrollTop=0;document.documentElement.scrollTop=0;document.body.scrollTop=0;window.scrollTo(0,0)}catch(e){}
+    if(key!=='all'){
+      var section=$('cat-'+key),first=section&&section.querySelector('.card');
+      if(first){
+        try{first.scrollIntoView({block:'start',inline:'nearest',behavior:'auto'})}catch(e){}
+        first.classList.remove('categorySwitch');void first.offsetWidth;first.classList.add('categorySwitch');
+      }
+    }
+  });
 }
 let searchTimer=null;function debounceSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(function(){render();},120);}
-function render(){var se=$('search'),q=se?String(se.value||'').toLowerCase().trim():'';document.body.classList.remove('categoryView');document.body.classList.remove('categoryMode');renderCats();var list;if(q){var match=groups.find(function(g){return g.items.some(function(x){return (x[1]+' '+x[2]).toLowerCase().includes(q)})});if(match)active=match.key;list=groups.map(function(g){return {g:g,items:g.items.filter(function(x){return (x[1]+' '+x[2]).toLowerCase().includes(q)})}}).filter(function(v){return v.items.length})}else if(active==='all'){list=groups.map(function(g){return {g:g,items:g.items}})}else{var g=groups.find(function(g){return g.key===active})||groups[0];active=g.key;list=[{g:g,items:g.items}]}var box=$('sections');if(!box)return;box.innerHTML=list.length?list.map(function(v){return '<div class="section" id="cat-'+v.g.key+'"><h2>'+v.g.ico+' '+v.g.name+'</h2><div class="cards">'+v.items.map(function(x){return card(x)}).join('')+'</div></div>'}).join(''):'<div class="empty">No matching item found.</div>';updateCart();}
+function render(){var se=$('search'),q=se?String(se.value||'').toLowerCase().trim():'';document.body.classList.remove('categoryView');document.body.classList.toggle('categoryMode',active!=='all'&&!q);renderCats();var list;if(q){var match=groups.find(function(g){return g.items.some(function(x){return (x[1]+' '+x[2]).toLowerCase().includes(q)})});if(match)active=match.key;list=groups.map(function(g){return {g:g,items:g.items.filter(function(x){return (x[1]+' '+x[2]).toLowerCase().includes(q)})}}).filter(function(v){return v.items.length})}else if(active==='all'){list=groups.map(function(g){return {g:g,items:g.items}})}else{var g=groups.find(function(g){return g.key===active})||groups[0];active=g.key;list=[{g:g,items:g.items}]}var box=$('sections');if(!box)return;box.innerHTML=list.length?list.map(function(v){return '<div class="section" id="cat-'+v.g.key+'"><h2>'+v.g.ico+' '+v.g.name+'</h2><div class="cards">'+v.items.map(function(x){return card(x)}).join('')+'</div></div>'}).join(''):'<div class="empty">No matching item found.</div>';updateCart();}
 function skProductTicker(){return '<div class="skProductTicker"><div class="skTickerTrack"><span class="skTickerItem">⏱ 20–30 min</span><span class="skTickerDot">•</span><span class="skTickerItem">⚡ Near & Fast</span><span class="skTickerDot">•</span><span class="skTickerItem">🔥 Fresh & Hot</span><span class="skTickerDot">•</span><span class="skTickerItem">🚴 Fast Delivery</span><span class="skTickerDot">•</span><span class="skTickerItem">⏱ 20–30 min</span><span class="skTickerDot">•</span><span class="skTickerItem">⚡ Near & Fast</span><span class="skTickerDot">•</span><span class="skTickerItem">🔥 Fresh & Hot</span><span class="skTickerDot">•</span><span class="skTickerItem">🚴 Fast Delivery</span></div></div>'}
 function card(x){let id=x[0],o=menuOverrides[id]||{},p=o.price!=null?o.price:x[3],q=cart[id]||0,ok=o.enabled!==false;let priceLabel=(p===0||p==='0')?'Price on request':'₹'+p;let photo=productPhotos[id];let visual=photo?`<img src="${photo}" alt="${x[1]}" loading="lazy" onerror="this.style.display='none';this.parentElement.textContent='${x[4]}'">`:x[4];return `<div class="card" id="product-${id}"><div class="visual" onclick="openProductImage('${id}')" role="button">${visual}</div>${skProductTicker()}<h3>${x[1]}</h3><div class="desc">${x[2]}</div><div class="unit">${x[5]}</div><div class="bottom"><span><span class="price">${priceLabel}</span><span class="availability ${ok?'available':'soldout'}">● ${ok?'Available':'Sold Out'}</span></span>${ok?(q?`<div class="qty"><button onclick="changeQty('${id}',-1)">−</button><b>${q}</b><button onclick="changeQty('${id}',1)">+</button></div>`:`<button class="add" onclick="add('${id}')">Add to Cart</button>`):`<button class="add" disabled>Sold Out</button>`}</div></div>`}
 function keepProductCategory(id){var g=groups.find(function(g){return g.items.some(function(x){return x[0]===id})});if(g)active=g.key}
@@ -280,6 +275,7 @@ body.skDark .termsLink{color:#f6c94a!important}
 body.skDark .termsText b{color:#f6c94a!important}
 body.skDark .empty{background:#211914!important;border-color:#554338!important}
 body.skDark .notice{color:#ddd2c8!important}
+.categoryMode #skBannerCarousel,.categoryMode #promoVideo,.categoryMode .promoVideo,.categoryMode #hero{display:none!important}.categoryMode #sections{margin-top:0!important}.categoryMode #sections .section:first-child{padding-top:4px!important}.categoryMode{scroll-behavior:auto!important}
 body.skDark ::placeholder{color:#a99a90!important}
 /* FINAL STABILITY: keep customer header/category menu above scrolling products and make modal controls tappable */
 .top{position:sticky!important;top:0!important;z-index:1000!important}
