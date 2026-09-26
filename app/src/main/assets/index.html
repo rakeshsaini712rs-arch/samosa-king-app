@@ -127,35 +127,40 @@ function selectCategory(key){
   var search=$('search');
   if(search)search.value='';
   render();
+  var html=document.documentElement;
+  var body=document.body;
+  var oldBehavior=html.style.scrollBehavior;
+  html.style.scrollBehavior='auto';
+  body.classList.add('categoryMode');
   if(key==='all'){
-    var root=document.scrollingElement||document.documentElement;
-    root.scrollTop=0;
+    window.scrollTo(0,0);
+    html.scrollTop=0;
+    body.scrollTop=0;
+    setTimeout(function(){html.style.scrollBehavior=oldBehavior;},50);
     return;
   }
-  requestAnimationFrame(function(){
+  function jump(){
     var section=document.getElementById('cat-'+key);
     if(!section)return;
     var top=document.querySelector('.top');
     var cats=document.querySelector('.cats');
     var headerH=top?Math.ceil(top.getBoundingClientRect().height):0;
     var catsH=cats?Math.ceil(cats.getBoundingClientRect().height):0;
-    var root=document.scrollingElement||document.documentElement;
-    var pageY=window.pageYOffset||root.scrollTop||0;
-    var sectionY=section.getBoundingClientRect().top+pageY;
-    var target=Math.max(0,sectionY-headerH-catsH-4);
-    root.scrollTop=target;
+    var y=section.getBoundingClientRect().top+(window.pageYOffset||html.scrollTop||0);
+    var target=Math.max(0,y-headerH-catsH-3);
     window.scrollTo(0,target);
-    setTimeout(function(){
-      var current=section.getBoundingClientRect().top;
-      var desired=headerH+catsH+4;
-      var correction=current-desired;
-      if(Math.abs(correction)>2){
-        root.scrollTop=Math.max(0,root.scrollTop+correction);
-      }
-      section.classList.remove('categorySwitch');
-      void section.offsetWidth;
-      section.classList.add('categorySwitch');
-    },80);
+    html.scrollTop=target;
+    body.scrollTop=target;
+    section.classList.remove('categorySwitch');
+    void section.offsetWidth;
+    section.classList.add('categorySwitch');
+  }
+  requestAnimationFrame(function(){
+    jump();
+    setTimeout(jump,60);
+    setTimeout(jump,180);
+    setTimeout(jump,400);
+    setTimeout(function(){html.style.scrollBehavior=oldBehavior;},450);
   });
 }
 let searchTimer=null;function debounceSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(function(){render();},120);}
