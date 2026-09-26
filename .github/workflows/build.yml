@@ -54,3 +54,4 @@ jobs:
           name: Samosa-King-ADMIN-APK
           path: admin/build/outputs/apk/debug/admin-debug.apk
           if-no-files-found: error
+# Build trigger for menu-order update
