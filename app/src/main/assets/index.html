@@ -127,42 +127,38 @@ function selectCategory(key){
   var search=$('search');
   if(search)search.value='';
   render();
-  var html=document.documentElement;
-  var body=document.body;
-  var oldBehavior=html.style.scrollBehavior;
-  html.style.scrollBehavior='auto';
-  body.classList.add('categoryMode');
+  var sections=$('sections');
+  var banner=$('skBannerCarousel');
+  var cats=$('cats');
+  if(!sections||!cats)return;
+
+  /*
+   * Android WebView-safe category navigation:
+   * Do not depend on scroll calculations. When a category is selected,
+   * put its already-filtered section immediately below the sticky category
+   * bar. The home view keeps the original banner -> sections order.
+   */
   if(key==='all'){
-    window.scrollTo(0,0);
-    html.scrollTop=0;
-    body.scrollTop=0;
-    setTimeout(function(){html.style.scrollBehavior=oldBehavior;},50);
-    return;
+    if(banner)cats.parentNode.insertBefore(banner,sections);
+    if(banner)banner.parentNode.insertBefore(sections,banner.nextSibling);
+    document.body.classList.remove('categoryMode');
+  }else{
+    cats.parentNode.insertBefore(sections,cats.nextSibling);
+    document.body.classList.add('categoryMode');
   }
-  function jump(){
-    var section=document.getElementById('cat-'+key);
-    if(!section)return;
-    var top=document.querySelector('.top');
-    var cats=document.querySelector('.cats');
-    var headerH=top?Math.ceil(top.getBoundingClientRect().height):0;
-    var catsH=cats?Math.ceil(cats.getBoundingClientRect().height):0;
-    var y=section.getBoundingClientRect().top+(window.pageYOffset||html.scrollTop||0);
-    var target=Math.max(0,y-headerH-catsH-3);
-    window.scrollTo(0,target);
-    html.scrollTop=target;
-    body.scrollTop=target;
+
+  window.scrollTo(0,0);
+  document.documentElement.scrollTop=0;
+  document.body.scrollTop=0;
+
+  var section=document.getElementById('cat-'+key);
+  if(section){
     section.classList.remove('categorySwitch');
     void section.offsetWidth;
     section.classList.add('categorySwitch');
   }
-  requestAnimationFrame(function(){
-    jump();
-    setTimeout(jump,60);
-    setTimeout(jump,180);
-    setTimeout(jump,400);
-    setTimeout(function(){html.style.scrollBehavior=oldBehavior;},450);
-  });
 }
+
 let searchTimer=null;function debounceSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(function(){render();},120);}
 function render(){var se=$('search'),q=se?String(se.value||'').toLowerCase().trim():'';document.body.classList.remove('categoryView');document.body.classList.remove('categoryMode');renderCats();var list;if(q){var match=groups.find(function(g){return g.items.some(function(x){return (x[1]+' '+x[2]).toLowerCase().includes(q)})});if(match)active=match.key;list=groups.map(function(g){return {g:g,items:g.items.filter(function(x){return (x[1]+' '+x[2]).toLowerCase().includes(q)})}}).filter(function(v){return v.items.length})}else if(active==='all'){list=groups.map(function(g){return {g:g,items:g.items}})}else{var g=groups.find(function(g){return g.key===active})||groups[0];active=g.key;list=[{g:g,items:g.items}]}var box=$('sections');if(!box)return;box.innerHTML=list.length?list.map(function(v){return '<div class="section" id="cat-'+v.g.key+'"><h2>'+v.g.ico+' '+v.g.name+'</h2><div class="cards">'+v.items.map(function(x){return card(x)}).join('')+'</div></div>'}).join(''):'<div class="empty">No matching item found.</div>';updateCart();}
 function skProductTicker(){return '<div class="skProductTicker"><div class="skTickerTrack"><span class="skTickerItem">⏱ 20–30 min</span><span class="skTickerDot">•</span><span class="skTickerItem">⚡ Near & Fast</span><span class="skTickerDot">•</span><span class="skTickerItem">🔥 Fresh & Hot</span><span class="skTickerDot">•</span><span class="skTickerItem">🚴 Fast Delivery</span><span class="skTickerDot">•</span><span class="skTickerItem">⏱ 20–30 min</span><span class="skTickerDot">•</span><span class="skTickerItem">⚡ Near & Fast</span><span class="skTickerDot">•</span><span class="skTickerItem">🔥 Fresh & Hot</span><span class="skTickerDot">•</span><span class="skTickerItem">🚴 Fast Delivery</span></div></div>'}
