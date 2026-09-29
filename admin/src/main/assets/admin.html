@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Samosa King Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff} .btn.status-done{box-shadow:0 0 0 2px #b7e4c7}.paymentBox{margin:10px 0;padding:11px;border-radius:12px;background:#fffaf1;border:1px solid #eadfd3}.paymentPaid{color:#16803c;font-weight:900}.paymentPending{color:#b36b00;font-weight:900}.liveMap{width:100%;height:360px;border-radius:16px;overflow:hidden;border:1px solid #eadfd3;background:#eee;margin-top:10px}.mapLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px}.mapPill{padding:5px 8px;border-radius:999px;background:#f3e5c8;font-weight:700}.deliveryAssign{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px}.deliveryAssign select{width:100%;padding:9px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:13px}.deliveryAssign .btn{margin:0;padding:9px 10px;font-size:12px}.menuSearch{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;margin-top:8px;font-size:14px;outline:none}.menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.menuItem{border:1px solid #eadfd3;border-radius:12px;padding:9px;background:#fff}.menuItemHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}.menuItemName{font-size:14px;font-weight:800;line-height:1.2}.menuItemState{font-size:10px;font-weight:800;padding:3px 6px;border-radius:8px;background:#eee;color:#666;white-space:nowrap}.menuItemState.on{background:#e2f5e9;color:#16803c}.menuPrice{width:100%;padding:8px 9px!important;margin:3px 0 5px!important;border-radius:9px!important;font-size:14px!important}.menuActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}.menuActions .btn{margin:0;padding:8px 5px;font-size:11px;border-radius:9px;white-space:nowrap}@media(max-width:380px){.menuGrid{grid-template-columns:1fr}.menuItemName{font-size:13px}}
+*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff} .btn.status-done{box-shadow:0 0 0 2px #b7e4c7}.paymentBox{margin:10px 0;padding:11px;border-radius:12px;background:#fffaf1;border:1px solid #eadfd3}.paymentPaid{color:#16803c;font-weight:900}.paymentPending{color:#b36b00;font-weight:900}.liveMap{width:100%;height:360px;border-radius:16px;overflow:hidden;border:1px solid #eadfd3;background:#eee;margin-top:10px}.mapFallback{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:#786b61}.riderMarker{font-size:22px;line-height:22px;text-shadow:0 1px 2px #fff}.riderLabel{background:#fff;border:1px solid #eadfd3;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 2px 7px #0002}.mapLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px}.mapPill{padding:5px 8px;border-radius:999px;background:#f3e5c8;font-weight:700}.deliveryAssign{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px}.deliveryAssign select{width:100%;padding:9px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:13px}.deliveryAssign .btn{margin:0;padding:9px 10px;font-size:12px}.menuSearch{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;margin-top:8px;font-size:14px;outline:none}.menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.menuItem{border:1px solid #eadfd3;border-radius:12px;padding:9px;background:#fff}.menuItemHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}.menuItemName{font-size:14px;font-weight:800;line-height:1.2}.menuItemState{font-size:10px;font-weight:800;padding:3px 6px;border-radius:8px;background:#eee;color:#666;white-space:nowrap}.menuItemState.on{background:#e2f5e9;color:#16803c}.menuPrice{width:100%;padding:8px 9px!important;margin:3px 0 5px!important;border-radius:9px!important;font-size:14px!important}.menuActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}.menuActions .btn{margin:0;padding:8px 5px;font-size:11px;border-radius:9px;white-space:nowrap}@media(max-width:380px){.menuGrid{grid-template-columns:1fr}.menuItemName{font-size:13px}}
 </style>
 </head>
 <body>
@@ -147,14 +147,96 @@
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
   var currentOrders=[],currentDeliveryBoys=[];
-  var deliveryMap=null,deliveryMarkers={},deliveryMapReady=false;
-  function loadGoogleMap(){if(deliveryMapReady||window.google&&window.google.maps)return initDeliveryMap();var s=document.createElement('script');s.async=true;s.defer=true;s.src='https://maps.googleapis.com/maps/api/js?key=AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw&callback=initDeliveryMap';document.head.appendChild(s);}
-  window.initDeliveryMap=function(){deliveryMapReady=true;var el=document.getElementById('deliveryMap');if(!el||!window.google||!google.maps)return;deliveryMap=new google.maps.Map(el,{center:{lat:27.0,lng:75.4},zoom:12,mapTypeControl:false,streetViewControl:false,fullscreenControl:true});renderDeliveryMarkers();};
-  function bikeIcon(online){return {path:'M12 2C7.6 2 4 5.6 4 10c0 5.8 8 12 8 12s8-6.2 8-12c0-4.4-3.6-8-8-8z',fillColor:online?'#16803c':'#d88a00',fillOpacity:1,strokeColor:'#fff',strokeWeight:2,scale:1.35,anchor:new google.maps.Point(12,22)};}
-  function renderDeliveryMarkers(){if(!deliveryMap||!window.google||!google.maps)return;var bounds=new google.maps.LatLngBounds(),has=false,i,b,pos,m,live;for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];if(!b||!Number(b.latitude)||!Number(b.longitude))continue;pos={lat:Number(b.latitude),lng:Number(b.longitude)};has=true;live=b.online&&b.lastSeenMs&&Date.now()-b.lastSeenMs<180000;m=deliveryMarkers[b.uid];if(!m){m=new google.maps.Marker({map:deliveryMap,position:pos,icon:bikeIcon(live),title:shortEmail(b.email),label:{text:'🛵',fontSize:'18px'}});deliveryMarkers[b.uid]=m;}else{m.setPosition(pos);m.setIcon(bikeIcon(live));m.setTitle(shortEmail(b.email));}bounds.extend(pos);}for(var uid in deliveryMarkers){var found=false;for(i=0;i<currentDeliveryBoys.length;i++)if(String(currentDeliveryBoys[i].uid)===String(uid)){found=true;break;}if(!found){deliveryMarkers[uid].setMap(null);delete deliveryMarkers[uid];}}if(has)deliveryMap.fitBounds(bounds);}
+  var deliveryMap=null,deliveryMarkers={},deliveryMapReady=false,mapMode='';
+  function loadGoogleMap(){
+    if(deliveryMapReady||window.google&&window.google.maps)return initDeliveryMap();
+    window.gm_authFailure=function(){startFallbackMap('Google Maps API key is not authorized for this WebView.');};
+    var s=document.createElement('script');
+    s.async=true;s.defer=true;
+    s.onerror=function(){startFallbackMap('Google Maps could not be loaded.');};
+    s.src='https://maps.googleapis.com/maps/api/js?key=AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw&callback=initDeliveryMap';
+    document.head.appendChild(s);
+    setTimeout(function(){if(!deliveryMapReady)startFallbackMap('Google Maps did not initialize. Showing live map fallback.');},7000);
+  }
+  window.initDeliveryMap=function(){
+    deliveryMapReady=true;mapMode='google';
+    var el=document.getElementById('deliveryMap');
+    if(!el||!window.google||!google.maps){startFallbackMap('Google Maps is unavailable.');return;}
+    deliveryMap=new google.maps.Map(el,{center:{lat:27.0,lng:75.4},zoom:12,mapTypeControl:false,streetViewControl:false,fullscreenControl:true});
+    renderDeliveryMarkers();
+  };
+  function startFallbackMap(reason){
+    if(mapMode==='leaflet'||mapMode==='google')return;
+    mapMode='leaflet';
+    var el=document.getElementById('deliveryMap');
+    if(!el)return;
+    el.innerHTML='<div class="mapFallback"><div><b>Live map</b><br><span>'+esc(reason)+'</span><br><small>Loading real GPS map…</small></div></div>';
+    var css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
+    var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=function(){initLeafletMap();};s.onerror=function(){el.innerHTML='<div class="mapFallback"><div><b>Map unavailable</b><br>'+esc(reason)+'</div></div>';};document.head.appendChild(s);
+  }
+  var leafletMap=null,leafletMarkers={};
+  function initLeafletMap(){
+    var el=document.getElementById('deliveryMap');
+    if(!el||!window.L)return;
+    el.innerHTML='';
+    leafletMap=L.map(el,{zoomControl:true}).setView([27.0,75.4],12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(leafletMap);
+    renderDeliveryMarkers();
+  }
+  function bikeIcon(online){
+    if(mapMode==='leaflet')return L.divIcon({className:'',html:'<div class="riderMarker">🛵</div>',iconSize:[28,28],iconAnchor:[14,14]});
+    return {path:'M12 2C7.6 2 4 5.6 4 10c0 5.8 8 12 8 12s8-6.2 8-12c0-4.4-3.6-8-8-8z',fillColor:online?'#16803c':'#d88a00',fillOpacity:1,strokeColor:'#fff',strokeWeight:2,scale:1.35,anchor:new google.maps.Point(12,22)};
+  }
+  function renderDeliveryMarkers(){
+    if(mapMode==='google'){
+      if(!deliveryMap||!window.google||!google.maps)return;
+      var bounds=new google.maps.LatLngBounds(),has=false,i,b,pos,m,live;
+      for(i=0;i<currentDeliveryBoys.length;i++){
+        b=currentDeliveryBoys[i];
+        if(!b||!Number(b.latitude)||!Number(b.longitude))continue;
+        pos={lat:Number(b.latitude),lng:Number(b.longitude)};has=true;
+        live=b.online&&b.lastSeenMs&&Date.now()-b.lastSeenMs<180000;
+        m=deliveryMarkers[b.uid];
+        if(!m){
+          m=new google.maps.Marker({map:deliveryMap,position:pos,icon:bikeIcon(live),title:shortEmail(b.email),label:{text:'🛵',fontSize:'18px'}});
+          deliveryMarkers[b.uid]=m;
+        }else{m.setPosition(pos);m.setIcon(bikeIcon(live));m.setTitle(shortEmail(b.email));}
+        bounds.extend(pos);
+      }
+      for(var uid in deliveryMarkers){
+        var found=false;
+        for(i=0;i<currentDeliveryBoys.length;i++)if(String(currentDeliveryBoys[i].uid)===String(uid)){found=true;break;}
+        if(!found){deliveryMarkers[uid].setMap(null);delete deliveryMarkers[uid];}
+      }
+      if(has)deliveryMap.fitBounds(bounds);
+      return;
+    }
+    if(mapMode==='leaflet'&&leafletMap){
+      var lb=[],j,b2,pos2,m2,live2;
+      for(j=0;j<currentDeliveryBoys.length;j++){
+        b2=currentDeliveryBoys[j];
+        if(!b2||!Number(b2.latitude)||!Number(b2.longitude))continue;
+        pos2=[Number(b2.latitude),Number(b2.longitude)];lb.push(pos2);
+        live2=b2.online&&b2.lastSeenMs&&Date.now()-b2.lastSeenMs<180000;
+        m2=leafletMarkers[b2.uid];
+        if(!m2){
+          m2=L.marker(pos2,{icon:bikeIcon(live2)}).addTo(leafletMap);
+          m2.bindTooltip(shortEmail(b2.email),{permanent:true,direction:'top',className:'riderLabel',offset:[0,-10]});
+          leafletMarkers[b2.uid]=m2;
+        }else{m2.setLatLng(pos2);m2.setIcon(bikeIcon(live2));}
+        m2.bindPopup('<b>🚚 '+esc(shortEmail(b2.email))+'</b><br>📍 '+Number(b2.latitude).toFixed(5)+', '+Number(b2.longitude).toFixed(5)+(live2?'<br>🟢 LIVE':'<br>🟠 Last seen'));
+      }
+      for(var uid2 in leafletMarkers){
+        var found2=false;
+        for(j=0;j<currentDeliveryBoys.length;j++)if(String(currentDeliveryBoys[j].uid)===String(uid2)){found2=true;break;}
+        if(!found2){leafletMap.removeLayer(leafletMarkers[uid2]);delete leafletMarkers[uid2];}
+      }
+      if(lb.length)leafletMap.fitBounds(L.latLngBounds(lb),{padding:[30,30],maxZoom:15});
+    }
+  }
   function deliveryBoysResult(raw){
     try{currentDeliveryBoys=typeof raw==='string'?JSON.parse(raw):(raw||[]);var el=document.getElementById('deliveryBoys');if(!el)return;
-      if(!currentDeliveryBoys.length){el.textContent='No delivery partner location received yet.';return;}
+      if(!currentDeliveryBoys.length){el.textContent='No delivery partner location received yet.';renderDeliveryMarkers();return;}
       var h='',i,b,age;
       for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];age=b.lastSeenMs?Math.max(0,Math.round((Date.now()-b.lastSeenMs)/60000)):9999;
         h+='<div style="padding:7px 0;border-bottom:1px solid #eadfd3">🚚 <b>'+esc(shortEmail(b.email))+'</b> • '+(b.latitude&&b.longitude?('📍 '+Number(b.latitude).toFixed(5)+', '+Number(b.longitude).toFixed(5)):'No GPS')+' • '+(age<3?'🟢 LIVE':'🟠 '+age+' min ago')+'</div>';}
@@ -164,7 +246,8 @@
   function shortEmail(e){var x=String(e||'');return x.split('@')[0]||x;}
   function distanceKm(lat1,lon1,lat2,lon2){var R=6371,rad=Math.PI/180,dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad,a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
   function nearestBoy(o){var lat=Number(o.latitude),lon=Number(o.longitude),best=null,i,b,d;if(!lat||!lon)return null;for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];if(!b.email||!Number(b.latitude)||!Number(b.longitude))continue;d=distanceKm(lat,lon,Number(b.latitude),Number(b.longitude));if(!best||d<best.distance)best={email:b.email,distance:d};}return best;}
-  function assignNearest(id){var o=null,i;for(i=0;i<currentOrders.length;i++)if(String(currentOrders[i].id)===String(id)){o=currentOrders[i];break;}var n=nearestBoy(o||{});if(!n){adminError("Nearest delivery boy cannot be found: GPS unavailable.");return;}var e=document.getElementById("boy_"+id);if(e)e.value=n.email;assignBoy(id);} function assignBoy(id){var e=document.getElementById("boy_"+id);if(!e||!e.value){adminError("Please select a delivery boy.");return;}var v=e.value;e.disabled=true;var b=e.parentElement?e.parentElement.querySelector(".goldbtn"):null;if(b){b.disabled=true;b.textContent="ASSIGNING…";}nativeCall("assign",[id,v]);}
+  function assignNearest(id){var o=null,i;for(i=0;i<currentOrders.length;i++)if(String(currentOrders[i].id)===String(id)){o=currentOrders[i];break;}var n=nearestBoy(o||{});if(!n){adminError("Nearest delivery boy cannot be found: GPS unavailable.");return;}var e=document.getElementById("boy_"+id);if(e)e.value=n.email;assignBoy(id);}
+  function assignBoy(id){var e=document.getElementById("boy_"+id);if(!e||!e.value){adminError("Please select a delivery boy.");return;}var v=e.value;e.disabled=true;var b=e.parentElement?e.parentElement.querySelector(".goldbtn"):null;if(b){b.disabled=true;b.textContent="ASSIGNING…";}nativeCall("assign",[id,v]);}
   function paymentHtml(o){
     var p=String(o.payment||'COD'),st=String(o.paymentStatus||'');
     if(p==='COD')return '<div class="paymentBox">💵 <b>COD</b><br><span class="muted">Payment delivery ke time collect hoga.</span></div>';
