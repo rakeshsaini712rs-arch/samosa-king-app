@@ -42,8 +42,9 @@ public class AdminActivity extends Activity{
  private void assignDeliveryBoy(String orderId,String boyEmail){
   if(orderId==null||orderId.trim().isEmpty()){message("Invalid order ID.");return;}
   if(boyEmail==null||boyEmail.trim().isEmpty()){message("Select a delivery boy.");return;}
-  if(!isDeliveryEmail(boyEmail)){message("Invalid delivery account.");return;}
-  isAdmin(()->db.collection("orders").document(orderId).update("deliveryBoyEmail",boyEmail,"deliveryBoyAssignedAt",FieldValue.serverTimestamp())
+  String assignedEmail=boyEmail.trim().toLowerCase(Locale.US);
+  if(!isDeliveryEmail(assignedEmail)){message("Invalid delivery account.");return;}
+  isAdmin(()->db.collection("orders").document(orderId).update("deliveryBoyEmail",assignedEmail,"deliveryBoyAssignedAt",FieldValue.serverTimestamp())
     .addOnSuccessListener(v->message("✓ Delivery boy assigned."))
     .addOnFailureListener(e->message("✗ Assignment failed: "+e.getMessage())));
  }
