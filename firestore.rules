@@ -7,11 +7,11 @@ service cloud.firestore {
       return signedIn()
         && request.auth.token.email != null
         && request.auth.token.email in [
-          'Rakeshsaini1@gmail.com',
-          'Rakeshsaini2@gmail.com',
-          'Rakeshsaini3@gmail.com',
-          'Rakeshsaini4@gmail.com',
-          'Rakeshsaini5@gmail.com'
+          'Rakeshsaini1@gmail.com','rakeshsaini1@gmail.com',
+          'Rakeshsaini2@gmail.com','rakeshsaini2@gmail.com',
+          'Rakeshsaini3@gmail.com','rakeshsaini3@gmail.com',
+          'Rakeshsaini4@gmail.com','rakeshsaini4@gmail.com',
+          'Rakeshsaini5@gmail.com','rakeshsaini5@gmail.com'
         ];
     }
     function couponValid() {
