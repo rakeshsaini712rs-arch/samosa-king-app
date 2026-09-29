@@ -4,239 +4,48 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Samosa King Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff} .btn.status-done{box-shadow:0 0 0 2px #b7e4c7}.paymentBox{margin:10px 0;padding:11px;border-radius:12px;background:#fffaf1;border:1px solid #eadfd3}.paymentPaid{color:#16803c;font-weight:900}.paymentPending{color:#b36b00;font-weight:900}.liveMap{width:100%;height:360px;border-radius:16px;overflow:hidden;border:1px solid #eadfd3;background:#eee;margin-top:10px}.mapFallback{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:#786b61}.riderMarker{font-size:22px;line-height:22px;text-shadow:0 1px 2px #fff}.riderLabel{background:#fff;border:1px solid #eadfd3;border-radius:999px;padding:3px 7px;font-size:11px;font-weight:800;white-space:nowrap;box-shadow:0 2px 7px #0002}.mapLegend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px}.mapPill{padding:5px 8px;border-radius:999px;background:#f3e5c8;font-weight:700}.deliveryAssign{display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px}.deliveryAssign select{width:100%;padding:9px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:13px}.deliveryAssign .btn{margin:0;padding:9px 10px;font-size:12px}.menuSearch{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;margin-top:8px;font-size:14px;outline:none}.menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.menuItem{border:1px solid #eadfd3;border-radius:12px;padding:9px;background:#fff}.menuItemHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}.menuItemName{font-size:14px;font-weight:800;line-height:1.2}.menuItemState{font-size:10px;font-weight:800;padding:3px 6px;border-radius:8px;background:#eee;color:#666;white-space:nowrap}.menuItemState.on{background:#e2f5e9;color:#16803c}.menuPrice{width:100%;padding:8px 9px!important;margin:3px 0 5px!important;border-radius:9px!important;font-size:14px!important}.menuActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}.menuActions .btn{margin:0;padding:8px 5px;font-size:11px;border-radius:9px;white-space:nowrap}@media(max-width:380px){.menuGrid{grid-template-columns:1fr}.menuItemName{font-size:13px}}
+*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff}.btn.status-done{box-shadow:0 0 0 2px #b7e4c7}.paymentBox{margin:10px 0;padding:11px;border-radius:12px;background:#fffaf1;border:1px solid #eadfd3}.paymentPaid{color:#16803c;font-weight:900}.paymentPending{color:#b36b00;font-weight:900}.liveMap{width:100%;height:430px;border-radius:16px;overflow:hidden;border:1px solid #eadfd3;background:#eee;margin-top:10px}.mapFallback{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:#786b61}.riderMarker{font-size:28px;line-height:28px;text-shadow:0 1px 2px #fff;filter:drop-shadow(0 2px 2px #0004)}.riderLabel{background:#fff;border:2px solid #d88a00;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:900;white-space:nowrap;box-shadow:0 2px 8px #0003}.adminMarker{font-size:27px;line-height:27px}.adminLabel{background:#17100b;color:#fff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:900;white-space:nowrap}.mapLegend{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;font-size:12px}.mapPill{padding:6px 9px;border-radius:999px;background:#f3e5c8;font-weight:700}.distanceRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #eadfd3}.distanceRow:last-child{border-bottom:0}.distanceBig{font-size:16px;font-weight:900}.deliveryAssign{display:grid;grid-template-columns:1fr auto auto;gap:6px;margin-top:8px}.deliveryAssign select{width:100%;padding:9px;border:1px solid #ddd;border-radius:10px;background:#fff;font-size:13px}.deliveryAssign .btn{margin:0;padding:9px 10px;font-size:12px}.menuSearch{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;margin-top:8px;font-size:14px;outline:none}.menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.menuItem{border:1px solid #eadfd3;border-radius:12px;padding:9px;background:#fff}.menuItemHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}.menuItemName{font-size:14px;font-weight:800;line-height:1.2}.menuItemState{font-size:10px;font-weight:800;padding:3px 6px;border-radius:8px;background:#eee;color:#666;white-space:nowrap}.menuItemState.on{background:#e2f5e9;color:#16803c}.menuPrice{width:100%;padding:8px 9px!important;margin:3px 0 5px!important;border-radius:9px!important;font-size:14px!important}.menuActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}.menuActions .btn{margin:0;padding:8px 5px;font-size:11px;border-radius:9px;white-space:nowrap}@media(max-width:500px){.deliveryAssign{grid-template-columns:1fr 1fr}.deliveryAssign select{grid-column:1/-1}}@media(max-width:380px){.menuGrid{grid-template-columns:1fr}.menuItemName{font-size:13px}}
 </style>
 </head>
 <body>
 <div id="app"></div><div id="nativeErr" style="position:fixed;left:10px;right:10px;bottom:10px;z-index:99;background:#fff3cd;color:#6b4e00;border:1px solid #e0c36a;border-radius:12px;padding:10px;display:none;font-size:12px"></div>
 <script>
 (function(){
-  function esc(s){
-    return String(s==null?'':s).replace(/[&<>"']/g,function(c){
-      if(c==='&')return '&amp;';
-      if(c==='<')return '&lt;';
-      if(c==='>')return '&gt;';
-      if(c==='"')return '&quot;';
-      return '&#39;';
-    });
-  }
-  function showLogin(){
-    var app=document.getElementById('app');
-    if(!app)return;
-    app.innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1></div>'+
-      '<div class="wrap"><div class="card"><h2>Admin Login</h2>'+
-      '<p class="muted">Use the authorized admin Firebase account.</p>'+
-      '<input id="email" class="input" type="email" placeholder="Admin email" autocomplete="username">'+
-      '<input id="pass" class="input" type="password" placeholder="Password" autocomplete="current-password">'+
-      '<button class="btn goldbtn" onclick="doLogin()">LOGIN</button><div id="err" class="err"></div></div></div>';
-  }
-  function nativeCall(name,args){
-    try{
-      if(window.AdminNative && typeof window.AdminNative[name]==='function') return window.AdminNative[name].apply(window.AdminNative,args||[]);
-      nativeError('Native function unavailable: '+name);
-    }catch(e){nativeError(name+' failed: '+e.message);}
-  }
-  function doLogin(){
-    var e=document.getElementById('email'),p=document.getElementById('pass');
-    if(!e||!p)return;
-    if(!e.value.trim()||!p.value){loginError('Email and password required.');return;}
-    nativeCall('login',[e.value.trim(),p.value]);
-  }
-  function loginError(x){
-    var e=document.getElementById('err');
-    if(e)e.textContent=String(x||'Login failed');
-  }
-  function showDashboard(label){
-    var app=document.getElementById('app');
-    if(!app)return;
-    app.innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1>'+
-      '<div class="muted" style="color:#ddd">'+esc(label||'Admin')+'</div></div>'+
-      '<div class="wrap"><div class="grid">'+
-      '<div class="stat"><span>Pending</span><br><b id="pending">0</b></div>'+
-      '<div class="stat"><span>Total Orders</span><br><b id="total">0</b></div>'+
-      '<div class="stat"><span>Today Sales</span><br><b id="today">₹0</b></div>'+
-      '<div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div>'+
-      '<div class="card"><a class="btn goldbtn" href="samosa://admin/refresh">↻ Refresh</a>'+
-      '<a class="btn" href="samosa://admin/logout">Logout</a><div id="msg" class="muted"></div></div>'+
-      '<div class="card"><h2 style="margin:0 0 4px;font-size:18px">💰 Menu Management</h2><div class="muted">Price & availability</div><input id="menuSearch" class="menuSearch" type="search" placeholder="🔎 Search product name..." oninput="filterMenu(this.value)" autocomplete="off"><div id="menu" class="menuGrid">Loading menu…</div></div><div class="card"><h2 style="margin:0 0 4px;font-size:18px">🚚 Delivery Boys Live Location</h2><div class="muted">Real-time GPS • rider marker moves automatically</div><div id="deliveryMap" class="liveMap">Loading Google Maps…</div><div id="deliveryBoys" class="muted" style="margin-top:8px">Waiting for GPS locations…</div><div class="mapLegend"><span class="mapPill">🛵 Delivery Boy</span><span class="mapPill">🟢 Live</span><span class="mapPill">🟠 Last seen</span></div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
-  loadMenu();loadGoogleMap();
-  }
-  function menuResult(raw){
-    try{
-      var a=typeof raw==='string'?JSON.parse(raw):(raw||[]),h='',i,o;
-      for(i=0;i<a.length;i++){
-        o=a[i];
-        h+='<div class="menuItem" data-menu-id="'+esc(o.id)+'"><div class="menuItemHead"><span class="menuItemName">'+esc(o.name||o.id)+'</span><span class="menuItemState '+(o.enabled?'on':'')+'">'+(o.enabled?'AVAILABLE':'SOLD OUT')+'</span></div>'+
-          '<input class="input menuPrice" id="price_'+esc(o.id)+'" type="number" min="0" value="'+esc(o.price)+'" placeholder="Price">'+
-          '<div class="menuActions"><button class="btn goldbtn" onclick="savePrice(\''+esc(o.id)+'\')">SAVE</button>'+
-          '<button class="btn" onclick="saveAvailability(\''+esc(o.id)+'\','+(!o.enabled)+')">'+(o.enabled?'SOLD OUT':'AVAILABLE')+'</button></div></div>';
-      }
-      var m=document.getElementById('menu');if(m)m.innerHTML=h||'<div class="muted">No menu items configured.</div>';filterMenu(document.getElementById('menuSearch')?document.getElementById('menuSearch').value:'');
-      var pb=document.querySelectorAll('[data-menu-price-id]'),ab=document.querySelectorAll('[data-menu-avail-id]'),j;
-      for(j=0;j<pb.length;j++)pb[j].addEventListener('click',function(){var id=this.getAttribute('data-menu-price-id'),e=document.getElementById('price_'+id);nativeCall('setMenuPrice',[id,e?e.value:'']);});
-      for(j=0;j<ab.length;j++)ab[j].addEventListener('click',function(){nativeCall('setMenuAvailability',[this.getAttribute('data-menu-avail-id'),this.getAttribute('data-menu-enabled')==='true']);});
-    }catch(e){adminError('Menu display error: '+e.message);}
-  }
-  function filterMenu(q){
-    var m=document.getElementById('menu');if(!m)return;
-    q=String(q||'').trim().toLowerCase();
-    var qNorm=q.replace(/[\\s_-]+/g,'');
-    var items=m.querySelectorAll('.menuItem'),i,name,nameNorm,match,shown=0;
-    for(i=0;i<items.length;i++){
-      name=String(items[i].querySelector('.menuItemName')?items[i].querySelector('.menuItemName').textContent:'').toLowerCase();
-      nameNorm=name.replace(/[\\s_-]+/g,'');
-      match=!q||name.indexOf(q)!==-1||nameNorm.indexOf(qNorm)!==-1;
-      items[i].style.display=match?'':'none';
-      if(match)shown++;
-    }
-    var empty=document.getElementById('menuNoMatch');
-    if(!shown&&items.length){
-      if(!empty){empty=document.createElement('div');empty.id='menuNoMatch';empty.className='muted';empty.style.gridColumn='1/-1';empty.textContent='No matching product found.';m.appendChild(empty);}
-      empty.style.display='block';
-    }else if(empty)empty.style.display='none';
-  }
-  function loadMenu(){nativeCall('menuPrices');}
-  function savePrice(id){var e=document.getElementById('price_'+id);if(!e)return;nativeCall('setMenuPrice',[id,e.value]);}
-  function saveAvailability(id,enabled){nativeCall('setMenuAvailability',[id,enabled]);}
-  function ordersResult(raw){
-    try{
-      var a=typeof raw==='string'?JSON.parse(raw):(raw||[]); currentOrders=a;
-      a.sort(function(x,y){return Number(y.createdAtMs||Date.parse(y.date)||0)-Number(x.createdAtMs||Date.parse(x.date)||0);});
-      var pending=0,i;
-      for(i=0;i<a.length;i++){if(a[i].status!=='DELIVERED'&&a[i].status!=='CANCELLED'&&a[i].status!=='REJECTED')pending++;}
-      var p=document.getElementById('pending'),t=document.getElementById('total'),s=document.getElementById('sales'),todayEl=document.getElementById('today'),o=document.getElementById('orders');
-      if(p)p.textContent=pending;
-      if(t)t.textContent=a.length;
-      var sales=0,today=0,now=new Date().toDateString();
-      for(i=0;i<a.length;i++){
-        if(a[i].status==='DELIVERED')sales+=Number(a[i].total||0);
-        if(new Date(a[i].date).toDateString()===now&&a[i].status!=='CANCELLED'&&a[i].status!=='REJECTED')today+=Number(a[i].total||0);
-      }
-      if(s)s.textContent='₹'+sales;
-      if(todayEl)todayEl.textContent='₹'+today;
-      if(o)o.innerHTML=a.length?mapOrders(a):'<p class="muted">No orders yet.</p>';
-    }catch(e){adminError('Order display error: '+e.message);}
-  }
-  function mapOrders(a){
-    var out='',i;
-    for(i=0;i<a.length;i++)out+=orderHtml(a[i]);
-    return out;
-  }
-  function actionUrl(action,id,value){
-    return 'samosa://admin/'+encodeURIComponent(action)+'?id='+encodeURIComponent(id||'')+'&value='+encodeURIComponent(value||'');
-  }
-  function orderHtml(o){
-    var items='',i,arr=o.items||[]; var nb=nearestBoy(o);
-    for(i=0;i<arr.length;i++)items+='<div class="itemline"><span>🍽️ <b>'+esc(arr[i].name)+'</b></span><span class="itemqty">× '+esc(arr[i].qty)+'</span></div>';
-    var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
-    var buttons='',s;
-    for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<a class="btn '+(String(o.status||'')===s?'status-current':'')+'" data-order-id="'+esc(o.id)+'" data-status="'+s+'" href="'+actionUrl('status',o.id,s)+'">'+(String(o.status||'')===s?'✓ ':'')+s.replace(/_/g,' ')+'</a>';}
-    buttons+='<a class="btn" href="'+actionUrl('reject',o.id,'')+'">REJECT</a>';
-    buttons+='<a class="btn" style="background:#b3261e;color:#fff" href="'+actionUrl('delete',o.id,'')+'" onclick="return confirm(\'Delete this order permanently? This cannot be undone.\')">🗑 DELETE</a>';
-    return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
-      '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile||'')+'</p>'+
-      '<p>📍 <b>Delivery address</b><br>'+esc(o.address||'')+'</p>'+
-      '<div class="items"><div class="itemhead">🛒 ORDER ITEMS</div>'+items+'</div>'+
-      '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
-      '<br><b>💰 Total ₹'+esc(o.total)+'</b></p>'+paymentHtml(o)+
-      '<div class="deliveryAssign"><select id="boy_'+esc(o.id)+'"><option value="">🚚 Select Delivery Boy</option><option value="Rakeshsaini1@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini1@gmail.com'?'selected':'')+'>Delivery Boy 1</option><option value="Rakeshsaini2@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini2@gmail.com'?'selected':'')+'>Delivery Boy 2</option><option value="Rakeshsaini3@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini3@gmail.com'?'selected':'')+'>Delivery Boy 3</option><option value="Rakeshsaini4@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini4@gmail.com'?'selected':'')+'>Delivery Boy 4</option><option value="Rakeshsaini5@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini5@gmail.com'?'selected':'')+'>Delivery Boy 5</option></select><button class="btn" onclick="assignBoy(\''+esc(o.id)+'\')">ASSIGN</button><button class="btn goldbtn" onclick="assignNearest(\''+esc(o.id)+'\')">📍 NEAREST</button></div><div class="muted" style="margin-top:5px">'+(nb?('Nearest: <b>'+esc(shortEmail(nb.email))+'</b> • '+nb.distance.toFixed(2)+' km'): 'Customer GPS / delivery boy GPS unavailable')+'</div>'+
-      '<div class="row"><a class="btn" href="'+actionUrl('call','',o.mobile||'')+'">📞 Call</a>'+
-      '<a class="btn" href="'+actionUrl('whatsapp','',o.mobile||'')+'">WhatsApp</a>'+
-      '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a>'+
-      '<a class="btn goldbtn" href="'+actionUrl('print',o.id,'')+'">🧾 Print Bill</a></div>'+
-      '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
-  }
-  var currentOrders=[],currentDeliveryBoys=[];
-  var mapMode='leaflet',leafletMap=null,leafletMarkers={};
-  function loadGoogleMap(){initLeafletMap();}
-  function initLeafletMap(){
-    var el=document.getElementById('deliveryMap');
-    if(!el)return;
-    if(window.L){createLeafletMap();return;}
-    el.innerHTML='<div class="mapFallback"><div><b>Loading live map…</b><br><small>Using OpenStreetMap</small></div></div>';
-    var css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
-    var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=createLeafletMap;s.onerror=function(){el.innerHTML='<div class="mapFallback"><div><b>Map unavailable</b><br>Please check internet connection.</div></div>';};document.head.appendChild(s);
-  }
-  function createLeafletMap(){
-    var el=document.getElementById('deliveryMap');if(!el||!window.L)return;
-    el.innerHTML='';
-    leafletMap=L.map(el,{zoomControl:true}).setView([27.84018,75.26941],13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(leafletMap);
-    renderDeliveryMarkers();
-  }
-  function bikeIcon(online){
-    return L.divIcon({className:'',html:'<div class="riderMarker">'+(online?'🛵':'🛵')+'</div>',iconSize:[30,30],iconAnchor:[15,15]});
-  }
-  function renderDeliveryMarkers(){
-    if(!leafletMap||!window.L)return;
-    var bounds=[],i,b,pos,m,live;
-    for(i=0;i<currentDeliveryBoys.length;i++){
-      b=currentDeliveryBoys[i];
-      if(!b||!Number(b.latitude)||!Number(b.longitude))continue;
-      pos=[Number(b.latitude),Number(b.longitude)];bounds.push(pos);
-      live=!!(b.online&&b.lastSeenMs&&Date.now()-b.lastSeenMs<180000);
-      m=leafletMarkers[b.uid];
-      if(!m){
-        m=L.marker(pos,{icon:bikeIcon(live)}).addTo(leafletMap);
-        m.bindTooltip(shortEmail(b.email),{permanent:true,direction:'top',className:'riderLabel',offset:[0,-12]});
-        leafletMarkers[b.uid]=m;
-      }else{
-        m.setLatLng(pos);m.setIcon(bikeIcon(live));
-        m.setTooltipContent(shortEmail(b.email));
-      }
-      m.bindPopup('<b>🚚 '+esc(shortEmail(b.email))+'</b><br>📍 '+Number(b.latitude).toFixed(5)+', '+Number(b.longitude).toFixed(5)+(live?'<br>🟢 LIVE':'<br>🟠 Last seen'));
-    }
-    for(var uid in leafletMarkers){
-      var found=false;
-      for(i=0;i<currentDeliveryBoys.length;i++)if(String(currentDeliveryBoys[i].uid)===String(uid)){found=true;break;}
-      if(!found){leafletMap.removeLayer(leafletMarkers[uid]);delete leafletMarkers[uid];}
-    }
-    if(bounds.length)leafletMap.fitBounds(L.latLngBounds(bounds),{padding:[35,35],maxZoom:15});
-  }
-  function deliveryBoysResult(raw){
-    try{
-      currentDeliveryBoys=typeof raw==='string'?JSON.parse(raw):(raw||[]);
-      var el=document.getElementById('deliveryBoys');if(!el)return;
-      if(!currentDeliveryBoys.length){el.textContent='No delivery partner location received yet.';renderDeliveryMarkers();return;}
-      var h='',i,b,age;
-      for(i=0;i<currentDeliveryBoys.length;i++){
-        b=currentDeliveryBoys[i];age=b.lastSeenMs?Math.max(0,Math.round((Date.now()-b.lastSeenMs)/60000)):9999;
-        h+='<div style="padding:7px 0;border-bottom:1px solid #eadfd3">🚚 <b>'+esc(shortEmail(b.email))+'</b> • '+(b.latitude&&b.longitude?('📍 '+Number(b.latitude).toFixed(5)+', '+Number(b.longitude).toFixed(5)):'No GPS')+' • '+(age<3?'🟢 LIVE':'🟠 '+age+' min ago')+'</div>';
-      }
-      el.innerHTML=h;renderDeliveryMarkers();
-      var o=document.getElementById('orders');if(o)o.innerHTML=currentOrders.length?mapOrders(currentOrders):'<p class="muted">No orders yet.</p>';
-    }catch(e){adminError('Delivery location display error: '+e.message);}
-  }
-  function shortEmail(e){var x=String(e||'');return x.split('@')[0]||x;}
-  function distanceKm(lat1,lon1,lat2,lon2){var R=6371,rad=Math.PI/180,dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad,a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-  function nearestBoy(o){var lat=Number(o.latitude),lon=Number(o.longitude),best=null,i,b,d;if(!lat||!lon)return null;for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];if(!b.email||!Number(b.latitude)||!Number(b.longitude))continue;d=distanceKm(lat,lon,Number(b.latitude),Number(b.longitude));if(!best||d<best.distance)best={email:b.email,distance:d};}return best;}
-  function assignNearest(id){var o=null,i;for(i=0;i<currentOrders.length;i++)if(String(currentOrders[i].id)===String(id)){o=currentOrders[i];break;}var n=nearestBoy(o||{});if(!n){adminError("Nearest delivery boy cannot be found: GPS unavailable.");return;}var e=document.getElementById("boy_"+id);if(e)e.value=n.email;assignBoy(id);}
-  function assignBoy(id){var e=document.getElementById("boy_"+id);if(!e||!e.value){adminError("Please select a delivery boy.");return;}var v=e.value;e.disabled=true;var b=e.parentElement?e.parentElement.querySelector(".goldbtn"):null;if(b){b.disabled=true;b.textContent="ASSIGNING…";}nativeCall("assign",[id,v]);}
-  function paymentHtml(o){
-    var p=String(o.payment||'COD'),st=String(o.paymentStatus||'');
-    if(p==='COD')return '<div class="paymentBox">💵 <b>COD</b><br><span class="muted">Payment delivery ke time collect hoga.</span></div>';
-    var paid=st==='PAID';
-    return '<div class="paymentBox">📱 <b>UPI / ONLINE PAYMENT</b><br>'+(paid?'<span class="paymentPaid">✅ PAYMENT RECEIVED</span>':'<span class="paymentPending">🟠 PAYMENT PENDING</span><br><a class="btn goldbtn" href="'+actionUrl('payment',o.id,'PAID')+'">💳 Mark Payment Received</a>')+'</div>';
-  }
-  function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x;}
-  function statusDone(id,st){var a=document.querySelectorAll('.btn[data-order-id]'),i,b;for(i=0;i<a.length;i++){b=a[i];if(b.getAttribute('data-order-id')===String(id)&&b.getAttribute('data-status')===String(st)){b.classList.add('status-done');b.textContent='✓ '+String(st).replace(/_/g,' ');}}}
-  function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error');}
-  function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000);}}
-  window.nativeCall=nativeCall;
-  window.showLogin=showLogin;
-  window.doLogin=doLogin;
-  window.loginError=loginError;
-  window.showDashboard=showDashboard;
-  window.menuResult=menuResult;
-  window.loadMenu=loadMenu;
-  window.savePrice=savePrice;
-  window.saveAvailability=saveAvailability;
-  window.ordersResult=ordersResult;window.deliveryBoysResult=deliveryBoysResult;window.assignNearest=assignNearest;
-  window.actionDone=actionDone;window.statusDone=statusDone;
-  window.adminError=adminError;window.nativeError=nativeError;window.assignBoy=assignBoy;
-  loadMenu();setTimeout(function(){var b=document.getElementById('bridge');if(b)b.textContent=(window.AdminNative&&typeof window.AdminNative.ready==='function'&&window.AdminNative.ready())?'✓ Bridge connected':'⚠ Bridge unavailable';},500);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);
-  else showLogin();
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return c==='&'?'&amp;':c==='<'?'&lt;':c==='>'?'&gt;':c==='"'?'&quot;':'&#39;'})}
+function nativeCall(name,args){try{if(window.AdminNative&&typeof window.AdminNative[name]==='function')return window.AdminNative[name].apply(window.AdminNative,args||[]);nativeError('Native function unavailable: '+name)}catch(e){nativeError(name+' failed: '+e.message)}}
+function showLogin(){var app=document.getElementById('app');if(!app)return;app.innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1></div><div class="wrap"><div class="card"><h2>Admin Login</h2><p class="muted">Use the authorized admin Firebase account.</p><input id="email" class="input" type="email" placeholder="Admin email" autocomplete="username"><input id="pass" class="input" type="password" placeholder="Password" autocomplete="current-password"><button class="btn goldbtn" onclick="doLogin()">LOGIN</button><div id="err" class="err"></div></div></div>'}
+function doLogin(){var e=document.getElementById('email'),p=document.getElementById('pass');if(!e||!p)return;if(!e.value.trim()||!p.value){loginError('Email and password required.');return}nativeCall('login',[e.value.trim(),p.value])}
+function loginError(x){var e=document.getElementById('err');if(e)e.textContent=String(x||'Login failed')}
+function showDashboard(label){var app=document.getElementById('app');if(!app)return;app.innerHTML='<div class="top"><h1>👑 Samosa King <span class="gold">ADMIN</span></h1><div class="muted" style="color:#ddd">'+esc(label||'Admin')+'</div></div><div class="wrap"><div class="grid"><div class="stat"><span>Pending</span><br><b id="pending">0</b></div><div class="stat"><span>Total Orders</span><br><b id="total">0</b></div><div class="stat"><span>Today Sales</span><br><b id="today">₹0</b></div><div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div><div class="card"><a class="btn goldbtn" href="samosa://admin/refresh">↻ Refresh</a><a class="btn" href="samosa://admin/logout">Logout</a><div id="msg" class="muted"></div></div><div class="card"><h2 style="margin:0 0 4px;font-size:18px">💰 Menu Management</h2><div class="muted">Price & availability</div><input id="menuSearch" class="menuSearch" type="search" placeholder="🔎 Search product name..." oninput="filterMenu(this.value)" autocomplete="off"><div id="menu" class="menuGrid">Loading menu…</div></div><div class="card"><h2 style="margin:0 0 4px;font-size:18px">🚚 Delivery Boys Live Location</h2><div class="muted">हर captain की सिर्फ 1 scooter • GPS live location</div><div id="adminDistance" class="paymentBox">📍 <b>Admin location</b><br><span class="muted">Location लेने के लिए नीचे बटन दबाएँ.</span><br><button class="btn goldbtn" onclick="startAdminLocation()">📍 MY LOCATION</button></div><div id="deliveryMap" class="liveMap"><div class="mapFallback">Loading live map…</div></div><div id="deliveryBoys" class="muted" style="margin-top:8px">Waiting for GPS locations…</div><div class="mapLegend"><span class="mapPill">🛵 1 scooter = 1 captain</span><span class="mapPill">📍 Admin</span><span class="mapPill">🟢 Live</span><span class="mapPill">🟠 Last seen</span></div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';loadMenu();loadGoogleMap();setTimeout(startAdminLocation,500)}
+function menuResult(raw){try{var a=typeof raw==='string'?JSON.parse(raw):(raw||[]),h='',i,o;for(i=0;i<a.length;i++){o=a[i];h+='<div class="menuItem" data-menu-id="'+esc(o.id)+'"><div class="menuItemHead"><span class="menuItemName">'+esc(o.name||o.id)+'</span><span class="menuItemState '+(o.enabled?'on':'')+'">'+(o.enabled?'AVAILABLE':'SOLD OUT')+'</span></div><input class="input menuPrice" id="price_'+esc(o.id)+'" type="number" min="0" value="'+esc(o.price)+'" placeholder="Price"><div class="menuActions"><button class="btn goldbtn" onclick="savePrice(\''+esc(o.id)+'\')">SAVE</button><button class="btn" onclick="saveAvailability(\''+esc(o.id)+'\','+(!o.enabled)+')">'+(o.enabled?'SOLD OUT':'AVAILABLE')+'</button></div></div>'}var m=document.getElementById('menu');if(m)m.innerHTML=h||'<div class="muted">No menu items configured.</div>';filterMenu(document.getElementById('menuSearch')?document.getElementById('menuSearch').value:'')}catch(e){adminError('Menu display error: '+e.message)}}
+function filterMenu(q){var m=document.getElementById('menu');if(!m)return;q=String(q||'').trim().toLowerCase();var qNorm=q.replace(/[\s_-]+/g,''),items=m.querySelectorAll('.menuItem'),i,name,nameNorm,match,shown=0;for(i=0;i<items.length;i++){name=String(items[i].querySelector('.menuItemName')?items[i].querySelector('.menuItemName').textContent:'').toLowerCase();nameNorm=name.replace(/[\s_-]+/g,'');match=!q||name.indexOf(q)!==-1||nameNorm.indexOf(qNorm)!==-1;items[i].style.display=match?'':'none';if(match)shown++}var empty=document.getElementById('menuNoMatch');if(!shown&&items.length){if(!empty){empty=document.createElement('div');empty.id='menuNoMatch';empty.className='muted';empty.style.gridColumn='1/-1';empty.textContent='No matching product found.';m.appendChild(empty)}empty.style.display='block'}else if(empty)empty.style.display='none'}
+function loadMenu(){nativeCall('menuPrices')}function savePrice(id){var e=document.getElementById('price_'+id);if(e)nativeCall('setMenuPrice',[id,e.value])}function saveAvailability(id,enabled){nativeCall('setMenuAvailability',[id,enabled])}
+function ordersResult(raw){try{var a=typeof raw==='string'?JSON.parse(raw):(raw||[]);currentOrders=a;a.sort(function(x,y){return Number(y.createdAtMs||Date.parse(y.date)||0)-Number(x.createdAtMs||Date.parse(x.date)||0)});var pending=0,i;for(i=0;i<a.length;i++)if(a[i].status!=='DELIVERED'&&a[i].status!=='CANCELLED'&&a[i].status!=='REJECTED')pending++;var p=document.getElementById('pending'),t=document.getElementById('total'),s=document.getElementById('sales'),todayEl=document.getElementById('today'),o=document.getElementById('orders');if(p)p.textContent=pending;if(t)t.textContent=a.length;var sales=0,today=0,now=new Date().toDateString();for(i=0;i<a.length;i++){if(a[i].status==='DELIVERED')sales+=Number(a[i].total||0);if(new Date(a[i].date).toDateString()===now&&a[i].status!=='CANCELLED'&&a[i].status!=='REJECTED')today+=Number(a[i].total||0)}if(s)s.textContent='₹'+sales;if(todayEl)todayEl.textContent='₹'+today;if(o)o.innerHTML=a.length?mapOrders(a):'<p class="muted">No orders yet.</p>'}catch(e){adminError('Order display error: '+e.message)}}
+function mapOrders(a){var out='',i;for(i=0;i<a.length;i++)out+=orderHtml(a[i]);return out}
+function actionUrl(action,id,value){return 'samosa://admin/'+encodeURIComponent(action)+'?id='+encodeURIComponent(id||'')+'&value='+encodeURIComponent(value||'')}
+function orderHtml(o){var items='',i,arr=o.items||[];var nb=nearestBoy(o);for(i=0;i<arr.length;i++)items+='<div class="itemline"><span>🍽️ <b>'+esc(arr[i].name)+'</b></span><span class="itemqty">× '+esc(arr[i].qty)+'</span></div>';var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];var buttons='',s;for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<a class="btn '+(String(o.status||'')===s?'status-current':'')+'" data-order-id="'+esc(o.id)+'" data-status="'+s+'" href="'+actionUrl('status',o.id,s)+'">'+(String(o.status||'')===s?'✓ ':'')+s.replace(/_/g,' ')+'</a>'}buttons+='<a class="btn" href="'+actionUrl('reject',o.id,'')+'">REJECT</a><a class="btn" style="background:#b3261e;color:#fff" href="'+actionUrl('delete',o.id,'')+'" onclick="return confirm(\'Delete this order permanently? This cannot be undone.\')">🗑 DELETE</a>';return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div><p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile||'')+'</p><p>📍 <b>Delivery address</b><br>'+esc(o.address||'')+'</p><div class="items"><div class="itemhead">🛒 ORDER ITEMS</div>'+items+'</div><p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+'<br><b>💰 Total ₹'+esc(o.total)+'</b></p>'+paymentHtml(o)+'<div class="deliveryAssign"><select id="boy_'+esc(o.id)+'"><option value="">🚚 Select Delivery Boy</option><option value="Rakeshsaini1@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini1@gmail.com'?'selected':'')+'>Delivery Boy 1</option><option value="Rakeshsaini2@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini2@gmail.com'?'selected':'')+'>Delivery Boy 2</option><option value="Rakeshsaini3@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini3@gmail.com'?'selected':'')+'>Delivery Boy 3</option><option value="Rakeshsaini4@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini4@gmail.com'?'selected':'')+'>Delivery Boy 4</option><option value="Rakeshsaini5@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini5@gmail.com'?'selected':'')+'>Delivery Boy 5</option></select><button class="btn" onclick="assignBoy(\''+esc(o.id)+'\')">ASSIGN</button><button class="btn goldbtn" onclick="assignNearest(\''+esc(o.id)+'\')">📍 NEAREST</button></div><div class="muted" style="margin-top:5px">'+(nb?('Nearest: <b>'+esc(shortEmail(nb.email))+'</b> • '+nb.distance.toFixed(2)+' km'): 'Customer GPS / delivery boy GPS unavailable')+'</div><div class="row"><a class="btn" href="'+actionUrl('call','',o.mobile||'')+'">📞 Call</a><a class="btn" href="'+actionUrl('whatsapp','',o.mobile||'')+'">WhatsApp</a><a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a><a class="btn goldbtn" href="'+actionUrl('print',o.id,'')+'">🧾 Print Bill</a></div><div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>'}
+var currentOrders=[],currentDeliveryBoys=[],leafletMap=null,leafletMarkers={},adminMarker=null,adminLat=null,adminLon=null;
+function loadGoogleMap(){initLeafletMap()}
+function initLeafletMap(){var el=document.getElementById('deliveryMap');if(!el)return;if(window.L){createLeafletMap();return}el.innerHTML='<div class="mapFallback"><div><b>Loading live map…</b><br><small>Using OpenStreetMap</small></div></div>';var css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=createLeafletMap;s.onerror=function(){el.innerHTML='<div class="mapFallback"><div><b>Map unavailable</b><br>Please check internet connection.</div></div>'};document.head.appendChild(s)}
+function createLeafletMap(){var el=document.getElementById('deliveryMap');if(!el||!window.L)return;el.innerHTML='';leafletMap=L.map(el,{zoomControl:true,scrollWheelZoom:true,doubleClickZoom:true,touchZoom:true}).setView([27.84018,75.26941],13);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'© OpenStreetMap contributors'}).addTo(leafletMap);renderDeliveryMarkers()}
+function bikeIcon(){return L.divIcon({className:'',html:'<div class="riderMarker">🛵</div>',iconSize:[32,32],iconAnchor:[16,16]})}
+function adminIcon(){return L.divIcon({className:'',html:'<div class="adminMarker">📍</div>',iconSize:[32,32],iconAnchor:[16,16]})}
+function startAdminLocation(){if(!navigator.geolocation){adminError('Admin device location is not available.');return}navigator.geolocation.getCurrentPosition(function(p){adminLat=p.coords.latitude;adminLon=p.coords.longitude;updateAdminLocation()},function(){adminError('Admin GPS permission/location is OFF. Please allow Location permission.');},{enableHighAccuracy:true,timeout:15000,maximumAge:10000})}
+function updateAdminLocation(){if(leafletMap&&window.L){var pos=[adminLat,adminLon];if(!adminMarker){adminMarker=L.marker(pos,{icon:adminIcon(),zIndexOffset:1000}).addTo(leafletMap);adminMarker.bindTooltip('ADMIN',{permanent:true,direction:'top',className:'adminLabel',offset:[0,-13]})}else adminMarker.setLatLng(pos);adminMarker.bindPopup('<b>📍 ADMIN</b><br>'+adminLat.toFixed(5)+', '+adminLon.toFixed(5))}renderDeliveryMarkers();renderDistanceList()}
+function renderDeliveryMarkers(){if(!leafletMap||!window.L)return;var bounds=[],i,b,pos,m,age,live;for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];if(!b||!Number(b.latitude)||!Number(b.longitude))continue;pos=[Number(b.latitude),Number(b.longitude)];bounds.push(pos);live=!!(b.online&&b.lastSeenMs&&Date.now()-b.lastSeenMs<180000);m=leafletMarkers[b.uid];if(!m){m=L.marker(pos,{icon:bikeIcon(),zIndexOffset:500}).addTo(leafletMap);m.bindTooltip(shortEmail(b.email),{permanent:true,direction:'top',className:'riderLabel',offset:[0,-14]});leafletMarkers[b.uid]=m}else{m.setLatLng(pos);m.setTooltipContent(shortEmail(b.email))}m.bindPopup('<b>🛵 '+esc(shortEmail(b.email))+'</b><br>📍 '+Number(b.latitude).toFixed(6)+', '+Number(b.longitude).toFixed(6)+'<br>'+((adminLat!=null&&adminLon!=null)?'📏 Admin se '+distanceKm(adminLat,adminLon,Number(b.latitude),Number(b.longitude)).toFixed(2)+' km':'📏 Admin distance: GPS not available')+'<br>'+(live?'🟢 LIVE':'🟠 Last seen'));m.off('click');m.on('click',(function(marker){return function(){leafletMap.setView(marker.getLatLng(),18,{animate:true});marker.openPopup()}})(m))}for(var uid in leafletMarkers){var found=false;for(i=0;i<currentDeliveryBoys.length;i++)if(String(currentDeliveryBoys[i].uid)===String(uid)){found=true;break}if(!found){leafletMap.removeLayer(leafletMarkers[uid]);delete leafletMarkers[uid]}}if(adminLat!=null&&adminLon!=null)bounds.push([adminLat,adminLon]);if(bounds.length===1)leafletMap.setView(bounds[0],18);else if(bounds.length>1)leafletMap.fitBounds(L.latLngBounds(bounds),{padding:[45,45],maxZoom:17});}
+function deliveryBoysResult(raw){try{currentDeliveryBoys=typeof raw==='string'?JSON.parse(raw):(raw||[]);var el=document.getElementById('deliveryBoys');if(!el)return;if(!currentDeliveryBoys.length){el.textContent='No delivery partner location received yet.';renderDeliveryMarkers();renderDistanceList();return}var h='',i,b,age,d;for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];age=b.lastSeenMs?Math.max(0,Math.round((Date.now()-b.lastSeenMs)/60000)):9999;d=(adminLat!=null&&adminLon!=null&&Number(b.latitude)&&Number(b.longitude))?distanceKm(adminLat,adminLon,Number(b.latitude),Number(b.longitude)):null;h+='<div class="distanceRow"><span>🛵 <b>'+esc(shortEmail(b.email))+'</b><br><small>'+ (b.latitude&&b.longitude?'📍 '+Number(b.latitude).toFixed(5)+', '+Number(b.longitude).toFixed(5):'No GPS')+' • '+(age<3?'🟢 LIVE':'🟠 '+age+' min ago')+'</small></span><span class="distanceBig">'+(d==null?'—':d.toFixed(2)+' km')+'</span></div>'}el.innerHTML=h;renderDeliveryMarkers();renderDistanceList();var o=document.getElementById('orders');if(o)o.innerHTML=currentOrders.length?mapOrders(currentOrders):'<p class="muted">No orders yet.'}catch(e){adminError('Delivery location display error: '+e.message)}}
+function renderDistanceList(){var box=document.getElementById('adminDistance');if(!box)return;var h='<b>📍 Admin → Delivery Boy distance</b>';if(adminLat==null||adminLon==null){box.innerHTML=h+'<br><span class="muted">GPS not set.</span><br><button class="btn goldbtn" onclick="startAdminLocation()">📍 MY LOCATION</button>';return}h+='<br><small>Admin: '+adminLat.toFixed(5)+', '+adminLon.toFixed(5)+'</small>';for(var i=0;i<currentDeliveryBoys.length;i++){var b=currentDeliveryBoys[i];if(!b||!Number(b.latitude)||!Number(b.longitude))continue;h+='<div class="distanceRow"><span>🛵 '+esc(shortEmail(b.email))+'</span><span class="distanceBig">'+distanceKm(adminLat,adminLon,Number(b.latitude),Number(b.longitude)).toFixed(2)+' km</span></div>'}box.innerHTML=h}
+function shortEmail(e){return String(e||'').split('@')[0]||String(e||'')}
+function distanceKm(lat1,lon1,lat2,lon2){var R=6371,rad=Math.PI/180,dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad,a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))}
+function nearestBoy(o){var lat=Number(o.latitude),lon=Number(o.longitude),best=null,i,b,d;if(!lat||!lon)return null;for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];if(!b.email||!Number(b.latitude)||!Number(b.longitude))continue;d=distanceKm(lat,lon,Number(b.latitude),Number(b.longitude));if(!best||d<best.distance)best={email:b.email,distance:d}}return best}
+function assignNearest(id){var o=null,i;for(i=0;i<currentOrders.length;i++)if(String(currentOrders[i].id)===String(id)){o=currentOrders[i];break}var n=nearestBoy(o||{});if(!n){adminError('Nearest delivery boy cannot be found: GPS unavailable.');return}var e=document.getElementById('boy_'+id);if(e)e.value=n.email;assignBoy(id)}
+function assignBoy(id){var e=document.getElementById('boy_'+id);if(!e||!e.value){adminError('Please select a delivery boy.');return}var v=e.value;e.disabled=true;var b=e.parentElement?e.parentElement.querySelector('.goldbtn'):null;if(b){b.disabled=true;b.textContent='ASSIGNING…'}nativeCall('assign',[id,v])}
+function paymentHtml(o){var p=String(o.payment||'COD'),st=String(o.paymentStatus||'');if(p==='COD')return '<div class="paymentBox">💵 <b>COD</b><br><span class="muted">Payment delivery ke time collect hoga.</span></div>';var paid=st==='PAID';return '<div class="paymentBox">📱 <b>UPI / ONLINE PAYMENT</b><br>'+(paid?'<span class="paymentPaid">✅ PAYMENT RECEIVED</span>':'<span class="paymentPending">🟠 PAYMENT PENDING</span><br><a class="btn goldbtn" href="'+actionUrl('payment',o.id,'PAID')+'">💳 Mark Payment Received</a>')+'</div>'}
+function actionDone(x){var m=document.getElementById('msg');if(m)m.textContent='✓ '+x}
+function statusDone(id,st){var a=document.querySelectorAll('.btn[data-order-id]'),i,b;for(i=0;i<a.length;i++){b=a[i];if(b.getAttribute('data-order-id')===String(id)&&b.getAttribute('data-status')===String(st)){b.classList.add('status-done');b.textContent='✓ '+String(st).replace(/_/g,' ')}}}
+function adminError(x){var m=document.getElementById('msg')||document.getElementById('err');if(m)m.textContent='⚠ '+String(x||'Unknown error')}
+function nativeError(x){var e=document.getElementById('nativeErr');if(e){e.textContent='⚠ '+String(x||'Unknown error');e.style.display='block';setTimeout(function(){e.style.display='none'},8000)}}
+window.nativeCall=nativeCall;window.showLogin=showLogin;window.doLogin=doLogin;window.loginError=loginError;window.showDashboard=showDashboard;window.menuResult=menuResult;window.loadMenu=loadMenu;window.savePrice=savePrice;window.saveAvailability=saveAvailability;window.ordersResult=ordersResult;window.deliveryBoysResult=deliveryBoysResult;window.assignNearest=assignNearest;window.assignBoy=assignBoy;window.startAdminLocation=startAdminLocation;window.actionDone=actionDone;window.statusDone=statusDone;window.adminError=adminError;window.nativeError=nativeError;loadMenu();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showLogin);else showLogin();
 })();
 </script>
 </body>
