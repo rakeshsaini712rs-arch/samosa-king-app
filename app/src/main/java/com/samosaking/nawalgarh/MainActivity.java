@@ -23,18 +23,15 @@ public class MainActivity extends Activity{
  void history(){
   Runnable load=()->{
    if(a.getCurrentUser()==null){js("window.renderHistory([])");return;}
-   String uid=a.getCurrentUser().getUid();String mobile=getPreferences(0).getString("lastCustomerMobile","");
-   com.google.android.gms.tasks.Task<com.google.firebase.firestore.QuerySnapshot> t1=db.collection("orders").whereEqualTo("userId",uid).get();
-   com.google.android.gms.tasks.Task<com.google.firebase.firestore.QuerySnapshot> t2=null;if(mobile.matches("[6-9][0-9]{9}"))t2=db.collection("orders").whereEqualTo("mobile",mobile).get();
-   java.util.List<com.google.android.gms.tasks.Task<com.google.firebase.firestore.QuerySnapshot>> tasks=new java.util.ArrayList<>();tasks.add(t1);if(t2!=null)tasks.add(t2);
-   com.google.android.gms.tasks.Tasks.whenAllSuccess(tasks).addOnSuccessListener(results->{try{
-    java.util.LinkedHashMap<String,DocumentSnapshot> all=new java.util.LinkedHashMap<>();for(Object rr:results){com.google.firebase.firestore.QuerySnapshot qs=(com.google.firebase.firestore.QuerySnapshot)rr;for(DocumentSnapshot d:qs.getDocuments())all.put(d.getId(),d);}
-    java.util.List<DocumentSnapshot> l=new java.util.ArrayList<>(all.values());l.sort((x,y)->{com.google.firebase.Timestamp tx=x.getTimestamp("createdAt"),ty=y.getTimestamp("createdAt");if(tx==null&&ty==null)return 0;if(tx==null)return 1;if(ty==null)return -1;return ty.compareTo(tx);});
-    JSONArray out=new JSONArray();for(DocumentSnapshot d:l){JSONObject o=new JSONObject();o.put("id",d.getId());Long total=d.getLong("total");o.put("total",total==null?0:total);String status=d.getString("status");o.put("status",status==null?"PLACED":status);com.google.firebase.Timestamp ts=d.getTimestamp("createdAt");o.put("date",ts==null?"Recent":ts.toDate().toString());Map<String,Object> im=d.get("items",Map.class);JSONArray ia=new JSONArray();if(im!=null)for(Map.Entry<String,Object> q:im.entrySet()){JSONObject z=new JSONObject();z.put("id",q.getKey());Object vv=q.getValue();if(vv instanceof Map){Map<?,?> mm=(Map<?,?>)vv;z.put("name",String.valueOf(mm.get("name")));z.put("qty",num(mm.get("qty")));}else{z.put("name",itemName(q.getKey()));z.put("qty",num(vv));}ia.put(z);}o.put("itemsJson",ia.toString());out.put(o);}
+   db.collection("orders").whereEqualTo("userId",a.getCurrentUser().getUid()).get().addOnSuccessListener(qs->{try{
+    java.util.List<DocumentSnapshot> l=new java.util.ArrayList<>(qs.getDocuments());
+    l.sort((x,y)->{com.google.firebase.Timestamp tx=x.getTimestamp("createdAt"),ty=y.getTimestamp("createdAt");if(tx==null&&ty==null)return 0;if(tx==null)return 1;if(ty==null)return -1;return ty.compareTo(tx);});
+    JSONArray out=new JSONArray();
+    for(DocumentSnapshot d:l){JSONObject o=new JSONObject();o.put("id",d.getId());Long total=d.getLong("total");o.put("total",total==null?0:total);String status=d.getString("status");o.put("status",status==null?"PLACED":status);com.google.firebase.Timestamp ts=d.getTimestamp("createdAt");o.put("date",ts==null?"Recent":ts.toDate().toString());Map<String,Object> im=d.get("items",Map.class);JSONArray ia=new JSONArray();if(im!=null)for(Map.Entry<String,Object> q:im.entrySet()){JSONObject z=new JSONObject();z.put("id",q.getKey());Object vv=q.getValue();if(vv instanceof Map){Map<?,?> mm=(Map<?,?>)vv;z.put("name",String.valueOf(mm.get("name")));z.put("qty",num(mm.get("qty")));}else{z.put("name",itemName(q.getKey()));z.put("qty",num(vv));}ia.put(z);}o.put("itemsJson",ia.toString());out.put(o);}
     js("window.renderHistory("+JSONObject.quote(out.toString())+")");
-   }catch(Exception ex){js("window.renderHistory([])");}}).addOnFailureListener(ex->js("window.renderHistory([])"));
+   }catch(Exception ex){js("window.renderHistory([])");}}).addOnFailureListener(ex->{js("window.renderHistoryError&&window.renderHistoryError("+JSONObject.quote(ex.getMessage()==null?"Could not read order history":ex.getMessage())+")");});
   };
-  if(a.getCurrentUser()!=null)load.run();else a.signInAnonymously().addOnSuccessListener(x->load.run()).addOnFailureListener(x->js("window.renderHistory([])"));
+  if(a.getCurrentUser()!=null)load.run();else a.signInAnonymously().addOnSuccessListener(x->load.run()).addOnFailureListener(x->js("window.renderHistoryError&&window.renderHistoryError('Could not sign in')"));
  }
  void profile(){if(a.getCurrentUser()==null)return;db.collection("users").document(a.getCurrentUser().getUid()).get().addOnSuccessListener(d->{try{JSONObject o=new JSONObject();o.put("name",d.getString("name"));o.put("mobile",d.getString("mobile"));js("window.profileResult("+JSONObject.quote(o.toString())+");");}catch(Exception e){}});}
  void saveProfile(String n,String p){if(a.getCurrentUser()==null)return;Map<String,Object>m=new HashMap<>();m.put("uid",a.getCurrentUser().getUid());m.put("name",n);m.put("mobile",p);m.put("updatedAt",FieldValue.serverTimestamp());db.collection("users").document(a.getCurrentUser().getUid()).set(m,SetOptions.merge()).addOnSuccessListener(x->js("window.profileSaved&&window.profileSaved();"));}
