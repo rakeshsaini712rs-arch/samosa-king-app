@@ -23,14 +23,20 @@ public class MainActivity extends Activity{
  void history(){
   Runnable load=()->{
    if(a.getCurrentUser()==null){js("window.renderHistoryError('Please wait for sign-in')");return;}
-   String ids=getPreferences(0).getString("orderHistoryIds","");String lastId=getPreferences(0).getString("lastOrderId","");if(lastId!=null&&!lastId.isEmpty()&&!ids.contains(lastId))ids=lastId+(ids.isEmpty()?"":","+ids);
+   String ids=getPreferences(0).getString("orderHistoryIds","");String lastId=getPreferences(0).getString("lastOrderId","");
+   if(lastId!=null&&!lastId.isEmpty()){boolean found=false;for(String x:ids.split(","))if(lastId.equals(x.trim())){found=true;break;}if(!found)ids=lastId+(ids.isEmpty()?"":","+ids);}
    if(ids.trim().isEmpty()){js("window.renderHistory([])");return;}
-   java.util.List<String> idList=new java.util.ArrayList<>();for(String id:ids.split(",")){if(id!=null&&!id.trim().isEmpty()&&!idList.contains(id.trim()))idList.add(id.trim());}
+   java.util.List<String> idList=new java.util.ArrayList<>();for(String id:ids.split(",")){id=id.trim();if(!id.isEmpty()&&!idList.contains(id))idList.add(id);}
    java.util.List<com.google.android.gms.tasks.Task<DocumentSnapshot>> tasks=new java.util.ArrayList<>();for(String id:idList)tasks.add(db.collection("orders").document(id).get());
    com.google.android.gms.tasks.Tasks.whenAllSuccess(tasks).addOnSuccessListener(results->{try{
     java.util.List<DocumentSnapshot> l=new java.util.ArrayList<>();for(Object rr:results){DocumentSnapshot d=(DocumentSnapshot)rr;if(d.exists()&&a.getCurrentUser().getUid().equals(d.getString("userId")))l.add(d);}
     l.sort((x,y)->{com.google.firebase.Timestamp tx=x.getTimestamp("createdAt"),ty=y.getTimestamp("createdAt");if(tx==null&&ty==null)return 0;if(tx==null)return 1;if(ty==null)return -1;return ty.compareTo(tx);});
-    JSONArray out=new JSONArray();for(DocumentSnapshot d:l){JSONObject o=new JSONObject();o.put("id",d.getId());Long total=d.getLong("total");o.put("total",total==null?0:total);String status=d.getString("status");o.put("status",status==null?"PLACED":status);com.google.firebase.Timestamp ts=d.getTimestamp("createdAt");o.put("date",ts==null?"Recent":ts.toDate().toString());Map<String,Object> allData=d.getData();Object rawItems=allData==null?null:allData.get("items");Map<String,Object> im=null;if(rawItems instanceof Map){im=(Map<String,Object>)rawItems;}JSONArray ia=new JSONArray();if(im!=null)for(Map.Entry<String,Object> q:im.entrySet()){JSONObject z=new JSONObject();z.put("id",q.getKey());Object vv=q.getValue();if(vv instanceof Map){Map<?,?> mm=(Map<?,?>)vv;z.put("name",String.valueOf(mm.get("name")));z.put("qty",num(mm.get("qty")));}else{z.put("name",itemName(q.getKey()));z.put("qty",num(vv));}ia.put(z);}o.put("itemsJson",ia.toString());out.put(o);}
+    JSONArray out=new JSONArray();
+    for(DocumentSnapshot d:l){JSONObject o=new JSONObject();o.put("id",d.getId());Object tv=d.get("total");o.put("total",num(tv));String status=d.getString("status");o.put("status",status==null?"PLACED":status);com.google.firebase.Timestamp ts=d.getTimestamp("createdAt");o.put("date",ts==null?"Recent":ts.toDate().toString());
+      Object rawItems=d.getData()==null?null:d.getData().get("items");JSONArray ia=new JSONArray();
+      if(rawItems instanceof Map){Map<?,?> im=(Map<?,?>)rawItems;for(Map.Entry<?,?> q:im.entrySet()){JSONObject z=new JSONObject();z.put("id",String.valueOf(q.getKey()));Object vv=q.getValue();if(vv instanceof Map){Map<?,?> mm=(Map<?,?>)vv;Object nm=mm.get("name");z.put("name",nm==null?itemName(String.valueOf(q.getKey())):String.valueOf(nm));z.put("qty",num(mm.get("qty")));}else{z.put("name",itemName(String.valueOf(q.getKey())));z.put("qty",num(vv));}ia.put(z);}}
+      o.put("itemsJson",ia.toString());out.put(o);
+    }
     js("window.renderHistory("+JSONObject.quote(out.toString())+")");
    }catch(Exception ex){js("window.renderHistoryError("+JSONObject.quote("Could not read order history: "+String.valueOf(ex.getMessage()))+")");}}).addOnFailureListener(ex->js("window.renderHistoryError("+JSONObject.quote("Could not read order history: "+String.valueOf(ex.getMessage()))+")"));
   };
