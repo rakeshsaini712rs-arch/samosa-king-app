@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Samosa King Admin</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff} .btn.status-done{box-shadow:0 0 0 2px #b7e4c7}.paymentBox{margin:10px 0;padding:11px;border-radius:12px;background:#fffaf1;border:1px solid #eadfd3}.paymentPaid{color:#16803c;font-weight:900}.paymentPending{color:#b36b00;font-weight:900}.menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.menuItem{border:1px solid #eadfd3;border-radius:12px;padding:9px;background:#fff}.menuItemHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}.menuItemName{font-size:14px;font-weight:800;line-height:1.2}.menuItemState{font-size:10px;font-weight:800;padding:3px 6px;border-radius:8px;background:#eee;color:#666;white-space:nowrap}.menuItemState.on{background:#e2f5e9;color:#16803c}.menuPrice{width:100%;padding:8px 9px!important;margin:3px 0 5px!important;border-radius:9px!important;font-size:14px!important}.menuActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}.menuActions .btn{margin:0;padding:8px 5px;font-size:11px;border-radius:9px;white-space:nowrap}@media(max-width:380px){.menuGrid{grid-template-columns:1fr}.menuItemName{font-size:13px}}
+*{box-sizing:border-box}body{margin:0;background:#f7f3ed;color:#24170f;font-family:Arial,sans-serif}.top{background:#17100b;color:#fff;padding:20px 16px;position:sticky;top:0;z-index:5}.top h1{margin:0;font-size:22px}.gold{color:#f6c94a}.wrap{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 5px 20px #0001}.input{width:100%;padding:14px;border:1px solid #ddd;border-radius:12px;margin:7px 0;font-size:16px}.btn{border:0;border-radius:12px;padding:12px 14px;margin:5px 3px;background:#17100b;color:#fff;font-weight:700}.btn.goldbtn{background:#d88a00}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#fff;border-radius:16px;padding:14px}.stat b{font-size:22px}.order{border:1px solid #eadfd3;border-radius:16px;padding:14px;margin:12px 0}.pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#f3e5c8;font-size:12px;font-weight:700}.items{background:#faf7f2;border-radius:12px;padding:12px;margin:10px 0}.itemline{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px solid #eadfd3;font-size:16px}.itemline:last-child{border-bottom:0}.itemqty{font-size:16px;font-weight:800;background:#f3e5c8;border-radius:10px;padding:4px 9px}.itemhead{font-weight:800;margin-bottom:3px}.err{color:#b3261e;margin:8px 0}.muted{color:#786b61;font-size:13px}.row{display:flex;flex-wrap:wrap;gap:4px}.btn.status-current,.btn.status-done{background:#16803c!important;color:#fff} .btn.status-done{box-shadow:0 0 0 2px #b7e4c7}.paymentBox{margin:10px 0;padding:11px;border-radius:12px;background:#fffaf1;border:1px solid #eadfd3}.paymentPaid{color:#16803c;font-weight:900}.paymentPending{color:#b36b00;font-weight:900}.menuSearch{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;margin-top:8px;font-size:14px;outline:none}.menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.menuItem{border:1px solid #eadfd3;border-radius:12px;padding:9px;background:#fff}.menuItemHead{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px}.menuItemName{font-size:14px;font-weight:800;line-height:1.2}.menuItemState{font-size:10px;font-weight:800;padding:3px 6px;border-radius:8px;background:#eee;color:#666;white-space:nowrap}.menuItemState.on{background:#e2f5e9;color:#16803c}.menuPrice{width:100%;padding:8px 9px!important;margin:3px 0 5px!important;border-radius:9px!important;font-size:14px!important}.menuActions{display:grid;grid-template-columns:1fr 1fr;gap:5px}.menuActions .btn{margin:0;padding:8px 5px;font-size:11px;border-radius:9px;white-space:nowrap}@media(max-width:380px){.menuGrid{grid-template-columns:1fr}.menuItemName{font-size:13px}}
 </style>
 </head>
 <body>
@@ -58,7 +58,7 @@
       '<div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div>'+
       '<div class="card"><a class="btn goldbtn" href="samosa://admin/refresh">↻ Refresh</a>'+
       '<a class="btn" href="samosa://admin/logout">Logout</a><div id="msg" class="muted"></div></div>'+
-      '<div class="card"><h2 style="margin:0 0 4px;font-size:18px">💰 Menu Management</h2><div class="muted">Price & availability</div><div id="menu" class="menuGrid">Loading menu…</div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
+      '<div class="card"><h2 style="margin:0 0 4px;font-size:18px">💰 Menu Management</h2><div class="muted">Price & availability</div><input id="menuSearch" class="menuSearch" type="search" placeholder="🔎 Search product name..." oninput="filterMenu(this.value)" autocomplete="off"><div id="menu" class="menuGrid">Loading menu…</div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
   loadMenu();
   }
   function menuResult(raw){
@@ -71,11 +71,26 @@
           '<div class="menuActions"><button class="btn goldbtn" onclick="savePrice(\''+esc(o.id)+'\')">SAVE</button>'+
           '<button class="btn" onclick="saveAvailability(\''+esc(o.id)+'\','+(!o.enabled)+')">'+(o.enabled?'SOLD OUT':'AVAILABLE')+'</button></div></div>';
       }
-      var m=document.getElementById('menu');if(m)m.innerHTML=h||'<div class="muted">No menu items configured.</div>';
+      var m=document.getElementById('menu');if(m)m.innerHTML=h||'<div class="muted">No menu items configured.</div>';filterMenu(document.getElementById('menuSearch')?document.getElementById('menuSearch').value:'');
       var pb=document.querySelectorAll('[data-menu-price-id]'),ab=document.querySelectorAll('[data-menu-avail-id]'),j;
       for(j=0;j<pb.length;j++)pb[j].addEventListener('click',function(){var id=this.getAttribute('data-menu-price-id'),e=document.getElementById('price_'+id);nativeCall('setMenuPrice',[id,e?e.value:'']);});
       for(j=0;j<ab.length;j++)ab[j].addEventListener('click',function(){nativeCall('setMenuAvailability',[this.getAttribute('data-menu-avail-id'),this.getAttribute('data-menu-enabled')==='true']);});
     }catch(e){adminError('Menu display error: '+e.message);}
+  }
+  function filterMenu(q){
+    var m=document.getElementById('menu');if(!m)return;
+    q=String(q||'').trim().toLowerCase();
+    var items=m.querySelectorAll('.menuItem'),i,name,shown=0;
+    for(i=0;i<items.length;i++){
+      name=String(items[i].querySelector('.menuItemName')?items[i].querySelector('.menuItemName').textContent:'').toLowerCase();
+      items[i].style.display=(!q||name.indexOf(q)!==-1)?'':'none';
+      if(!q||name.indexOf(q)!==-1)shown++;
+    }
+    var empty=document.getElementById('menuNoMatch');
+    if(!shown&&items.length){
+      if(!empty){empty=document.createElement('div');empty.id='menuNoMatch';empty.className='muted';empty.style.gridColumn='1/-1';empty.textContent='No matching product found.';m.appendChild(empty);}
+      empty.style.display='block';
+    }else if(empty)empty.style.display='none';
   }
   function loadMenu(){nativeCall('menuPrices');}
   function savePrice(id){var e=document.getElementById('price_'+id);if(!e)return;nativeCall('setMenuPrice',[id,e.value]);}
