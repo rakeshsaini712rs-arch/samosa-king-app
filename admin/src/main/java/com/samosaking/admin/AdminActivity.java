@@ -33,11 +33,11 @@ public class AdminActivity extends Activity{
     if("call".equals(action)){call(value);return;}
     if("whatsapp".equals(action)){whatsapp(value);return;}
     if("navigate".equals(action)){nav(value);return;}
-    if("print".equals(action)){printBill(id);return;}
+    if("print".equals(action)){printBill(id);return;}\n    if("assign".equals(action)){assignDeliveryBoy(id,value);return;}
     message("Unknown admin action: "+action);
   }catch(Exception e){message("Action error: "+e.getClass().getSimpleName()+" — "+e.getMessage());}
  }
- private void showRuntimeError(String x){js("window.nativeError&&window.nativeError("+JSONObject.quote(x)+")");}
+\n private void assignDeliveryBoy(String orderId,String boyUid){\n  if(orderId==null||orderId.trim().isEmpty()){message("Invalid order ID.");return;}\n  if(boyUid==null||boyUid.trim().isEmpty()){message("Select a delivery boy.");return;}\n  isAdmin(()->db.collection("orders").document(orderId).update("deliveryBoyId",boyUid,"deliveryBoyAssignedAt",FieldValue.serverTimestamp())\n    .addOnSuccessListener(v->message("✓ Delivery boy assigned."))\n    .addOnFailureListener(e->message("✗ Assignment failed: "+e.getMessage())));\n }\n private void showRuntimeError(String x){js("window.nativeError&&window.nativeError("+JSONObject.quote(x)+")");}
  private void fatal(Throwable e){TextView t=new TextView(this);t.setText("Samosa King ADMIN\n\nStartup error: "+e.getClass().getSimpleName()+"\n"+String.valueOf(e.getMessage()));t.setTextSize(17);t.setTextColor(Color.DKGRAY);t.setPadding(40,80,40,40);setContentView(t);}
  private void js(String code){runOnUiThread(()->{if(w!=null)w.evaluateJavascript("(function(){try{"+code+"}catch(e){}})()",null);});}
  private void message(String x){js("window.adminError("+JSONObject.quote(x)+")");}
