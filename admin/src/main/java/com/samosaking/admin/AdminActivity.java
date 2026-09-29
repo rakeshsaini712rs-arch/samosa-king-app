@@ -29,6 +29,7 @@ public class AdminActivity extends Activity{
       updateStatus(id,value);return;
     }
     if("reject".equals(action)){reject(id);return;}
+    if("delete".equals(action)){deleteOrder(id);return;}
     if("call".equals(action)){call(value);return;}
     if("whatsapp".equals(action)){whatsapp(value);return;}
     if("navigate".equals(action)){nav(value);return;}
@@ -176,6 +177,7 @@ public class AdminActivity extends Activity{
  private void updateStatus(String id,String st){if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}if(st==null||st.trim().isEmpty()){message("Invalid status.");return;}message("Updating order "+id+" → "+st+" …");isAdmin(()->db.collection("orders").document(id).update("status",st).addOnSuccessListener(v->{js("window.statusDone("+JSONObject.quote(id)+","+JSONObject.quote(st)+")");message("✓ Order "+id+" → "+st);}).addOnFailureListener(e->message("✗ Status update failed: "+e.getClass().getSimpleName()+" — "+e.getMessage())));}
  private void updatePaymentStatus(String id,String st){if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}if(!"PAID".equals(st)){message("Invalid payment status.");return;}message("Payment status update ho raha hai…");isAdmin(()->db.collection("orders").document(id).update("paymentStatus","PAID","paymentVerifiedAt",FieldValue.serverTimestamp()).addOnSuccessListener(v->{message("✓ Payment received marked for order "+id);}).addOnFailureListener(e->message("✗ Payment status update failed: "+e.getClass().getSimpleName()+" — "+e.getMessage())));}
  private void reject(String id){updateStatus(id,"REJECTED");}
+ private void deleteOrder(String id){if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}isAdmin(()->db.collection("orders").document(id).delete().addOnSuccessListener(v->message("✓ Order "+id+" permanently deleted.")).addOnFailureListener(e->message("✗ Delete failed: "+e.getClass().getSimpleName()+" — "+e.getMessage())));}
  private void call(String n){try{startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+n)));}catch(Exception e){message("Could not open phone dialer.");}}
  private void whatsapp(String n){try{String x=n.replaceAll("[^0-9]","");if(x.length()==10)x="91"+x;startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://wa.me/"+x)));}catch(Exception e){message("Could not open WhatsApp.");}}
  private void nav(String a){try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com/maps/dir/?api=1&destination="+Uri.encode(a)+"&travelmode=driving")));}catch(Exception e){message("Could not open Maps.");}}
