@@ -43,8 +43,8 @@ public class DeliveryActivity extends Activity {
         root.addView(tv("My Assigned Orders",18));list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);root.addView(list,new LinearLayout.LayoutParams(-1,-1));listenAssignedOrders();
     }
     private void listenAssignedOrders(){
-        if(listener!=null)listener.remove();String uid=auth.getCurrentUser().getUid();
-        listener=db.collection("orders").whereEqualTo("deliveryBoyId",uid).addSnapshotListener((snap,e)->{list.removeAllViews();if(e!=null){list.addView(tv("Could not load orders: "+e.getMessage(),15));return;}if(snap==null||snap.isEmpty()){list.addView(tv("No assigned deliveries right now.",16));return;}for(DocumentSnapshot d:snap.getDocuments())addOrder(d);});
+        if(listener!=null)listener.remove();String email=auth.getCurrentUser().getEmail();
+        listener=db.collection("orders").whereEqualTo("deliveryBoyEmail",email).addSnapshotListener((snap,e)->{list.removeAllViews();if(e!=null){list.addView(tv("Could not load orders: "+e.getMessage(),15));return;}if(snap==null||snap.isEmpty()){list.addView(tv("No assigned deliveries right now.",16));return;}for(DocumentSnapshot d:snap.getDocuments())addOrder(d);});
     }
     private void addOrder(DocumentSnapshot d){
         LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(14,14,14,14);GradientDrawable bg=new GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(18);card.setBackground(bg);
