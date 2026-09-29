@@ -10,7 +10,8 @@ public class AdminActivity extends Activity{
    FirebaseOptions o=new FirebaseOptions.Builder().setProjectId(PROJECT).setApplicationId(APP_ID).setApiKey(API_KEY).build();
    if(FirebaseApp.getApps(this).isEmpty()){FirebaseApp.initializeApp(this,o);} FirebaseApp app=FirebaseApp.getInstance(); auth=FirebaseAuth.getInstance(app); db=FirebaseFirestore.getInstance(app);
    w=new WebView(this);w.setBackgroundColor(Color.WHITE);WebSettings s=w.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setAllowFileAccess(true);s.setAllowContentAccess(true);
-   w.setWebChromeClient(new WebChromeClient(){@Override public boolean onConsoleMessage(ConsoleMessage m){android.util.Log.e("SAMOSA_ADMIN_JS",""+m.message()+" @ line "+m.lineNumber());return true;}});w.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String u){if(auth.getCurrentUser()!=null)checkAdmin();else v.evaluateJavascript("window.showLogin()",null);}@Override public void onReceivedError(WebView v,int code,String desc,String url){showRuntimeError("WebView error "+code+": "+desc+"\n"+url);} @Override public boolean shouldOverrideUrlLoading(WebView v,String u){try{if(u.startsWith("samosa://admin/")){handleAdminUrl(u);return true;}if(u.startsWith("tel:")||u.startsWith("https://wa.me/")){startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(u)));return true;}}catch(Exception e){message("Action failed: "+e.getMessage());}return false;}});
+   w.setWebChromeClient(new WebChromeClient(){@Override public boolean onConsoleMessage(ConsoleMessage m){android.util.Log.e("SAMOSA_ADMIN_JS",""+m.message()+" @ line "+m.lineNumber());return true;}});w.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String u){if(auth.getCurrentUser()!=null)checkAdmin();else v.evaluateJavascript("window.showLogin()",null);}@Override public void onReceivedError(WebView v,int code,String desc,String url){showRuntimeError("WebView error "+code+": "+desc+"
+"+url);} @Override public boolean shouldOverrideUrlLoading(WebView v,String u){try{if(u.startsWith("samosa://admin/")){handleAdminUrl(u);return true;}if(u.startsWith("tel:")||u.startsWith("https://wa.me/")){startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(u)));return true;}}catch(Exception e){message("Action failed: "+e.getMessage());}return false;}});
    w.addJavascriptInterface(new Bridge(),"AdminNative");setContentView(w);w.loadUrl("file:///android_asset/admin.html");
  }catch(Throwable e){fatal(e);}}
  private void handleAdminUrl(String u){
@@ -33,12 +34,26 @@ public class AdminActivity extends Activity{
     if("call".equals(action)){call(value);return;}
     if("whatsapp".equals(action)){whatsapp(value);return;}
     if("navigate".equals(action)){nav(value);return;}
-    if("print".equals(action)){printBill(id);return;}\n    if("assign".equals(action)){assignDeliveryBoy(id,value);return;}
+    if("print".equals(action)){printBill(id);return;}
+    if("assign".equals(action)){assignDeliveryBoy(id,value);return;}
     message("Unknown admin action: "+action);
   }catch(Exception e){message("Action error: "+e.getClass().getSimpleName()+" — "+e.getMessage());}
  }
-\n private void assignDeliveryBoy(String orderId,String boyEmail){\n  if(orderId==null||orderId.trim().isEmpty()){message("Invalid order ID.");return;}\n  if(boyEmail==null||boyEmail.trim().isEmpty()){message("Select a delivery boy.");return;}\n  if(!isDeliveryEmail(boyEmail)){message("Invalid delivery account.");return;}\n  isAdmin(()->db.collection("orders").document(orderId).update("deliveryBoyEmail",boyEmail,"deliveryBoyAssignedAt",FieldValue.serverTimestamp())\n    .addOnSuccessListener(v->message("✓ Delivery boy assigned."))\n    .addOnFailureListener(e->message("✗ Assignment failed: "+e.getMessage())));\n }\n private boolean isDeliveryEmail(String e){return "Rakeshsaini1@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini2@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini3@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini4@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini5@gmail.com".equalsIgnoreCase(e);}\n private void showRuntimeError(String x){js("window.nativeError&&window.nativeError("+JSONObject.quote(x)+")");}
- private void fatal(Throwable e){TextView t=new TextView(this);t.setText("Samosa King ADMIN\n\nStartup error: "+e.getClass().getSimpleName()+"\n"+String.valueOf(e.getMessage()));t.setTextSize(17);t.setTextColor(Color.DKGRAY);t.setPadding(40,80,40,40);setContentView(t);}
+
+ private void assignDeliveryBoy(String orderId,String boyEmail){
+  if(orderId==null||orderId.trim().isEmpty()){message("Invalid order ID.");return;}
+  if(boyEmail==null||boyEmail.trim().isEmpty()){message("Select a delivery boy.");return;}
+  if(!isDeliveryEmail(boyEmail)){message("Invalid delivery account.");return;}
+  isAdmin(()->db.collection("orders").document(orderId).update("deliveryBoyEmail",boyEmail,"deliveryBoyAssignedAt",FieldValue.serverTimestamp())
+    .addOnSuccessListener(v->message("✓ Delivery boy assigned."))
+    .addOnFailureListener(e->message("✗ Assignment failed: "+e.getMessage())));
+ }
+ private boolean isDeliveryEmail(String e){return "Rakeshsaini1@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini2@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini3@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini4@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini5@gmail.com".equalsIgnoreCase(e);}
+ private void showRuntimeError(String x){js("window.nativeError&&window.nativeError("+JSONObject.quote(x)+")");}
+ private void fatal(Throwable e){TextView t=new TextView(this);t.setText("Samosa King ADMIN
+
+Startup error: "+e.getClass().getSimpleName()+"
+"+String.valueOf(e.getMessage()));t.setTextSize(17);t.setTextColor(Color.DKGRAY);t.setPadding(40,80,40,40);setContentView(t);}
  private void js(String code){runOnUiThread(()->{if(w!=null)w.evaluateJavascript("(function(){try{"+code+"}catch(e){}})()",null);});}
  private void message(String x){js("window.adminError("+JSONObject.quote(x)+")");}
  private boolean isConfiguredAdmin(){return auth!=null&&auth.getCurrentUser()!=null&&ADMIN_UID.equals(auth.getCurrentUser().getUid());}
