@@ -3,7 +3,7 @@ package com.samosaking.admin;
 import android.app.*;import android.content.*;import android.net.Uri;import android.os.*;import android.webkit.*;import android.print.PrintAttributes;import android.print.PrintManager;import android.graphics.Color;import android.widget.TextView;import com.google.firebase.FirebaseApp;import com.google.firebase.FirebaseOptions;import com.google.firebase.auth.FirebaseAuth;import com.google.firebase.firestore.*;import org.json.*;import java.util.*;
 
 public class AdminActivity extends Activity{
- private WebView w; private WebView printView; private FirebaseAuth auth; private FirebaseFirestore db; private ListenerRegistration ordersListener;
+ private WebView w; private WebView printView; private FirebaseAuth auth; private FirebaseFirestore db; private ListenerRegistration ordersListener; private ListenerRegistration deliveryBoysListener;
  private static final String PROJECT="samosa-king-3b90d"; private static final String APP_ID="1:855148039257:android:535730f98ea24e77253548"; private static final String API_KEY="AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw";
  private static final String ADMIN_UID="vJCq3yQDe0QcCg5EoEPnjVKwUgJ2";
  @Override public void onCreate(Bundle b){super.onCreate(b);try{
@@ -22,7 +22,7 @@ public class AdminActivity extends Activity{
     String value=x.getQueryParameter("value");
     if(action==null||action.isEmpty()){message("Invalid admin action.");return;}
     if("refresh".equals(action)){refresh();return;}
-    if("logout".equals(action)){if(ordersListener!=null)ordersListener.remove();auth.signOut();js("window.showLogin()");return;}
+    if("logout".equals(action)){if(ordersListener!=null)ordersListener.remove();if(deliveryBoysListener!=null)deliveryBoysListener.remove();auth.signOut();js("window.showLogin()");return;}
     if("payment".equals(action)){ if(id==null||id.trim().isEmpty()){message("Invalid payment action data.");return;} updatePaymentStatus(id,value);return;}
     if("status".equals(action)){
       if(id==null||id.trim().isEmpty()||value==null||value.trim().isEmpty()){message("Invalid status action data.");return;}
@@ -58,7 +58,7 @@ public class AdminActivity extends Activity{
  private void message(String x){js("window.adminError("+JSONObject.quote(x)+")");}
  private boolean isConfiguredAdmin(){return auth!=null&&auth.getCurrentUser()!=null&&ADMIN_UID.equals(auth.getCurrentUser().getUid());}
  private void deny(String uid){auth.signOut();js("window.showLogin();window.loginError("+JSONObject.quote("This account is not authorized as admin. UID: "+uid)+")");}
- private void checkAdmin(){if(auth==null||auth.getCurrentUser()==null){js("window.showLogin()");return;}String uid=auth.getCurrentUser().getUid();if(isConfiguredAdmin()){js("window.showDashboard("+JSONObject.quote("Admin")+")");listenOrders();}else{deny(uid);}}
+ private void checkAdmin(){if(auth==null||auth.getCurrentUser()==null){js("window.showLogin()");return;}String uid=auth.getCurrentUser().getUid();if(isConfiguredAdmin()){js("window.showDashboard("+JSONObject.quote("Admin")+")");listenOrders();listenDeliveryBoys();}else{deny(uid);}}
  private void listenOrders(){if(db==null){message("Firestore is not initialized.");return;}if(ordersListener!=null)ordersListener.remove();ordersListener=db.collection("orders").addSnapshotListener((snap,e)->{if(e!=null){message("Could not load live orders: "+e.getClass().getSimpleName()+" — "+e.getMessage());return;}sendOrders(snap);});}
  private void refresh(){if(auth==null){message("Firebase is not initialized.");return;}if(auth.getCurrentUser()==null){js("window.showLogin()");return;}checkAdmin();}
  private String itemName(String id){
@@ -159,7 +159,7 @@ public class AdminActivity extends Activity{
    for(DocumentSnapshot d:snap.getDocuments()){
     JSONObject o=new JSONObject();
     o.put("id",d.getId());o.put("name",d.getString("customerName"));o.put("mobile",d.getString("mobile"));
-    o.put("address",d.getString("address"));o.put("payment",d.getString("paymentMethod"));o.put("paymentStatus",d.getString("paymentStatus"));
+    o.put("address",d.getString("address"));o.put("latitude",numDouble(d.get("latitude")));o.put("longitude",numDouble(d.get("longitude")));o.put("payment",d.getString("paymentMethod"));o.put("paymentStatus",d.getString("paymentStatus"));
     o.put("subtotal",num(d.get("subtotal")));o.put("delivery",num(d.get("deliveryFee")));o.put("discount",num(d.get("discount")));
     o.put("total",num(d.get("total")));o.put("status",d.getString("status"));o.put("deliveryBoyEmail",d.getString("deliveryBoyEmail"));o.put("date",dateText(d.get("createdAt")));
     if(d.get("createdAt") instanceof com.google.firebase.Timestamp)o.put("createdAtMs",((com.google.firebase.Timestamp)d.get("createdAt")).toDate().getTime());
@@ -186,7 +186,26 @@ public class AdminActivity extends Activity{
    js("window.ordersResult("+JSONObject.quote(out.toString())+")");
   }catch(Exception e){message("Order data error: "+e.getMessage());}
  }
+ private void listenDeliveryBoys(){
+  if(db==null||auth==null||auth.getCurrentUser()==null)return;
+  if(deliveryBoysListener!=null)deliveryBoysListener.remove();
+  deliveryBoysListener=db.collection("deliveryBoys").addSnapshotListener((snap,e)->{
+    if(e!=null){message("Could not load delivery locations: "+e.getClass().getSimpleName()+" — "+e.getMessage());return;}
+    try{
+      JSONArray a=new JSONArray();
+      if(snap!=null)for(DocumentSnapshot d:snap.getDocuments()){
+        JSONObject o=new JSONObject();
+        o.put("uid",d.getId());o.put("email",d.getString("email"));o.put("latitude",numDouble(d.get("latitude")));o.put("longitude",numDouble(d.get("longitude")));
+        o.put("accuracy",numDouble(d.get("accuracyMeters")));o.put("online",Boolean.TRUE.equals(d.getBoolean("online")));
+        o.put("lastSeenMs",d.get("lastSeenAt") instanceof com.google.firebase.Timestamp?((com.google.firebase.Timestamp)d.get("lastSeenAt")).toDate().getTime():0);
+        a.put(o);
+      }
+      js("window.deliveryBoysResult("+JSONObject.quote(a.toString())+")");
+    }catch(Exception ex){message("Delivery location data error: "+ex.getMessage());}
+  });
+ }
  private String dateText(Object x){if(x instanceof com.google.firebase.Timestamp)return ((com.google.firebase.Timestamp)x).toDate().toString();return x==null?"":String.valueOf(x);}
+ private double numDouble(Object x){if(x instanceof Number)return ((Number)x).doubleValue();try{return Double.parseDouble(String.valueOf(x));}catch(Exception e){return 0;}}
  private long num(Object x){if(x instanceof Number)return ((Number)x).longValue();try{return Long.parseLong(String.valueOf(x));}catch(Exception e){return 0;}}
  private boolean isAdmin(Runnable yes){if(auth==null||auth.getCurrentUser()==null){message("Admin login required.");return false;}if(!isConfiguredAdmin()){deny(auth.getCurrentUser().getUid());return false;}yes.run();return true;}
  private void updateStatus(String id,String st){if(id==null||id.trim().isEmpty()){message("Invalid order ID.");return;}if(st==null||st.trim().isEmpty()){message("Invalid status.");return;}message("Updating order "+id+" → "+st+" …");isAdmin(()->db.collection("orders").document(id).update("status",st).addOnSuccessListener(v->{js("window.statusDone("+JSONObject.quote(id)+","+JSONObject.quote(st)+")");message("✓ Order "+id+" → "+st);}).addOnFailureListener(e->message("✗ Status update failed: "+e.getClass().getSimpleName()+" — "+e.getMessage())));}
