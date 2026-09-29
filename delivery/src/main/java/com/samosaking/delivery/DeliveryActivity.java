@@ -3,6 +3,9 @@ package com.samosaking.delivery;
 import android.app.*;
 import android.os.*;
 import android.content.*;
+import android.content.pm.PackageManager;
+import android.location.*;
+import android.Manifest;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -16,7 +19,7 @@ import java.util.*;
 
 public class DeliveryActivity extends Activity {
     private FirebaseAuth auth; private FirebaseFirestore db;
-    private LinearLayout root,list; private EditText email,password; private ListenerRegistration listener;
+    private LinearLayout root,list; private EditText email,password; private ListenerRegistration listener; private LocationManager locationManager; private LocationListener locationListener; private boolean locationStarted=false;
     private static final String PROJECT="samosa-king-3b90d";
     private static final String APP_ID="1:855148039257:android:535730f98ea24e77253548";
     private static final String API_KEY="AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw";
@@ -39,8 +42,53 @@ public class DeliveryActivity extends Activity {
     private void login(){String e=email.getText().toString().trim(),p=password.getText().toString();if(e.isEmpty()||p.isEmpty()){toast("Email and password required.");return;}auth.signInWithEmailAndPassword(e,p).addOnSuccessListener(r->loadDashboard()).addOnFailureListener(x->toast("Login failed: "+x.getMessage()));}
     private void loadDashboard(){
         if(auth.getCurrentUser()==null){showLogin();return;} root.removeAllViews();
-        LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);TextView t=tv("🚚 Delivery Dashboard",22);head.addView(t,new LinearLayout.LayoutParams(0,-2,1));Button lo=btn("Logout");head.addView(lo);root.addView(head);lo.setOnClickListener(v->{if(listener!=null)listener.remove();auth.signOut();showLogin();});
-        root.addView(tv("My Assigned Orders",18));list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);root.addView(list,new LinearLayout.LayoutParams(-1,-1));listenAssignedOrders();
+        LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);TextView t=tv("🚚 Delivery Dashboard",22);head.addView(t,new LinearLayout.LayoutParams(0,-2,1));Button lo=btn("Logout");head.addView(lo);root.addView(head);lo.setOnClickListener(v->{if(listener!=null)listener.remove();stopLocationSharing();auth.signOut();showLogin();});
+        root.addView(tv("📍 Live Location: ON when GPS permission is allowed",14));
+        root.addView(tv("My Assigned Orders",18));
+        startLocationSharing();list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);root.addView(list,new LinearLayout.LayoutParams(-1,-1));listenAssignedOrders();
+    }
+    private void startLocationSharing(){
+        if(auth.getCurrentUser()==null)return;
+        if(Build.VERSION.SDK_INT>=23 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},7001); return;
+        }
+        try{
+            locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
+            locationListener=new LocationListener(){
+                @Override public void onLocationChanged(Location l){saveDeliveryLocation(l);}
+                @Override public void onProviderEnabled(String p){}
+                @Override public void onProviderDisabled(String p){}
+            };
+            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10000,20,locationListener);
+            if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,15000,30,locationListener);
+            Location last=null;
+            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if(last==null && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            if(last!=null)saveDeliveryLocation(last);
+            locationStarted=true;
+        }catch(SecurityException e){toast("Location permission required.");}
+        catch(Exception e){toast("Could not start location: "+e.getMessage());}
+    }
+    @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults){
+        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+        if(requestCode==7001 && grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)startLocationSharing();
+        else toast("Location permission is required for nearest delivery assignment.");
+    }
+    private void saveDeliveryLocation(Location l){
+        if(l==null||auth.getCurrentUser()==null)return;
+        String uid=auth.getCurrentUser().getUid(), em=auth.getCurrentUser().getEmail();
+        if(em==null)em="";
+        em=em.trim();
+        Map<String,Object> m=new HashMap<>();
+        m.put("email",em);m.put("latitude",l.getLatitude());m.put("longitude",l.getLongitude());
+        m.put("accuracyMeters",(double)l.getAccuracy());m.put("lastSeenAt",FieldValue.serverTimestamp());m.put("online",true);
+        db.collection("deliveryBoys").document(uid).set(m,SetOptions.merge());
+    }
+    private void stopLocationSharing(){
+        try{if(locationManager!=null&&locationListener!=null)locationManager.removeUpdates(locationListener);}catch(Exception ignored){}
+        locationStarted=false;
     }
     private void listenAssignedOrders(){
         if(listener!=null)listener.remove();String email=auth.getCurrentUser().getEmail(); if(email==null)email=""; email=email.trim().toLowerCase(Locale.US);
