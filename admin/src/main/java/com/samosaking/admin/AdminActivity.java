@@ -40,13 +40,16 @@ public class AdminActivity extends Activity{
  }
 
  private void assignDeliveryBoy(String orderId,String boyEmail){
-  boyEmail=boyEmail==null?null:boyEmail.trim().toLowerCase(Locale.US);
   if(orderId==null||orderId.trim().isEmpty()){message("Invalid order ID.");return;}
   if(boyEmail==null||boyEmail.trim().isEmpty()){message("Select a delivery boy.");return;}
-  if(!isDeliveryEmail(boyEmail)){message("Invalid delivery account.");return;}
-  isAdmin(()->db.collection("orders").document(orderId).update("deliveryBoyEmail",boyEmail,"deliveryBoyAssignedAt",FieldValue.serverTimestamp())
-    .addOnSuccessListener(v->message("✓ Delivery boy assigned."))
-    .addOnFailureListener(e->message("✗ Assignment failed: "+e.getMessage())));
+  final String email=boyEmail.trim().toLowerCase(Locale.US);
+  if(!isDeliveryEmail(email)){message("Invalid delivery account.");return;}
+  message("Assigning delivery boy…");
+  if(!isAdmin(()->{}))return;
+  db.collection("orders").document(orderId)
+    .update("deliveryBoyEmail",email,"deliveryBoyAssignedAt",FieldValue.serverTimestamp())
+    .addOnSuccessListener(v->{message("✓ Delivery Boy assigned successfully.");refresh();})
+    .addOnFailureListener(e->message("✗ Assignment failed: "+e.getClass().getSimpleName()+" — "+e.getMessage()));
  }
  private boolean isDeliveryEmail(String e){return "Rakeshsaini1@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini2@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini3@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini4@gmail.com".equalsIgnoreCase(e)||"Rakeshsaini5@gmail.com".equalsIgnoreCase(e);}
  private void showRuntimeError(String x){js("window.nativeError&&window.nativeError("+JSONObject.quote(x)+")");}
