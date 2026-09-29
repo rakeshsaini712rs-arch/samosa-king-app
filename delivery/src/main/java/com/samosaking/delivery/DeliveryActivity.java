@@ -42,13 +42,14 @@ public class DeliveryActivity extends Activity {
     private void login(){String e=email.getText().toString().trim(),p=password.getText().toString();if(e.isEmpty()||p.isEmpty()){toast("Email and password required.");return;}auth.signInWithEmailAndPassword(e,p).addOnSuccessListener(r->loadDashboard()).addOnFailureListener(x->toast("Login failed: "+x.getMessage()));}
     private void loadDashboard(){
         if(auth.getCurrentUser()==null){showLogin();return;} root.removeAllViews();
-        LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);TextView t=tv("🚚 Delivery Dashboard",22);head.addView(t,new LinearLayout.LayoutParams(0,-2,1));Button lo=btn("Logout");head.addView(lo);root.addView(head);lo.setOnClickListener(v->{if(listener!=null)listener.remove();stopLocationSharing();auth.signOut();showLogin();});
+        LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);TextView t=tv("🚚 Delivery Dashboard",22);head.addView(t,new LinearLayout.LayoutParams(0,-2,1));Button lo=btn("Logout");head.addView(lo);root.addView(head);lo.setOnClickListener(v->logoutDelivery());
         root.addView(tv("📍 Live Location: ON when GPS permission is allowed",14));
         Button gps=btn("📍 ENABLE GPS"); root.addView(gps,new LinearLayout.LayoutParams(-1,-2));
         gps.setOnClickListener(v->{ try{startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));}catch(Exception ignored){} startLocationSharing(); });
         root.addView(tv("My Assigned Orders",18));
         startLocationSharing();list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);root.addView(list,new LinearLayout.LayoutParams(-1,-1));listenAssignedOrders();
     }
+    private void logoutDelivery(){final String uid=auth.getCurrentUser()==null?null:auth.getCurrentUser().getUid();if(listener!=null)listener.remove();stopLocationSharing();if(uid==null){auth.signOut();showLogin();return;}Map<String,Object> off=new HashMap<>();off.put("online",false);off.put("lastSeenAt",FieldValue.serverTimestamp());db.collection("deliveryBoys").document(uid).set(off,SetOptions.merge()).addOnCompleteListener(x->{auth.signOut();showLogin();});}
     private void startLocationSharing(){
         if(auth.getCurrentUser()==null)return;
         if(Build.VERSION.SDK_INT>=23 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
@@ -89,7 +90,8 @@ public class DeliveryActivity extends Activity {
         m.put("accuracyMeters",(double)l.getAccuracy());m.put("lastSeenAt",FieldValue.serverTimestamp());m.put("online",true);
         db.collection("deliveryBoys").document(uid).set(m,SetOptions.merge()).addOnFailureListener(e->toast("GPS save failed: "+e.getMessage())).addOnSuccessListener(v->{});
     }
-    private void stopLocationSharing(){
+    @Override protected void onDestroy(){try{if(listener!=null)listener.remove();}catch(Exception ignored){}stopLocationSharing();if(auth!=null&&auth.getCurrentUser()!=null){String uid=auth.getCurrentUser().getUid();Map<String,Object> off=new HashMap<>();off.put("online",false);off.put("lastSeenAt",FieldValue.serverTimestamp());db.collection("deliveryBoys").document(uid).set(off,SetOptions.merge());}super.onDestroy();}
+ private void stopLocationSharing(){
         try{if(locationManager!=null&&locationListener!=null)locationManager.removeUpdates(locationListener);}catch(Exception ignored){}
         locationStarted=false;
     }
