@@ -25,7 +25,7 @@ service cloud.firestore {
     }
     match /orders/{orderId} {
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid && request.resource.data.paymentMethod == 'COD' && request.resource.data.subtotal >= 100 && request.resource.data.deliveryFee == 30 && request.resource.data.discount >= 0 && request.resource.data.discount <= request.resource.data.subtotal && request.resource.data.total == request.resource.data.subtotal + 30 - request.resource.data.discount && couponValid() && request.resource.data.status == 'PLACED';
-      allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || admin() || (deliveryBoy() && resource.data.deliveryBoyEmail == request.auth.token.email.lower()));
+      allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || admin() || (deliveryBoy() && resource.data.deliveryBoyEmail == request.auth.token.email));
       allow update: if signedIn() && (
         (resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) && request.resource.data.status == 'CANCELLED')
         || admin()
