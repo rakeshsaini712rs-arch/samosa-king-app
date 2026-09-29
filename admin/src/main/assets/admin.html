@@ -80,11 +80,14 @@
   function filterMenu(q){
     var m=document.getElementById('menu');if(!m)return;
     q=String(q||'').trim().toLowerCase();
-    var items=m.querySelectorAll('.menuItem'),i,name,shown=0;
+    var qNorm=q.replace(/[\\s_-]+/g,'');
+    var items=m.querySelectorAll('.menuItem'),i,name,nameNorm,match,shown=0;
     for(i=0;i<items.length;i++){
       name=String(items[i].querySelector('.menuItemName')?items[i].querySelector('.menuItemName').textContent:'').toLowerCase();
-      items[i].style.display=(!q||name.indexOf(q)!==-1)?'':'none';
-      if(!q||name.indexOf(q)!==-1)shown++;
+      nameNorm=name.replace(/[\\s_-]+/g,'');
+      match=!q||name.indexOf(q)!==-1||nameNorm.indexOf(qNorm)!==-1;
+      items[i].style.display=match?'':'none';
+      if(match)shown++;
     }
     var empty=document.getElementById('menuNoMatch');
     if(!shown&&items.length){
