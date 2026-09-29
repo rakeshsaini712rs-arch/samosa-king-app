@@ -146,7 +146,7 @@
       '<a class="btn goldbtn" href="'+actionUrl('print',o.id,'')+'">🧾 Print Bill</a></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
-  function assignBoy(id){var e=document.getElementById("boy_"+id);if(!e||!e.value){adminError("Please select a delivery boy.");return;}nativeCall("assign",[id,e.value]);}
+  function assignBoy(id){var e=document.getElementById("boy_"+id);if(!e||!e.value){adminError("Please select a delivery boy.");return;}var v=e.value;e.disabled=true;var b=e.parentElement?e.parentElement.querySelector(".goldbtn"):null;if(b){b.disabled=true;b.textContent="ASSIGNING…";}window.location.href=actionUrl("assign",id,v);}
   function paymentHtml(o){
     var p=String(o.payment||'COD'),st=String(o.paymentStatus||'');
     if(p==='COD')return '<div class="paymentBox">💵 <b>COD</b><br><span class="muted">Payment delivery ke time collect hoga.</span></div>';
