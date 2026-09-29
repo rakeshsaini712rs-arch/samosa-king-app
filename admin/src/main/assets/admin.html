@@ -58,7 +58,7 @@
       '<div class="stat"><span>Delivered Sales</span><br><b id="sales">₹0</b></div></div>'+
       '<div class="card"><a class="btn goldbtn" href="samosa://admin/refresh">↻ Refresh</a>'+
       '<a class="btn" href="samosa://admin/logout">Logout</a><div id="msg" class="muted"></div></div>'+
-      '<div class="card"><h2 style="margin:0 0 4px;font-size:18px">💰 Menu Management</h2><div class="muted">Price & availability</div><input id="menuSearch" class="menuSearch" type="search" placeholder="🔎 Search product name..." oninput="filterMenu(this.value)" autocomplete="off"><div id="menu" class="menuGrid">Loading menu…</div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
+      '<div class="card"><h2 style="margin:0 0 4px;font-size:18px">💰 Menu Management</h2><div class="muted">Price & availability</div><input id="menuSearch" class="menuSearch" type="search" placeholder="🔎 Search product name..." oninput="filterMenu(this.value)" autocomplete="off"><div id="menu" class="menuGrid">Loading menu…</div></div><div class="card"><h2 style="margin:0 0 4px;font-size:18px">🚚 Delivery Boys Live Location</h2><div id="deliveryBoys" class="muted">Waiting for GPS locations…</div></div><div class="card"><h2>🧾 Live Orders</h2><div id="orders">Loading orders…</div></div></div>';
   loadMenu();
   }
   function menuResult(raw){
@@ -100,7 +100,7 @@
   function saveAvailability(id,enabled){nativeCall('setMenuAvailability',[id,enabled]);}
   function ordersResult(raw){
     try{
-      var a=typeof raw==='string'?JSON.parse(raw):(raw||[]);
+      var a=typeof raw==='string'?JSON.parse(raw):(raw||[]); currentOrders=a;
       a.sort(function(x,y){return Number(y.createdAtMs||Date.parse(y.date)||0)-Number(x.createdAtMs||Date.parse(x.date)||0);});
       var pending=0,i;
       for(i=0;i<a.length;i++){if(a[i].status!=='DELIVERED'&&a[i].status!=='CANCELLED'&&a[i].status!=='REJECTED')pending++;}
@@ -126,7 +126,7 @@
     return 'samosa://admin/'+encodeURIComponent(action)+'?id='+encodeURIComponent(id||'')+'&value='+encodeURIComponent(value||'');
   }
   function orderHtml(o){
-    var items='',i,arr=o.items||[];
+    var items='',i,arr=o.items||[]; var nb=nearestBoy(o);
     for(i=0;i<arr.length;i++)items+='<div class="itemline"><span>🍽️ <b>'+esc(arr[i].name)+'</b></span><span class="itemqty">× '+esc(arr[i].qty)+'</span></div>';
     var statuses=['ACCEPTED','PREPARING','OUT_FOR_DELIVERY','DELIVERED','CANCELLED'];
     var buttons='',s;
@@ -139,14 +139,27 @@
       '<div class="items"><div class="itemhead">🛒 ORDER ITEMS</div>'+items+'</div>'+
       '<p>Subtotal ₹'+esc(o.subtotal)+' + Delivery ₹'+esc(o.delivery)+' − Discount ₹'+esc(o.discount)+
       '<br><b>💰 Total ₹'+esc(o.total)+'</b></p>'+paymentHtml(o)+
-      '<div class="deliveryAssign"><select id="boy_'+esc(o.id)+'"><option value="">🚚 Select Delivery Boy</option><option value="rakeshsaini1@gmail.com" '+(String(o.deliveryBoyEmail||'').toLowerCase()==='rakeshsaini1@gmail.com'?'selected':'')+'>Delivery Boy 1</option><option value="rakeshsaini2@gmail.com" '+(String(o.deliveryBoyEmail||'').toLowerCase()==='rakeshsaini2@gmail.com'?'selected':'')+'>Delivery Boy 2</option><option value="rakeshsaini3@gmail.com" '+(String(o.deliveryBoyEmail||'').toLowerCase()==='rakeshsaini3@gmail.com'?'selected':'')+'>Delivery Boy 3</option><option value="rakeshsaini4@gmail.com" '+(String(o.deliveryBoyEmail||'').toLowerCase()==='rakeshsaini4@gmail.com'?'selected':'')+'>Delivery Boy 4</option><option value="rakeshsaini5@gmail.com" '+(String(o.deliveryBoyEmail||'').toLowerCase()==='rakeshsaini5@gmail.com'?'selected':'')+'>Delivery Boy 5</option></select><button class="btn goldbtn" onclick="assignBoy(\''+esc(o.id)+'\')">ASSIGN</button></div>'+
+      '<div class="deliveryAssign"><select id="boy_'+esc(o.id)+'"><option value="">🚚 Select Delivery Boy</option><option value="Rakeshsaini1@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini1@gmail.com'?'selected':'')+'>Delivery Boy 1</option><option value="Rakeshsaini2@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini2@gmail.com'?'selected':'')+'>Delivery Boy 2</option><option value="Rakeshsaini3@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini3@gmail.com'?'selected':'')+'>Delivery Boy 3</option><option value="Rakeshsaini4@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini4@gmail.com'?'selected':'')+'>Delivery Boy 4</option><option value="Rakeshsaini5@gmail.com" '+(String(o.deliveryBoyEmail||'')==='Rakeshsaini5@gmail.com'?'selected':'')+'>Delivery Boy 5</option></select><button class="btn goldbtn" onclick="assignNearest(\''+esc(o.id)+'\')">📍 NEAREST</button></div><div class="muted" style="margin-top:5px">'+(nb?('Nearest: <b>'+esc(shortEmail(nb.email))+'</b> • '+nb.distance.toFixed(2)+' km'): 'Customer GPS / delivery boy GPS unavailable')+'</div>'+
       '<div class="row"><a class="btn" href="'+actionUrl('call','',o.mobile||'')+'">📞 Call</a>'+
       '<a class="btn" href="'+actionUrl('whatsapp','',o.mobile||'')+'">WhatsApp</a>'+
       '<a class="btn" href="'+actionUrl('navigate','',o.address||'')+'">📍 Navigate</a>'+
       '<a class="btn goldbtn" href="'+actionUrl('print',o.id,'')+'">🧾 Print Bill</a></div>'+
       '<div class="row">'+buttons+'</div><div class="muted">'+esc(o.date)+'</div></div>';
   }
-  function assignBoy(id){var e=document.getElementById("boy_"+id);if(!e||!e.value){adminError("Please select a delivery boy.");return;}var v=e.value.toLowerCase();e.disabled=true;var b=e.parentElement?e.parentElement.querySelector(".goldbtn"):null;if(b){b.disabled=true;b.textContent="ASSIGNING…";}nativeCall("assign",[id,v]);}
+  var currentOrders=[],currentDeliveryBoys=[];
+  function deliveryBoysResult(raw){
+    try{currentDeliveryBoys=typeof raw==='string'?JSON.parse(raw):(raw||[]);var el=document.getElementById('deliveryBoys');if(!el)return;
+      if(!currentDeliveryBoys.length){el.textContent='No delivery partner location received yet.';return;}
+      var h='',i,b,age;
+      for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];age=b.lastSeenMs?Math.max(0,Math.round((Date.now()-b.lastSeenMs)/60000)):9999;
+        h+='<div style="padding:7px 0;border-bottom:1px solid #eadfd3">🚚 <b>'+esc(shortEmail(b.email))+'</b> • '+(b.latitude&&b.longitude?('📍 '+Number(b.latitude).toFixed(5)+', '+Number(b.longitude).toFixed(5)):'No GPS')+' • '+(age<3?'🟢 LIVE':'🟠 '+age+' min ago')+'</div>';}
+      el.innerHTML=h;var o=document.getElementById('orders');if(o)o.innerHTML=currentOrders.length?mapOrders(currentOrders):'<p class="muted">No orders yet.</p>';
+    }catch(e){adminError('Delivery location display error: '+e.message);}
+  }
+  function shortEmail(e){var x=String(e||'');return x.split('@')[0]||x;}
+  function distanceKm(lat1,lon1,lat2,lon2){var R=6371,rad=Math.PI/180,dLat=(lat2-lat1)*rad,dLon=(lon2-lon1)*rad,a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)*Math.sin(dLon/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+  function nearestBoy(o){var lat=Number(o.latitude),lon=Number(o.longitude),best=null,i,b,d;if(!lat||!lon)return null;for(i=0;i<currentDeliveryBoys.length;i++){b=currentDeliveryBoys[i];if(!b.email||!Number(b.latitude)||!Number(b.longitude))continue;d=distanceKm(lat,lon,Number(b.latitude),Number(b.longitude));if(!best||d<best.distance)best={email:b.email,distance:d};}return best;}
+  function assignNearest(id){var o=null,i;for(i=0;i<currentOrders.length;i++)if(String(currentOrders[i].id)===String(id)){o=currentOrders[i];break;}var n=nearestBoy(o||{});if(!n){adminError("Nearest delivery boy cannot be found: GPS unavailable.");return;}var e=document.getElementById("boy_"+id);if(e)e.value=n.email;assignBoy(id);} function assignBoy(id){var e=document.getElementById("boy_"+id);if(!e||!e.value){adminError("Please select a delivery boy.");return;}var v=e.value;e.disabled=true;var b=e.parentElement?e.parentElement.querySelector(".goldbtn"):null;if(b){b.disabled=true;b.textContent="ASSIGNING…";}nativeCall("assign",[id,v]);}
   function paymentHtml(o){
     var p=String(o.payment||'COD'),st=String(o.paymentStatus||'');
     if(p==='COD')return '<div class="paymentBox">💵 <b>COD</b><br><span class="muted">Payment delivery ke time collect hoga.</span></div>';
@@ -166,7 +179,7 @@
   window.loadMenu=loadMenu;
   window.savePrice=savePrice;
   window.saveAvailability=saveAvailability;
-  window.ordersResult=ordersResult;
+  window.ordersResult=ordersResult;window.deliveryBoysResult=deliveryBoysResult;window.assignNearest=assignNearest;
   window.actionDone=actionDone;window.statusDone=statusDone;
   window.adminError=adminError;window.nativeError=nativeError;window.assignBoy=assignBoy;
   loadMenu();setTimeout(function(){var b=document.getElementById('bridge');if(b)b.textContent=(window.AdminNative&&typeof window.AdminNative.ready==='function'&&window.AdminNative.ready())?'✓ Bridge connected':'⚠ Bridge unavailable';},500);
