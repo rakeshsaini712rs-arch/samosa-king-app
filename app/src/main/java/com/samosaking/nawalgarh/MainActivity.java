@@ -19,6 +19,7 @@ public class MainActivity extends Activity{
  }
  void listen(String id){if(sl!=null)sl.remove();sl=db.collection("orders").document(id).addSnapshotListener((s,e)->{if(e!=null||s==null||!s.exists())return;String st=s.getString("status");if(st==null)st="PLACED";js("window.statusUpdate("+JSONObject.quote(st)+");");if(!st.equals(last)){last=st;if(!st.equals("PLACED")&&(Build.VERSION.SDK_INT<33||ActivityCompat.checkSelfPermission(this,Manifest.permission.POST_NOTIFICATIONS)==PackageManager.PERMISSION_GRANTED))((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify((int)(System.currentTimeMillis()%100000),new NotificationCompat.Builder(this,CH).setSmallIcon(android.R.drawable.ic_dialog_info).setContentTitle("Samosa King – Order Update").setContentText("Order status: "+st).setAutoCancel(true).build());}});}
  void loadLast(){String id=getPreferences(0).getString("lastOrderId",null);if(id!=null)listen(id);}
+ long num(Object x){if(x instanceof Number)return ((Number)x).longValue();try{return Long.parseLong(String.valueOf(x));}catch(Exception e){return 0;}}
  void history(){
   Runnable load=()->{
    if(a.getCurrentUser()==null){js("window.renderHistory([])");return;}
