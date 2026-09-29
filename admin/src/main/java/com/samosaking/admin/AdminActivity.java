@@ -40,6 +40,7 @@ public class AdminActivity extends Activity{
  }
 
  private void assignDeliveryBoy(String orderId,String boyEmail){
+  boyEmail=boyEmail==null?null:boyEmail.trim().toLowerCase(Locale.US);
   if(orderId==null||orderId.trim().isEmpty()){message("Invalid order ID.");return;}
   if(boyEmail==null||boyEmail.trim().isEmpty()){message("Select a delivery boy.");return;}
   if(!isDeliveryEmail(boyEmail)){message("Invalid delivery account.");return;}
@@ -157,7 +158,7 @@ public class AdminActivity extends Activity{
     o.put("id",d.getId());o.put("name",d.getString("customerName"));o.put("mobile",d.getString("mobile"));
     o.put("address",d.getString("address"));o.put("payment",d.getString("paymentMethod"));o.put("paymentStatus",d.getString("paymentStatus"));
     o.put("subtotal",num(d.get("subtotal")));o.put("delivery",num(d.get("deliveryFee")));o.put("discount",num(d.get("discount")));
-    o.put("total",num(d.get("total")));o.put("status",d.getString("status"));o.put("date",dateText(d.get("createdAt")));
+    o.put("total",num(d.get("total")));o.put("status",d.getString("status"));o.put("deliveryBoyEmail",d.getString("deliveryBoyEmail"));o.put("date",dateText(d.get("createdAt")));
     if(d.get("createdAt") instanceof com.google.firebase.Timestamp)o.put("createdAtMs",((com.google.firebase.Timestamp)d.get("createdAt")).toDate().getTime());
     JSONArray items=new JSONArray();
     Object im=d.get("items");
