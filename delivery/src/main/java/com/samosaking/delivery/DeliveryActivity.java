@@ -44,6 +44,8 @@ public class DeliveryActivity extends Activity {
         if(auth.getCurrentUser()==null){showLogin();return;} root.removeAllViews();
         LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);TextView t=tv("🚚 Delivery Dashboard",22);head.addView(t,new LinearLayout.LayoutParams(0,-2,1));Button lo=btn("Logout");head.addView(lo);root.addView(head);lo.setOnClickListener(v->{if(listener!=null)listener.remove();stopLocationSharing();auth.signOut();showLogin();});
         root.addView(tv("📍 Live Location: ON when GPS permission is allowed",14));
+        Button gps=btn("📍 ENABLE GPS"); root.addView(gps,new LinearLayout.LayoutParams(-1,-2));
+        gps.setOnClickListener(v->{ try{startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));}catch(Exception ignored){} startLocationSharing(); });
         root.addView(tv("My Assigned Orders",18));
         startLocationSharing();list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);root.addView(list,new LinearLayout.LayoutParams(-1,-1));listenAssignedOrders();
     }
@@ -67,13 +69,14 @@ public class DeliveryActivity extends Activity {
             if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if(last==null && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             if(last!=null)saveDeliveryLocation(last);
+            else if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) toast("GPS is OFF. Tap ENABLE GPS.");
             locationStarted=true;
         }catch(SecurityException e){toast("Location permission required.");}
         catch(Exception e){toast("Could not start location: "+e.getMessage());}
     }
     @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults){
         super.onRequestPermissionsResult(requestCode,permissions,grantResults);
-        if(requestCode==7001 && grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED)startLocationSharing();
+        if(requestCode==7001 && grantResults.length>0 && (grantResults[0]==PackageManager.PERMISSION_GRANTED || (grantResults.length>1 && grantResults[1]==PackageManager.PERMISSION_GRANTED)))startLocationSharing();
         else toast("Location permission is required for nearest delivery assignment.");
     }
     private void saveDeliveryLocation(Location l){
@@ -84,7 +87,7 @@ public class DeliveryActivity extends Activity {
         Map<String,Object> m=new HashMap<>();
         m.put("email",em);m.put("latitude",l.getLatitude());m.put("longitude",l.getLongitude());
         m.put("accuracyMeters",(double)l.getAccuracy());m.put("lastSeenAt",FieldValue.serverTimestamp());m.put("online",true);
-        db.collection("deliveryBoys").document(uid).set(m,SetOptions.merge());
+        db.collection("deliveryBoys").document(uid).set(m,SetOptions.merge()).addOnFailureListener(e->toast("GPS save failed: "+e.getMessage())).addOnSuccessListener(v->{});
     }
     private void stopLocationSharing(){
         try{if(locationManager!=null&&locationListener!=null)locationManager.removeUpdates(locationListener);}catch(Exception ignored){}
