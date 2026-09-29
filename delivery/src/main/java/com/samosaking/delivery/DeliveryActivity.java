@@ -91,7 +91,7 @@ public class DeliveryActivity extends Activity {
         locationStarted=false;
     }
     private void listenAssignedOrders(){
-        if(listener!=null)listener.remove();String email=auth.getCurrentUser().getEmail(); if(email==null)email=""; email=email.trim().toLowerCase(Locale.US);
+        if(listener!=null)listener.remove();String email=auth.getCurrentUser().getEmail(); if(email==null)email=""; email=email.trim();
         listener=db.collection("orders").whereEqualTo("deliveryBoyEmail",email).addSnapshotListener((snap,e)->{list.removeAllViews();if(e!=null){list.addView(tv("Could not load orders: "+e.getMessage(),15));return;}if(snap==null||snap.isEmpty()){list.addView(tv("No assigned deliveries right now.",16));return;}for(DocumentSnapshot d:snap.getDocuments())addOrder(d);});
     }
     private void addOrder(DocumentSnapshot d){
