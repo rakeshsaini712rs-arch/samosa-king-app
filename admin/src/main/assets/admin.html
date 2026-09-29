@@ -114,6 +114,7 @@
     var buttons='',s;
     for(i=0;i<statuses.length;i++){s=statuses[i];buttons+='<a class="btn '+(String(o.status||'')===s?'status-current':'')+'" data-order-id="'+esc(o.id)+'" data-status="'+s+'" href="'+actionUrl('status',o.id,s)+'">'+(String(o.status||'')===s?'✓ ':'')+s.replace(/_/g,' ')+'</a>';}
     buttons+='<a class="btn" href="'+actionUrl('reject',o.id,'')+'">REJECT</a>';
+    buttons+='<a class="btn" style="background:#b3261e;color:#fff" href="'+actionUrl('delete',o.id,'')+'" onclick="return confirm(\'Delete this order permanently? This cannot be undone.\')">🗑 DELETE</a>';
     return '<div class="order"><div><b>Order #'+esc(o.id)+'</b> <span class="pill">'+esc(o.status||'PLACED')+'</span></div>'+
       '<p>👤 <b>'+esc(o.name)+'</b><br>📞 '+esc(o.mobile||'')+'</p>'+
       '<p>📍 <b>Delivery address</b><br>'+esc(o.address||'')+'</p>'+
