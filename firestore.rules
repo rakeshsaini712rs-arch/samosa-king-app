@@ -35,7 +35,10 @@ service cloud.firestore {
     }
     match /deliveryBoys/{uid} {
       allow read: if signedIn() && (admin() || request.auth.uid == uid);
-      allow create, update: if signedIn() && request.auth.uid == uid
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.latitude is number && request.resource.data.longitude is number;
+      allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.email == request.auth.token.email
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email','latitude','longitude','accuracyMeters','lastSeenAt','online']);
       allow delete: if admin();
