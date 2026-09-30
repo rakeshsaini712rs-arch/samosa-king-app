@@ -21,6 +21,26 @@ jobs:
       - name: Checkout current main
         uses: actions/checkout@v4
 
+      - name: Apply definitive customer UI cleanup
+        shell: bash
+        run: |
+          set -e
+          python3 tools/fix_customer_ui_duplicates.py
+          test -f app/src/main/assets/index.html
+          if grep -F '⏱ 20–30 min</span><span class="skTickerDot">•</span><span class="skTickerItem">⚡ Near & Fast</span><span class="skTickerDot">•</span><span class="skTickerItem">🔥 Fresh & Hot</span><span class="skTickerDot">•</span><span class="skTickerItem">🚴 Fast Delivery</span><span class="skTickerDot">•</span><span class="skTickerItem">⏱ 20–30 min' app/src/main/assets/index.html; then
+            echo 'ERROR: duplicated delivery ticker is still present'
+            exit 1
+          fi
+          if grep -F '+91XXXXXXXXXX' app/src/main/assets/index.html; then
+            echo 'ERROR: obsolete OTP phone placeholder is still present'
+            exit 1
+          fi
+          if grep -F 'Send OTP' app/src/main/assets/index.html; then
+            echo 'ERROR: obsolete Send OTP UI is still present'
+            exit 1
+          fi
+          echo 'Customer UI cleanup verified.'
+
       - name: Fix duplicate customer delivery strip
         shell: bash
         run: |
@@ -44,7 +64,6 @@ jobs:
         if(!matches)return;
         seen++;
         if(seen>1){el.style.setProperty('display','none','important');return;}
-        /* If one container contains the same strip twice, keep only the first copy. */
         if(matches.length>1){
           var parts=text.split(phrase);
           var keep=parts.shift().trim();
@@ -97,6 +116,6 @@ EOF
       - name: Upload admin APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-King-ADMIN-APK-NEW
+          name: Samosa-KING-ADMIN-APK-NEW
           path: admin/build/outputs/apk/debug/admin-debug.apk
           if-no-files-found: error
