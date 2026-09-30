@@ -198,7 +198,7 @@ public class AdminActivity extends Activity{
       JSONArray a=new JSONArray();
       if(snap!=null)for(DocumentSnapshot d:snap.getDocuments()){
         JSONObject o=new JSONObject();
-        o.put("uid",d.getId());o.put("email",d.getString("email"));o.put("latitude",numDouble(d.get("latitude")));o.put("longitude",numDouble(d.get("longitude")));
+        o.put("uid",d.getId());o.put("email",d.getString("email"));o.put("name",d.getString("name"));o.put("phone",d.getString("phone"));o.put("latitude",numDouble(d.get("latitude")));o.put("longitude",numDouble(d.get("longitude")));
         o.put("accuracy",numDouble(d.get("accuracyMeters")));o.put("online",Boolean.TRUE.equals(d.getBoolean("online")));
         o.put("lastSeenMs",d.get("lastSeenAt") instanceof com.google.firebase.Timestamp?((com.google.firebase.Timestamp)d.get("lastSeenAt")).toDate().getTime():0);
         a.put(o);
