@@ -10,6 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/patch_customer_delivery_tracking.py
+      - run: python3 tools/fix_customer_ui_duplicates.py
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
