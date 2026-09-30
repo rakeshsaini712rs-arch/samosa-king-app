@@ -1,114 +1,27 @@
 package com.samosaking.delivery;
 
-import android.app.*;
-import android.os.*;
-import android.content.*;
-import android.content.pm.PackageManager;
-import android.location.*;
-import android.Manifest;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.net.Uri;
-import android.view.*;
-import android.widget.*;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.*;
-import java.util.*;
+import android.app.*;import android.os.*;import android.content.*;import android.content.pm.PackageManager;import android.location.*;import android.Manifest;import android.graphics.Color;import android.graphics.drawable.GradientDrawable;import android.net.Uri;import android.view.*;import android.widget.*;import com.google.firebase.FirebaseApp;import com.google.firebase.FirebaseOptions;import com.google.firebase.auth.FirebaseAuth;import com.google.firebase.firestore.*;import java.util.*;
 
 public class DeliveryActivity extends Activity {
-    private FirebaseAuth auth; private FirebaseFirestore db;
-    private LinearLayout root,list; private EditText email,password; private ListenerRegistration listener; private LocationManager locationManager; private LocationListener locationListener; private boolean locationStarted=false;
-    private static final String PROJECT="samosa-king-3b90d";
-    private static final String APP_ID="1:855148039257:android:535730f98ea24e77253548";
-    private static final String API_KEY="AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw";
-
-    @Override public void onCreate(Bundle b){
-        super.onCreate(b);
-        FirebaseOptions o=new FirebaseOptions.Builder().setProjectId(PROJECT).setApplicationId(APP_ID).setApiKey(API_KEY).build();
-        if(FirebaseApp.getApps(this).isEmpty()) FirebaseApp.initializeApp(this,o);
-        FirebaseApp app=FirebaseApp.getInstance(); auth=FirebaseAuth.getInstance(app); db=FirebaseFirestore.getInstance(app); showLogin();
-    }
-    private TextView tv(String s,int n){TextView v=new TextView(this);v.setText(s);v.setTextSize(n);v.setTextColor(Color.rgb(40,30,24));v.setPadding(20,12,20,12);return v;}
-    private Button btn(String s){Button b=new Button(this);b.setText(s);b.setAllCaps(false);return b;}
-    private void showLogin(){
-        root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(28,60,28,28);root.setBackgroundColor(Color.rgb(250,247,243));
-        TextView t=tv("👑 SAMOSA KING",28);t.setTextColor(Color.rgb(145,83,0));root.addView(t);root.addView(tv("Delivery Partner Login",20));
-        email=new EditText(this);email.setHint("Delivery boy email");email.setInputType(33);root.addView(email,new LinearLayout.LayoutParams(-1,-2));
-        password=new EditText(this);password.setHint("Password");password.setInputType(129);root.addView(password,new LinearLayout.LayoutParams(-1,-2));
-        Button login=btn("LOGIN");root.addView(login,new LinearLayout.LayoutParams(-1,-2));root.addView(tv("Only authorized delivery accounts can access assigned orders.",14));login.setOnClickListener(v->login());setContentView(root);
-    }
-    private void login(){String e=email.getText().toString().trim(),p=password.getText().toString();if(e.isEmpty()||p.isEmpty()){toast("Email and password required.");return;}auth.signInWithEmailAndPassword(e,p).addOnSuccessListener(r->loadDashboard()).addOnFailureListener(x->toast("Login failed: "+x.getMessage()));}
-    private void loadDashboard(){
-        if(auth.getCurrentUser()==null){showLogin();return;} root.removeAllViews();
-        LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);TextView t=tv("🚚 Delivery Dashboard",22);head.addView(t,new LinearLayout.LayoutParams(0,-2,1));Button lo=btn("Logout");head.addView(lo);root.addView(head);lo.setOnClickListener(v->logoutDelivery());
-        root.addView(tv("📍 Live Location: ON when GPS permission is allowed",14));
-        Button gps=btn("📍 ENABLE GPS"); root.addView(gps,new LinearLayout.LayoutParams(-1,-2));
-        gps.setOnClickListener(v->{ try{startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));}catch(Exception ignored){} startLocationSharing(); });
-        root.addView(tv("My Assigned Orders",18));
-        startLocationSharing();list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);root.addView(list,new LinearLayout.LayoutParams(-1,-1));listenAssignedOrders();
-    }
-    private void logoutDelivery(){final String uid=auth.getCurrentUser()==null?null:auth.getCurrentUser().getUid();if(listener!=null)listener.remove();stopLocationSharing();if(uid==null){auth.signOut();showLogin();return;}Map<String,Object> off=new HashMap<>();off.put("online",false);off.put("lastSeenAt",FieldValue.serverTimestamp());db.collection("deliveryBoys").document(uid).set(off,SetOptions.merge()).addOnCompleteListener(x->{auth.signOut();showLogin();});}
-    private void startLocationSharing(){
-        if(auth.getCurrentUser()==null)return;
-        if(Build.VERSION.SDK_INT>=23 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},7001); return;
-        }
-        try{
-            locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);
-            locationListener=new LocationListener(){
-                @Override public void onLocationChanged(Location l){saveDeliveryLocation(l);}
-                @Override public void onProviderEnabled(String p){}
-                @Override public void onProviderDisabled(String p){}
-            };
-            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10000,20,locationListener);
-            if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,15000,30,locationListener);
-            Location last=null;
-            if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if(last==null && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            if(last!=null)saveDeliveryLocation(last);
-            else if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) toast("GPS is OFF. Tap ENABLE GPS.");
-            locationStarted=true;
-        }catch(SecurityException e){toast("Location permission required.");}
-        catch(Exception e){toast("Could not start location: "+e.getMessage());}
-    }
-    @Override public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults){
-        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
-        if(requestCode==7001 && grantResults.length>0 && (grantResults[0]==PackageManager.PERMISSION_GRANTED || (grantResults.length>1 && grantResults[1]==PackageManager.PERMISSION_GRANTED)))startLocationSharing();
-        else toast("Location permission is required for nearest delivery assignment.");
-    }
-    private void saveDeliveryLocation(Location l){
-        if(l==null||auth.getCurrentUser()==null)return;
-        String uid=auth.getCurrentUser().getUid(), em=auth.getCurrentUser().getEmail();
-        if(em==null)em="";
-        em=em.trim();
-        Map<String,Object> m=new HashMap<>();
-        m.put("email",em);m.put("latitude",l.getLatitude());m.put("longitude",l.getLongitude());
-        m.put("accuracyMeters",(double)l.getAccuracy());m.put("lastSeenAt",FieldValue.serverTimestamp());m.put("online",true);
-        db.collection("deliveryBoys").document(uid).set(m,SetOptions.merge()).addOnFailureListener(e->toast("GPS save failed: "+e.getMessage())).addOnSuccessListener(v->{});
-    }
-    @Override protected void onDestroy(){try{if(listener!=null)listener.remove();}catch(Exception ignored){}stopLocationSharing();if(auth!=null&&auth.getCurrentUser()!=null){String uid=auth.getCurrentUser().getUid();Map<String,Object> off=new HashMap<>();off.put("online",false);off.put("lastSeenAt",FieldValue.serverTimestamp());db.collection("deliveryBoys").document(uid).set(off,SetOptions.merge());}super.onDestroy();}
- private void stopLocationSharing(){
-        try{if(locationManager!=null&&locationListener!=null)locationManager.removeUpdates(locationListener);}catch(Exception ignored){}
-        locationStarted=false;
-    }
-    private void listenAssignedOrders(){
-        if(listener!=null)listener.remove();String email=auth.getCurrentUser().getEmail(); if(email==null)email=""; email=email.trim();
-        listener=db.collection("orders").whereEqualTo("deliveryBoyEmail",email).addSnapshotListener((snap,e)->{list.removeAllViews();if(e!=null){list.addView(tv("Could not load orders: "+e.getMessage(),15));return;}if(snap==null||snap.isEmpty()){list.addView(tv("No assigned deliveries right now.",16));return;}for(DocumentSnapshot d:snap.getDocuments())addOrder(d);});
-    }
-    private void addOrder(DocumentSnapshot d){
-        LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(14,14,14,14);GradientDrawable bg=new GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(18);card.setBackground(bg);
-        card.addView(tv("📦 "+safe(d.getString("customerName"))+"  •  ₹"+money(d.get("total")),18));
-        card.addView(tv("📍 "+safe(d.getString("address")),15));card.addView(tv("📞 "+safe(d.getString("mobile"))+"\nStatus: "+safe(d.getString("status")),14));
-        LinearLayout actions=new LinearLayout(this);String status=safe(d.getString("status"));
-        if("PLACED".equals(status)||"ACCEPTED".equals(status)||"PREPARING".equals(status))addAction(actions,d,"PICKED UP","OUT_FOR_DELIVERY");
-        if("OUT_FOR_DELIVERY".equals(status))addAction(actions,d,"DELIVERED","DELIVERED");
-        Button call=btn("📞 Call");actions.addView(call);call.setOnClickListener(v->{try{startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+d.getString("mobile"))));}catch(Exception ignored){}});card.addView(actions);
-        LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.setMargins(0,8,0,8);list.addView(card,cp);
-    }
-    private void addAction(LinearLayout row,DocumentSnapshot d,String label,String value){Button b=btn(label);row.addView(b);b.setOnClickListener(v->db.collection("orders").document(d.getId()).update("status",value).addOnSuccessListener(x->toast("Status updated.")).addOnFailureListener(x->toast("Update failed: "+x.getMessage())));}
-    private String safe(String s){return s==null?"":s;} private String money(Object x){try{return String.valueOf(Math.round(Double.parseDouble(String.valueOf(x))));}catch(Exception e){return "0";}} private void toast(String s){Toast.makeText(this,s,Toast.LENGTH_SHORT).show();}
+ private FirebaseAuth auth; private FirebaseFirestore db; private LinearLayout root,list; private EditText email,password; private ListenerRegistration listener; private LocationManager locationManager; private LocationListener locationListener;
+ private static final String PROJECT="samosa-king-3b90d"; private static final String APP_ID="1:855148039257:android:535730f98ea24e77253548"; private static final String API_KEY="AIzaSyCusjrBM2M59Obiwv-Dgy1m6PgiYDQtwQw";
+ @Override public void onCreate(Bundle b){super.onCreate(b);FirebaseOptions o=new FirebaseOptions.Builder().setProjectId(PROJECT).setApplicationId(APP_ID).setApiKey(API_KEY).build();if(FirebaseApp.getApps(this).isEmpty())FirebaseApp.initializeApp(this,o);FirebaseApp app=FirebaseApp.getInstance();auth=FirebaseAuth.getInstance(app);db=FirebaseFirestore.getInstance(app);showLogin();}
+ private TextView tv(String s,int n){TextView v=new TextView(this);v.setText(s);v.setTextSize(n);v.setTextColor(Color.rgb(40,30,24));v.setPadding(20,12,20,12);return v;} private Button btn(String s){Button b=new Button(this);b.setText(s);b.setAllCaps(false);return b;}
+ private void showLogin(){root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(28,60,28,28);root.setBackgroundColor(Color.rgb(250,247,243));TextView t=tv("👑 SAMOSA KING",28);t.setTextColor(Color.rgb(145,83,0));root.addView(t);root.addView(tv("Delivery Partner Login",20));email=new EditText(this);email.setHint("Delivery boy email");email.setInputType(33);root.addView(email);password=new EditText(this);password.setHint("Password");password.setInputType(129);root.addView(password);Button login=btn("LOGIN");root.addView(login);root.addView(tv("Only authorized delivery accounts can access assigned orders.",14));login.setOnClickListener(v->login());setContentView(root);}
+ private void login(){String e=email.getText().toString().trim(),p=password.getText().toString();if(e.isEmpty()||p.isEmpty()){toast("Email and password required.");return;}auth.signInWithEmailAndPassword(e,p).addOnSuccessListener(r->loadDashboard()).addOnFailureListener(x->toast("Login failed: "+x.getMessage()));}
+ private void loadDashboard(){if(auth.getCurrentUser()==null){showLogin();return;}root.removeAllViews();LinearLayout head=new LinearLayout(this);head.setGravity(Gravity.CENTER_VERTICAL);TextView t=tv("🚚 Delivery Dashboard",22);head.addView(t,new LinearLayout.LayoutParams(0,-2,1));Button lo=btn("Logout");head.addView(lo);root.addView(head);lo.setOnClickListener(v->logoutDelivery());root.addView(tv("📍 Live Location: ON when GPS permission is allowed",14));Button gps=btn("📍 ENABLE GPS");root.addView(gps);gps.setOnClickListener(v->{try{startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));}catch(Exception ignored){}startLocationSharing();});root.addView(tv("My Assigned Orders",18));startLocationSharing();list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);root.addView(list,new LinearLayout.LayoutParams(-1,-1));listenAssignedOrders();}
+ private void logoutDelivery(){String uid=auth.getCurrentUser()==null?null:auth.getCurrentUser().getUid();if(listener!=null)listener.remove();stopLocationSharing();if(uid==null){auth.signOut();showLogin();return;}Map<String,Object> off=new HashMap<>();off.put("online",false);off.put("lastSeenAt",FieldValue.serverTimestamp());db.collection("deliveryBoys").document(uid).set(off,SetOptions.merge()).addOnCompleteListener(x->{auth.signOut();showLogin();});}
+ private void startLocationSharing(){if(auth.getCurrentUser()==null)return;if(Build.VERSION.SDK_INT>=23&&checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED&&checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},7001);return;}try{locationManager=(LocationManager)getSystemService(LOCATION_SERVICE);locationListener=new LocationListener(){@Override public void onLocationChanged(Location l){saveDeliveryLocation(l);} @Override public void onProviderEnabled(String p){} @Override public void onProviderDisabled(String p){}};if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10000,20,locationListener);if(locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,15000,30,locationListener);Location last=null;if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);if(last==null&&locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))last=locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);if(last!=null)saveDeliveryLocation(last);}catch(Exception e){toast("Could not start location: "+e.getMessage());}}
+ @Override public void onRequestPermissionsResult(int r,String[] p,int[] g){super.onRequestPermissionsResult(r,p,g);if(r==7001&&g.length>0&&(g[0]==PackageManager.PERMISSION_GRANTED||(g.length>1&&g[1]==PackageManager.PERMISSION_GRANTED)))startLocationSharing();}
+ private void saveDeliveryLocation(Location l){if(l==null||auth.getCurrentUser()==null)return;Map<String,Object> m=new HashMap<>();m.put("email",auth.getCurrentUser().getEmail());m.put("latitude",l.getLatitude());m.put("longitude",l.getLongitude());m.put("accuracyMeters",(double)l.getAccuracy());m.put("lastSeenAt",FieldValue.serverTimestamp());m.put("online",true);db.collection("deliveryBoys").document(auth.getCurrentUser().getUid()).set(m,SetOptions.merge());}
+ private void stopLocationSharing(){try{if(locationManager!=null&&locationListener!=null)locationManager.removeUpdates(locationListener);}catch(Exception ignored){}}
+ private void listenAssignedOrders(){if(listener!=null)listener.remove();String e=auth.getCurrentUser().getEmail();if(e==null)e="";String em=e.trim();listener=db.collection("orders").whereEqualTo("deliveryBoyEmail",em).addSnapshotListener((snap,err)->{list.removeAllViews();if(err!=null){list.addView(tv("Could not load orders: "+err.getMessage(),15));return;}if(snap==null||snap.isEmpty()){list.addView(tv("No assigned deliveries right now.",16));return;}for(DocumentSnapshot d:snap.getDocuments())addOrder(d);});}
+ private void addOrder(DocumentSnapshot d){LinearLayout card=new LinearLayout(this);card.setOrientation(LinearLayout.VERTICAL);card.setPadding(14,14,14,14);GradientDrawable bg=new GradientDrawable();bg.setColor(Color.WHITE);bg.setCornerRadius(18);card.setBackground(bg);String pay=safe(d.getString("paymentMethod"));if(pay.isEmpty())pay=safe(d.getString("paymentType"));if(pay.isEmpty())pay="Not specified";String status=safe(d.getString("status"));card.addView(tv("📦 "+safe(d.getString("customerName"))+"  •  ₹"+money(d.get("total")),18));card.addView(tv("📍 Customer: "+safe(d.getString("address")),15));card.addView(tv("📞 "+safe(d.getString("mobile")),14));TextView payment=tv("💳 Payment: "+formatPayment(pay),16);payment.setTextColor(Color.rgb(120,70,0));card.addView(payment);card.addView(tv("Order Status: "+status,14));
+ LinearLayout actions=new LinearLayout(this);Button nav=btn("🗺️ Navigate to Customer");actions.addView(nav,new LinearLayout.LayoutParams(0,-2,1));nav.setOnClickListener(v->navigateToCustomer(d));Button call=btn("📞 Call");actions.addView(call);call.setOnClickListener(v->{try{startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:"+d.getString("mobile"))));}catch(Exception ignored){}});card.addView(actions);
+ if("PLACED".equals(status)||"ACCEPTED".equals(status)||"PREPARING".equals(status))addAction(card,d,"PICKED UP","OUT_FOR_DELIVERY");if("OUT_FOR_DELIVERY".equals(status))addAction(card,d,"DELIVERED","DELIVERED");LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.setMargins(0,8,0,8);list.addView(card,cp);}
+ private String formatPayment(String p){String x=p.trim().toUpperCase(Locale.US);if(x.contains("COD")||x.contains("CASH"))return "COD / Cash on Delivery";if(x.contains("UPI")||x.contains("ONLINE")||x.contains("PHONE")||x.contains("PAYMENT"))return "Online Payment / UPI";return p;}
+ private void navigateToCustomer(DocumentSnapshot d){try{Double lat=d.getDouble("latitude"),lon=d.getDouble("longitude");if(lat!=null&&lon!=null&&Math.abs(lat)>0.0001&&Math.abs(lon)>0.0001){Intent i=new Intent(Intent.ACTION_VIEW,Uri.parse("google.navigation:q="+lat+","+lon+"&mode=d"));i.setPackage("com.google.android.apps.maps");try{startActivity(i);return;}catch(Exception ignored){}}String address=safe(d.getString("address"));if(address.isEmpty()){toast("Customer location unavailable.");return;}startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://www.google.com/maps/dir/?api=1&destination="+Uri.encode(address)+"&travelmode=driving")));}catch(Exception e){toast("Could not open navigation.");}}
+ private void addAction(LinearLayout parent,DocumentSnapshot d,String label,String value){Button b=btn(label);parent.addView(b);b.setOnClickListener(v->db.collection("orders").document(d.getId()).update("status",value).addOnSuccessListener(x->toast("Status updated.")).addOnFailureListener(x->toast("Update failed: "+x.getMessage())));}
+ private String safe(String s){return s==null?"":s;}private String money(Object x){try{return String.valueOf(Math.round(Double.parseDouble(String.valueOf(x))));}catch(Exception e){return "0";}}private void toast(String s){Toast.makeText(this,s,Toast.LENGTH_SHORT).show();}
+ @Override protected void onDestroy(){try{if(listener!=null)listener.remove();}catch(Exception ignored){}stopLocationSharing();if(auth!=null&&auth.getCurrentUser()!=null){Map<String,Object> off=new HashMap<>();off.put("online",false);off.put("lastSeenAt",FieldValue.serverTimestamp());db.collection("deliveryBoys").document(auth.getCurrentUser().getUid()).set(off,SetOptions.merge());}super.onDestroy();}
 }
