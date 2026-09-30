@@ -16,6 +16,8 @@ jobs:
       GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
     steps:
       - uses: actions/checkout@v4
+      - name: Apply Admin payment verification patch
+        run: python3 tools/patch_admin_payment.py
       - uses: actions/setup-java@v5
         with: {distribution: temurin, java-version: '17'}
       - uses: gradle/actions/setup-gradle@v4
