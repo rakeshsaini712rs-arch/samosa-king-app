@@ -46,7 +46,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       {url:'https://videos.pexels.com/video-files/6603825/6603825-hd_1920_1080_25fps.mp4',tag:'👑 SAMOSA KING',title:'Fresh Food',sub:'Order your favourite food now'}
     ];
     var i=0,loading=false,retries=0;
-    function setText(x){t.innerHTML='<span>'+x.tag+'</span><b>'+x.title+'</b><small>'+x.sub+'</small>'}
+    function setText(x){t.innerHTML='<span>'+x.tag+'</span><b>'+x.title+'</b><small>'+x.sub+'</small>}
     function play(){var p=v.play();if(p&&p.catch)p.catch(function(){})}
     function show(n){if(loading)return;loading=true;var x=slides[n%slides.length];i=n%slides.length;setText(x);s.src=x.url;v.load();retries=0;setTimeout(function(){loading=false;play()},80)}
     function next(){show((i+1)%slides.length)}
@@ -57,4 +57,53 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     show(0);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installPromoFix);else installPromoFix();
+})();
+
+/* Customer UI cleanup: keep the original menu, remove only duplicate/obsolete visual items. */
+(function(){
+  if(window.__skCustomerUiCleanup)return; window.__skCustomerUiCleanup=true;
+  function clean(){
+    /* Keep the first visible hamburger/profile menu button and hide later duplicate buttons. */
+    var menus=[].slice.call(document.querySelectorAll('button')).filter(function(b){return (b.textContent||'').trim()==='☰' && getComputedStyle(b).display!=='none';});
+    menus.slice(1).forEach(function(b){b.style.setProperty('display','none','important');b.setAttribute('aria-hidden','true');});
+
+    /* Replace the obsolete 5 km wording without removing the delivery information. */
+    document.querySelectorAll('body *').forEach(function(el){
+      if(el.children.length===0 && el.textContent){
+        var t=el.textContent;
+        var n=t.replace(/Delivery\s*₹30\s*up to 5 km/gi,'Delivery ₹30').replace(/₹30\s*up to 5 km/gi,'₹30');
+        if(n!==t)el.textContent=n;
+      }
+    });
+
+    /* Remove the old OTP/login block from the customer home screen. */
+    document.querySelectorAll('body *').forEach(function(el){
+      if(el.children.length===0 && (el.textContent||'').trim()==='Send OTP'){
+        var p=el.closest('.login')||el.parentElement;
+        if(p)p.style.setProperty('display','none','important');
+      }
+    });
+
+    /* Keep only one delivery-information strip per product card. */
+    document.querySelectorAll('.card').forEach(function(card){
+      var strips=[];
+      card.querySelectorAll('*').forEach(function(el){
+        if(el.children.length===0)return;
+        var t=(el.textContent||'').replace(/\s+/g,' ');
+        if(t.indexOf('20–30 min')>=0 && t.indexOf('Near & Fast')>=0 && t.indexOf('Fresh & Hot')>=0 && t.indexOf('Fast Delivery')>=0)strips.push(el);
+      });
+      strips.forEach(function(el,i){if(i>0)el.style.setProperty('display','none','important');});
+    });
+
+    /* If a product title is rendered outside its card as a duplicate, hide only the repeated heading. */
+    var names=['Dahi Bhalla Plate 1','Dahi Bhalla Plate 2','Chole Bhature'];
+    names.forEach(function(name){
+      var hits=[].slice.call(document.querySelectorAll('body *')).filter(function(el){return el.children.length===0 && (el.textContent||'').trim()===name;});
+      var cardHit=hits.find(function(el){return el.closest('.card');});
+      hits.forEach(function(el){if(el!==cardHit && !el.closest('.card'))el.style.setProperty('display','none','important');});
+    });
+  }
+  function run(){clean();setTimeout(clean,500);setTimeout(clean,1500);setTimeout(clean,3000);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+  new MutationObserver(function(){if(!window.__skCustomerUiCleanupRunning){window.__skCustomerUiCleanupRunning=true;setTimeout(function(){window.__skCustomerUiCleanupRunning=false;clean()},150)}}).observe(document.documentElement,{childList:true,subtree:true});
 })();
