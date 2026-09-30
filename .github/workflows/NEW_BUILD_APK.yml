@@ -116,6 +116,6 @@ EOF
       - name: Upload admin APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-KING-ADMIN-APK-NEW
+          name: Samosa-King-ADMIN-APK-NEW
           path: admin/build/outputs/apk/debug/admin-debug.apk
           if-no-files-found: error
