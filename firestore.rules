@@ -29,7 +29,7 @@ service cloud.firestore {
       allow update: if signedIn() && (
         (resource.data.userId == request.auth.uid && request.resource.data.userId == resource.data.userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) && request.resource.data.status == 'CANCELLED')
         || admin()
-        || (deliveryBoy() && resource.data.deliveryBoyEmail == request.auth.token.email && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']) && (request.resource.data.status == 'OUT_FOR_DELIVERY' || request.resource.data.status == 'DELIVERED'))
+        || (deliveryBoy() && resource.data.deliveryBoyEmail == request.auth.token.email && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','trackingActive','deliveryStartedAt','deliveryBoyEmail','deliveryCompletedAt']) && (request.resource.data.status == 'OUT_FOR_DELIVERY' || request.resource.data.status == 'DELIVERED'))
       );
       allow delete: if admin();
     }
