@@ -1,0 +1,35 @@
+name: Fix Samosa King duplicate delivery UI
+on:
+  push:
+    branches: [ main ]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove duplicate delivery metadata and old 5 km text
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('MainActivity.java')
+          s=p.read_text(encoding='utf-8')
+          original=s
+          js="""<script>(function(){const R=/⏱\s*20–30 min\s*•\s*⚡ Near & Fast\s*•\s*🔥 Fresh & Hot\s*•\s*🚴 Fast Delivery(?:\s*•\s*)?⏱\s*20–30 min\s*•\s*⚡ Near & Fast\s*•\s*🔥 Fresh & Hot\s*•\s*🚴 Fast Delivery/g;function c(){document.querySelectorAll('*').forEach(e=>{if(e.children.length===0&&R.test(e.textContent)){e.textContent=e.textContent.replace(R,'⏱ 20–30 min • ⚡ Near & Fast • 🔥 Fresh & Hot • 🚴 Fast Delivery');R.lastIndex=0}})}new MutationObserver(c).observe(document.documentElement,{childList:true,subtree:true});c()})();</script>"""
+          marker='</body>'
+          if js not in s and marker in s:
+              s=s.replace(marker, js+marker, 1)
+          s=s.replace('Delivery ₹30 up to 5 km • Cash on Delivery','Delivery ₹30 • Cash on Delivery')
+          s=s.replace('Delivery ₹30 up to 5 km','Delivery ₹30')
+          if s==original:
+              raise SystemExit('No change made; aborting commit')
+          p.write_text(s,encoding='utf-8')
+      - name: Commit fix and remove one-shot workflow
+        run: |
+          git config user.name 'samosa-king-fix-bot'
+          git config user.email 'actions@github.com'
+          git add MainActivity.java
+          git rm -f .github/workflows/fix-samosa-duplicate.yml || true
+          git commit -m 'Fix duplicate delivery metadata and remove old 5 km text'
+          git push
