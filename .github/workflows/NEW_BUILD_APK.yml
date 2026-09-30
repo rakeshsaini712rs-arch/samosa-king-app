@@ -21,6 +21,49 @@ jobs:
       - name: Checkout current main
         uses: actions/checkout@v4
 
+      - name: Fix duplicate customer delivery strip
+        shell: bash
+        run: |
+          set -e
+          FIX="app/src/main/assets/settings-fix.js"
+          test -f "$FIX"
+          cat >> "$FIX" <<'EOF'
+
+/* Build-time duplicate delivery-strip hardening. */
+(function(){
+  if(window.__skDeliveryStripHardening)return;
+  window.__skDeliveryStripHardening=true;
+  var phrase=/20[–-]30 min\s*[•·]\s*⚡\s*Near & Fast\s*[•·]\s*🔥\s*Fresh & Hot\s*[•·]\s*🚴\s*Fast Delivery/g;
+  function clean(){
+    document.querySelectorAll('.card').forEach(function(card){
+      var seen=0;
+      card.querySelectorAll('*').forEach(function(el){
+        if(!el.children.length)return;
+        var text=(el.textContent||'').replace(/\s+/g,' ').trim();
+        var matches=text.match(phrase);
+        if(!matches)return;
+        seen++;
+        if(seen>1){el.style.setProperty('display','none','important');return;}
+        /* If one container contains the same strip twice, keep only the first copy. */
+        if(matches.length>1){
+          var parts=text.split(phrase);
+          var keep=parts.shift().trim();
+          el.textContent=(keep?keep+' ':'')+matches[0];
+        }
+      });
+    });
+  }
+  function run(){clean();setTimeout(clean,250);setTimeout(clean,800);setTimeout(clean,1800);setTimeout(clean,3500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+  new MutationObserver(function(){
+    if(window.__skDeliveryStripHardeningBusy)return;
+    window.__skDeliveryStripHardeningBusy=true;
+    setTimeout(function(){window.__skDeliveryStripHardeningBusy=false;clean()},120);
+  }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+EOF
+          echo "Duplicate delivery-strip hardening applied."
+
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
