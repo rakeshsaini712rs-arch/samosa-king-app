@@ -1,0 +1,56 @@
+name: Remove customer service information strip
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  remove-strip:
+    if: ${{ !contains(github.event.head_commit.message, 'Remove customer service information strip') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove customer delivery/payment/open/help strip
+        shell: bash
+        run: |
+          set -e
+          FIX="app/src/main/assets/settings-fix.js"
+          test -f "$FIX"
+          cat >> "$FIX" <<'EOF'
+
+/* Customer-requested removal of the old delivery/payment/open/help information strip. */
+(function(){
+  if(window.__skRemoveCustomerServiceInfo)return;
+  window.__skRemoveCustomerServiceInfo=true;
+  function clean(){
+    var all=[].slice.call(document.querySelectorAll('body *'));
+    all.forEach(function(el){
+      if(!el.children.length)return;
+      var t=(el.textContent||'').replace(/\s+/g,' ').trim();
+      if(t.indexOf('Delivery')<0 || t.indexOf('Payment')<0 || t.indexOf('Open')<0 || t.indexOf('Help')<0 || t.indexOf('7891851475')<0)return;
+      var p=el;
+      while(p.parentElement){
+        var pt=(p.parentElement.textContent||'').replace(/\s+/g,' ').trim();
+        if(pt.indexOf('Delivery')>=0 && pt.indexOf('Payment')>=0 && pt.indexOf('Open')>=0 && pt.indexOf('Help')>=0 && pt.indexOf('7891851475')>=0)p=p.parentElement;
+        else break;
+      }
+      p.style.setProperty('display','none','important');
+    });
+  }
+  function run(){clean();setTimeout(clean,300);setTimeout(clean,1000);setTimeout(clean,2500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+  new MutationObserver(function(){
+    if(window.__skRemoveCustomerServiceBusy)return;
+    window.__skRemoveCustomerServiceBusy=true;
+    setTimeout(function(){window.__skRemoveCustomerServiceBusy=false;clean()},150);
+  }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+EOF
+          git config user.name 'samosa-king-fix-bot'
+          git config user.email 'actions@github.com'
+          git add "$FIX"
+          git commit -m 'Remove customer service information strip'
+          git push
