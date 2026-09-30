@@ -26,6 +26,9 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Apply Admin payment verification patch
+        run: python3 tools/patch_admin_payment.py
+
       - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
