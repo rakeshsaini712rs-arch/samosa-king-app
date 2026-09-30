@@ -1,0 +1,86 @@
+name: Final Samosa King UI cleanup
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clean duplicate UI text in source
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          files = list(Path('.').rglob('*.java')) + list(Path('.').rglob('*.kt'))
+          changed = []
+
+          # Collapse duplicated delivery-info labels when the same label is
+          # emitted twice consecutively by the product-card template.
+          labels = [
+              '20–30 min', '20-30 min',
+              'Near & Fast', 'Fresh & Hot', 'Fast Delivery'
+          ]
+
+          for p in files:
+              try:
+                  s = p.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+              original = s
+
+              # Remove the old OTP input/button text from the customer UI.
+              s = s.replace('Send OTP', '')
+              s = s.replace('+91XXXXXXXXXX', '')
+
+              # The UI source contains formatting markup between duplicate
+              # labels. Remove only immediately repeated copies.
+              for label in labels:
+                  esc = re.escape(label)
+                  # Repeat with whitespace, HTML entities/tags or bullet
+                  # separators between the two copies; keep the first copy.
+                  pat = re.compile(
+                      rf'({esc})(?:(?:\\n|\\r|\\t|&nbsp;|[•·|]|<[^>]*>|\\s){{0,160}})({esc})',
+                      re.IGNORECASE
+                  )
+                  s = pat.sub(r'\\1', s)
+
+              # Also collapse the exact repeated delivery block if present.
+              block = re.compile(
+                  r'(20[–-]30 min.*?Near & Fast.*?Fresh & Hot.*?Fast Delivery)'
+                  r'(?:(?:\\n|\\r|\\t|&nbsp;|[•·|]|<[^>]*>|\\s){0,220})'
+                  r'(20[–-]30 min.*?Near & Fast.*?Fresh & Hot.*?Fast Delivery)',
+                  re.IGNORECASE | re.DOTALL
+              )
+              s = block.sub(r'\\1', s)
+
+              if s != original:
+                  p.write_text(s, encoding='utf-8')
+                  changed.append(str(p))
+
+          print('Changed:', changed)
+          if not changed:
+              print('No source cleanup was needed.')
+
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Fix duplicate delivery UI and remove OTP prompt'
+          git push
