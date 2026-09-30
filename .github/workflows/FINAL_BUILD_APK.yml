@@ -20,17 +20,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
+      - name: Apply definitive customer UI duplicate fix
+        run: python3 tools/fix_customer_ui_duplicates.py
+
+      - name: Verify customer UI fix
+        shell: bash
+        run: |
+          set -e
+          test -f app/src/main/assets/index.html
+          if grep -F '⏱ 20–30 min</span><span class="skTickerDot">•</span><span class="skTickerItem">⚡ Near & Fast</span><span class="skTickerDot">•</span><span class="skTickerItem">🔥 Fresh & Hot</span><span class="skTickerDot">•</span><span class="skTickerItem">🚴 Fast Delivery</span><span class="skTickerDot">•</span><span class="skTickerItem">⏱ 20–30 min' app/src/main/assets/index.html; then
+            echo 'ERROR: duplicated delivery ticker remains'
+            exit 1
+          fi
+          if grep -F '+91XXXXXXXXXX' app/src/main/assets/index.html; then
+            echo 'ERROR: obsolete OTP placeholder remains'
+            exit 1
+          fi
+          if grep -F 'Send OTP' app/src/main/assets/index.html; then
+            echo 'ERROR: obsolete Send OTP UI remains'
+            exit 1
+          fi
+          echo 'Customer UI duplicate/OTP cleanup verified.'
 
       - name: Apply Admin payment verification patch
         run: python3 tools/patch_admin_payment.py
 
       - name: Apply Delivery payment instruction patch
         run: python3 tools/patch_delivery_payment.py
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
 
       - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
