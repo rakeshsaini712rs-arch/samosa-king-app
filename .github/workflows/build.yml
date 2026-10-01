@@ -16,6 +16,8 @@ jobs:
       GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
     steps:
       - uses: actions/checkout@v4
+      - name: Restore customer category menu photos
+        run: python3 tools/patch_customer_category_photos.py
       - name: Apply Admin payment verification patch
         run: python3 tools/patch_admin_payment.py
       - name: Apply Delivery payment instruction patch
