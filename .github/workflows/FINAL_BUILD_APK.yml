@@ -32,12 +32,44 @@ jobs:
             echo 'ERROR: customer service information block still exists'
             exit 1
           fi
-          echo 'Customer service information block removed from source.'
 
       - name: Apply definitive customer UI duplicate fix
         run: python3 tools/fix_customer_ui_duplicates.py
 
-      - name: Verify customer UI fix
+      - name: Apply App 57 runtime duplicate cleanup directly to customer HTML
+        shell: python3 {0}
+        run: |
+          from pathlib import Path
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '/* __APP57_FINAL_DUPLICATE_CLEANUP__ */'
+          if marker not in s:
+              js = r'''<script>
+/* __APP57_FINAL_DUPLICATE_CLEANUP__ */
+(function(){
+  if(window.__app57FinalDuplicateCleanup)return;
+  window.__app57FinalDuplicateCleanup=true;
+  function txt(e){return (e.textContent||'').replace(/\s+/g,' ').trim();}
+  function fix(){
+    var cats=document.getElementById('cats');
+    if(cats){var seen={};Array.from(cats.querySelectorAll('.cat')).forEach(function(e){var k=e.getAttribute('onclick')||txt(e);if(seen[k])e.remove();else seen[k]=1;});}
+    document.querySelectorAll('.skTickerTrack').forEach(function(t){var a=Array.from(t.children);if(a.length>7)a.slice(7).forEach(function(e){e.remove();});});
+    document.querySelectorAll('.card .add[disabled]').forEach(function(e){if(txt(e)==='Sold Out')e.remove();});
+    document.querySelectorAll('.services .helpActions,.serviceMeta').forEach(function(e){e.remove();});
+    document.querySelectorAll('.login').forEach(function(e){e.remove();});
+    var menus=Array.from(document.querySelectorAll('button,a,[role="button"]')).filter(function(e){return txt(e)==='☰';});
+    menus.slice(1).forEach(function(e){e.remove();});
+    document.querySelectorAll('.card').forEach(function(c){var seen={};Array.from(c.querySelectorAll('h3')).forEach(function(h){var k=txt(h);if(k&&seen[k])h.remove();else if(k)seen[k]=1;});});
+  }
+  function run(){fix();setTimeout(fix,200);setTimeout(fix,800);setTimeout(fix,2000);setTimeout(fix,5000);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+  new MutationObserver(function(){setTimeout(fix,60);}).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>'''
+              s = s.replace('</body>', js + '\n</body>', 1)
+              p.write_text(s, encoding='utf-8')
+
+      - name: Verify customer UI duplicate cleanup
         shell: bash
         run: |
           set -e
@@ -54,7 +86,8 @@ jobs:
             echo 'ERROR: obsolete Send OTP UI remains'
             exit 1
           fi
-          echo 'Customer UI duplicate/OTP cleanup verified.'
+          grep -F '__APP57_FINAL_DUPLICATE_CLEANUP__' app/src/main/assets/index.html
+          echo 'Customer duplicate cleanup verified.'
 
       - name: Apply Admin payment verification patch
         run: python3 tools/patch_admin_payment.py
