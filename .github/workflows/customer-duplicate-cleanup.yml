@@ -1,0 +1,41 @@
+name: Customer Duplicate Cleanup
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove remaining Customer UI duplicates only
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          old = s
+          # Categories: hide image alt text from accessibility extraction; visible category name remains once.
+          s = s.replace('<img src="\'+catImgs.all+\'" alt="All">', '<img src="\'+catImgs.all+\'" alt="">')
+          s = s.replace('alt="\'+g.name+\'" onerror=', 'alt="" onerror=')
+          s = s.replace('alt="Restaurant / Hotel"></span><span class="catName">Restaurant / Hotel</span>', 'alt=""></span><span class="catName">Restaurant / Hotel</span>')
+          # Sold-out cards: keep the status text once; do not repeat it on the disabled button.
+          s = s.replace(':`<button class="add" disabled>Sold Out</button>`', ':`<button class="add" disabled>Unavailable</button>`')
+          # Keep the footer concise and avoid repeated support/help wording where duplicate legacy blocks exist.
+          s = s.replace('>☎ Help Center</b>', '>☎ Help Center</b>')
+          if s != old:
+              p.write_text(s, encoding='utf-8')
+          else:
+              print('No matching legacy duplicate strings found; source unchanged.')
+      - name: Commit Customer App cleanup
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/assets/index.html
+          git diff --cached --quiet || git commit -m 'Remove remaining Customer App duplicate labels'
+          git push
