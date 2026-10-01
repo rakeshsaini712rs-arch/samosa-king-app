@@ -26,6 +26,9 @@ jobs:
       - name: Apply customer duplicate cleanup
         run: python3 tools/fix_customer_ui_duplicates.py
 
+      - name: Apply checkout-only mobile number fix
+        run: python3 tools/fix_checkout_phone.py
+
       - name: Definitive customer ticker cleanup
         shell: python3 {0}
         run: |
