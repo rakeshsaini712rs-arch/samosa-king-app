@@ -7,6 +7,9 @@ static_cats = '''<div id="cats" class="cats"><button class="cat active" onclick=
 if static_cats in s:
     s = s.replace(static_cats, '<div id="cats" class="cats"></div>', 1)
 
+# Remove the second "Sold Out" label while preserving the availability state.
+s = s.replace("`<button class=\"add\" disabled>Sold Out</button>`", "`<span class=\"soldOutSpacer\"></span>`", 1)
+
 settings = Path('app/src/main/assets/settings-fix.js')
 if settings.exists():
     ss = settings.read_text(encoding='utf-8')
@@ -20,6 +23,8 @@ if settings.exists():
   window.__skApp57DuplicateUiFix=true;
   function fix(){
     document.querySelectorAll('.profileMenuBtn').forEach(function(el){el.remove()});
+    document.querySelectorAll('.helpActions,.serviceMeta').forEach(function(el){el.style.setProperty('display','none','important')});
+    document.querySelectorAll('.help .small').forEach(function(el){el.style.setProperty('display','none','important')});
     var cats=document.getElementById('cats');
     if(cats && !cats.querySelector('[data-sk-category]') && !cats.querySelector('.catImg')){
       cats.innerHTML='';
@@ -38,4 +43,4 @@ if settings.exists():
         settings.write_text(ss, encoding='utf-8')
 
 p.write_text(s, encoding='utf-8')
-print('App 57 duplicate UI fix applied: single category renderer and single header menu.')
+print('App 57 duplicate UI fix applied: single category renderer, single menu, single Help Center, and single Sold Out label.')
