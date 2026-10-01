@@ -6,29 +6,40 @@ permissions:
   contents: write
 jobs:
   fix-and-build:
-    if: github.event.head_commit.message != 'Definitive customer footer cleanup'
+    if: github.event.head_commit.message != 'Remove actual duplicate customer help section'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Remove unwanted customer Help Center block
+      - name: Remove actual unwanted customer Help Center section from source
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p=Path('MainActivity.java')
           s=p.read_text()
-          start='<div class=\\\"helpbox\\\" id=\\\"helpSection\\\">'
-          end='</div><div class=\\\"choiceModal\\\" id=\\\"restaurantModal\\\">'
-          a=s.find(start)
-          b=s.find(end, a) if a >= 0 else -1
-          if a >= 0 and b >= 0:
-              s=s[:a]+end[5:]
-          else:
-              import re
-              s=re.sub(r'<div class=\\\"helpbox\\\" id=\\\"helpSection\\\">.*?</div></div>(?=<div class=\\\"choiceModal\\\")','',s,count=1,flags=re.S)
+          original=s
+          # Remove the actual helpSection regardless of whether it is emitted as a div or section.
+          patterns = [
+              r'<section class=\\\"helpbox\\\" id=\\\"helpSection\\\">.*?</section>',
+              r'<div class=\\\"helpbox\\\" id=\\\"helpSection\\\">.*?</div>(?=<div class=\\\"choiceModal\\\")',
+              r'<section[^>]*id=\\\"helpSection\\\"[^>]*>.*?</section>',
+              r'<div[^>]*id=\\\"helpSection\\\"[^>]*>.*?</div>(?=<div class=\\\"choiceModal\\\")'
+          ]
+          for pat in patterns:
+              s,n=re.subn(pat,'',s,count=1,flags=re.S)
+              if n:
+                  break
+          # Remove any remaining standalone Help Center footer block containing its distinctive text.
+          s=re.sub(r'<(?:section|div)[^>]*>[^<]*☎ Help Center.*?</(?:section|div)>','',s,count=1,flags=re.S)
+          # Remove the old CSS override if present.
           s=s.replace('/* DEFINITIVE_CUSTOMER_FOOTER_FIX_V2 */ #helpSection{display:block!important}','')
           s=s.replace('/* DEFINITIVE_CUSTOMER_FOOTER_FIX_V2 */ #helpSection{display:none!important}','')
+          if s == original:
+              print('WARNING: no source-level helpSection match found')
+          else:
+              print('Customer Help Center duplicate source block removed')
           p.write_text(s)
           PY
       - name: Commit source fix
@@ -36,7 +47,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add MainActivity.java
-          git diff --cached --quiet || git commit -m 'Definitive customer footer cleanup'
+          git diff --cached --quiet || git commit -m 'Remove actual duplicate customer help section'
           git push
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -50,5 +61,5 @@ jobs:
       - name: Upload customer APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-King-CUSTOMER-FOOTER-FIX
+          name: Samosa-King-CUSTOMER-HELP-CLEAN
           path: app/build/outputs/apk/debug/*.apk
