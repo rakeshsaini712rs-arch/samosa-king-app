@@ -83,6 +83,72 @@ jobs:
 EOF
           echo "Duplicate delivery-strip hardening applied."
 
+      - name: Keep mobile number only inside Buy Now checkout
+        shell: bash
+        run: |
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '</body>'
+          if marker not in s:
+              raise SystemExit('ERROR: index.html closing body tag not found')
+          script = r'''<script>
+          (function(){
+            if(window.__skCheckoutPhoneFix)return;
+            window.__skCheckoutPhoneFix=true;
+            function cleanMainPhoneFields(){
+              document.querySelectorAll('input#phone,input[name="phone"],input[data-field="phone"]').forEach(function(el){
+                var modal=document.getElementById('modal');
+                if(modal && modal.contains(el)) return;
+                var wrap=el.closest('label,.field,.inputGroup,.formGroup');
+                if(wrap && wrap.querySelectorAll('input').length===1) wrap.remove();
+                else el.remove();
+              });
+            }
+            function ensureCheckoutPhone(){
+              cleanMainPhoneFields();
+              var modal=document.getElementById('modal');
+              if(!modal || !modal.querySelector('.sheet')) return;
+              var sheet=modal.querySelector('.sheet');
+              var phone=sheet.querySelector('#phone');
+              if(!phone){
+                var name=sheet.querySelector('#name');
+                phone=document.createElement('input');
+                phone.id='phone';
+                phone.type='tel';
+                phone.inputMode='numeric';
+                phone.autocomplete='tel';
+                phone.maxLength=10;
+                phone.className='input';
+                phone.placeholder='Mobile number (10 digits)';
+                phone.setAttribute('aria-label','Mobile number');
+                if(name && name.parentNode) name.parentNode.insertBefore(phone,name.nextSibling);
+                else sheet.insertBefore(phone,sheet.firstChild);
+              }
+              phone.addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,10);},{once:false});
+            }
+            function run(){cleanMainPhoneFields();ensureCheckoutPhone();}
+            if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+            document.addEventListener('click',function(e){
+              var t=e.target;
+              if(t && (t.closest('#modal .order') || t.closest('.cartbtn') || t.closest('.buyNow'))) setTimeout(ensureCheckoutPhone,60);
+            },true);
+            new MutationObserver(function(){
+              if(window.__skCheckoutPhoneBusy)return;
+              window.__skCheckoutPhoneBusy=true;
+              setTimeout(function(){window.__skCheckoutPhoneBusy=false;run();},80);
+            }).observe(document.documentElement,{childList:true,subtree:true});
+          })();
+          </script>\n'''
+          s = s.replace(marker, script + marker, 1)
+          p.write_text(s, encoding='utf-8')
+          print('Checkout-only mobile number fix injected.')
+          PY
+          grep -F 'Mobile number (10 digits)' app/src/main/assets/index.html
+          echo 'Verified: mobile field is injected only into #modal checkout at runtime.'
+
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
@@ -116,6 +182,6 @@ EOF
       - name: Upload admin APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-King-ADMIN-APK-NEW
+          name: Samosa-KING-ADMIN-APK-NEW
           path: admin/build/outputs/apk/debug/admin-debug.apk
           if-no-files-found: error
