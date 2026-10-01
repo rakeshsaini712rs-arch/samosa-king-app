@@ -40,3 +40,5 @@ jobs:
           git rm .github/workflows/one-time-hide-empty-order-box.yml
           git commit -m "Remove one-time cleanup workflow"
           git push
+
+# one-time trigger refresh
