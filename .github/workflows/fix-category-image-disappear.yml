@@ -1,0 +1,49 @@
+name: Fix category image disappearing
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+auto_cancel: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch WebView image persistence
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('MainActivity.java')
+          s = p.read_text(encoding='utf-8')
+          marker = 'CATEGORY_IMAGE_PERSISTENCE_FIX_20261001'
+          if marker in s:
+              print('Fix already present; nothing to do.')
+              raise SystemExit(0)
+          needle = 'new WebViewClient() {'
+          if needle not in s:
+              raise SystemExit('WebViewClient block not found in MainActivity.java')
+          injection = '''new WebViewClient() {\n      // CATEGORY_IMAGE_PERSISTENCE_FIX_20261001\n      @Override public void onPageFinished(WebView view, String url) {\n        super.onPageFinished(view, url);\n        view.evaluateJavascript("""(function(){\n          function fixImages(){\n            document.querySelectorAll('img').forEach(function(img){\n              img.loading='eager';\n              img.decoding='sync';\n              img.style.visibility='visible';\n              img.style.opacity='1';\n              var src=img.getAttribute('src');\n              if(src && !img.getAttribute('data-original-src')) img.setAttribute('data-original-src',src);\n              var original=img.getAttribute('data-original-src');\n              if(original && (!img.getAttribute('src') || img.getAttribute('src')==='about:blank')) img.setAttribute('src',original);\n            });\n          }\n          fixImages();\n          setTimeout(fixImages,100);\n          setTimeout(fixImages,400);\n          setTimeout(fixImages,1000);\n          if(!window.__categoryImageFixObserver){\n            window.__categoryImageFixObserver=new MutationObserver(function(){fixImages();});\n            window.__categoryImageFixObserver.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src','style','class']});\n          }\n        })();""", null);\n      }\n'''
+          s = s.replace(needle, injection, 1)
+          p.write_text(s, encoding='utf-8')
+      - name: Commit source fix
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add MainActivity.java
+          if git diff --cached --quiet; then
+            echo "No source changes."
+            exit 0
+          fi
+          git commit -m "Fix category tap image disappearing"
+          git push
