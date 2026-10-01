@@ -15,12 +15,15 @@ jobs:
         run: python3 tools/remove_customer_info_strip.py
       - name: FINAL remove customer Help Center block
         run: python3 tools/remove_customer_help_center.py
-      - name: Verify final customer info/help removal patches
+      - name: FINAL remove customer delivery summary line
+        run: python3 tools/remove_customer_delivery_summary_line.py
+      - name: Verify final customer UI removal patches
         shell: bash
         run: |
           set -e
           grep -F '__skFinalRemoveInfoStrip' app/src/main/assets/settings-fix.js
           grep -F '__skFinalRemoveHelpCenter' app/src/main/assets/settings-fix.js
+          grep -F '__skFinalRemoveDeliverySummary' app/src/main/assets/settings-fix.js
           grep -F 'sk-final-hide-customer-info' app/src/main/assets/index.html
           grep -F 'sk-final-hide-customer-help-center' app/src/main/assets/index.html
       - uses: actions/setup-java@v5
