@@ -13,11 +13,18 @@ jobs:
       - run: python3 tools/fix_customer_ui_duplicates.py
       - name: Persist final customer info/help removal
         run: python3 tools/final_customer_info_cleanup.py
+      - name: Remove App 57 duplicate customer UI
+        run: python3 tools/remove_app57_duplicate_ui.py
       - name: Verify final customer UI cleanup
         shell: bash
         run: |
           set -e
           grep -F '__SK_FINAL_CUSTOMER_INFO_CLEANUP__' app/src/main/assets/settings-fix.js
+          grep -F '__SK_APP57_DUPLICATE_UI_FIX__' app/src/main/assets/settings-fix.js
+          if grep -F 'onclick="selectCategory(\'all\')">🍽️ All</button><button class="cat"' app/src/main/assets/index.html; then
+            echo 'ERROR: old static duplicate category buttons remain'
+            exit 1
+          fi
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
