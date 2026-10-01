@@ -1,4 +1,4 @@
-name: Fix category image disappearing
+name: Fix category image persistence permanently
 
 on:
   push:
@@ -19,22 +19,76 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Patch WebView image persistence
+      - name: Patch category image persistence in WebView source
         shell: python
         run: |
           from pathlib import Path
           p = Path('MainActivity.java')
           s = p.read_text(encoding='utf-8')
-          marker = 'CATEGORY_IMAGE_PERSISTENCE_FIX_20261001'
+          marker = 'CATEGORY_IMAGE_PERMANENT_FIX_20261001'
           if marker in s:
-              print('Fix already present; nothing to do.')
+              print('Permanent category image fix already present.')
               raise SystemExit(0)
+
+          # Add a WebView-side guard that remembers every real image URL and
+          # immediately restores it if category navigation/rerendering blanks it.
           needle = 'new WebViewClient() {'
           if needle not in s:
-              raise SystemExit('WebViewClient block not found in MainActivity.java')
-          injection = '''new WebViewClient() {\n      // CATEGORY_IMAGE_PERSISTENCE_FIX_20261001\n      @Override public void onPageFinished(WebView view, String url) {\n        super.onPageFinished(view, url);\n        view.evaluateJavascript("""(function(){\n          function fixImages(){\n            document.querySelectorAll('img').forEach(function(img){\n              img.loading='eager';\n              img.decoding='sync';\n              img.style.visibility='visible';\n              img.style.opacity='1';\n              var src=img.getAttribute('src');\n              if(src && !img.getAttribute('data-original-src')) img.setAttribute('data-original-src',src);\n              var original=img.getAttribute('data-original-src');\n              if(original && (!img.getAttribute('src') || img.getAttribute('src')==='about:blank')) img.setAttribute('src',original);\n            });\n          }\n          fixImages();\n          setTimeout(fixImages,100);\n          setTimeout(fixImages,400);\n          setTimeout(fixImages,1000);\n          if(!window.__categoryImageFixObserver){\n            window.__categoryImageFixObserver=new MutationObserver(function(){fixImages();});\n            window.__categoryImageFixObserver.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src','style','class']});\n          }\n        })();""", null);\n      }\n'''
+              raise SystemExit('WebViewClient block not found')
+
+          injection = r'''new WebViewClient() {
+      // CATEGORY_IMAGE_PERMANENT_FIX_20261001
+      @Override public void onPageFinished(WebView view, String url) {
+        super.onPageFinished(view, url);
+        view.evaluateJavascript("""
+          (function(){
+            if(window.__SK_CATEGORY_IMAGE_PERMANENT_FIX__) return;
+            window.__SK_CATEGORY_IMAGE_PERMANENT_FIX__=true;
+            var saved=new WeakMap();
+            function remember(img){
+              if(!img) return;
+              var src=img.getAttribute('src') || img.src || '';
+              if(src && src!=='about:blank') saved.set(img,src);
+              var old=saved.get(img);
+              if(old && (!img.getAttribute('src') || img.getAttribute('src')==='about:blank')) img.setAttribute('src',old);
+              img.loading='eager';
+              img.decoding='sync';
+              img.style.setProperty('visibility','visible','important');
+              img.style.setProperty('opacity','1','important');
+            }
+            function fixAll(){ document.querySelectorAll('img').forEach(remember); }
+            fixAll();
+            [50,150,300,600,1000,1800].forEach(function(ms){setTimeout(fixAll,ms);});
+            var mo=new MutationObserver(function(records){
+              records.forEach(function(r){
+                if(r.type==='attributes' && r.target && r.target.tagName==='IMG') remember(r.target);
+                if(r.type==='childList') r.addedNodes.forEach(function(n){
+                  if(n.nodeType===1){
+                    if(n.tagName==='IMG') remember(n);
+                    if(n.querySelectorAll) n.querySelectorAll('img').forEach(remember);
+                  }
+                });
+              });
+            });
+            mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src','style','class','loading']});
+
+            // Category buttons may rerender/replace their section. After every
+            // category tap, keep the selected section rendered and its photos visible.
+            document.addEventListener('click',function(e){
+              var cat=e.target.closest && e.target.closest('.cat');
+              if(!cat) return;
+              setTimeout(fixAll,0);
+              setTimeout(fixAll,100);
+              setTimeout(fixAll,350);
+              setTimeout(fixAll,800);
+            },true);
+          })();
+        """, null);
+      }
+'''
           s = s.replace(needle, injection, 1)
           p.write_text(s, encoding='utf-8')
+
       - name: Commit source fix
         shell: bash
         run: |
@@ -45,5 +99,5 @@ jobs:
             echo "No source changes."
             exit 0
           fi
-          git commit -m "Fix category tap image disappearing"
+          git commit -m "Permanently keep category product images visible"
           git push
