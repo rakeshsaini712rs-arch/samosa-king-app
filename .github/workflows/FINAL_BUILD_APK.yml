@@ -69,6 +69,20 @@ jobs:
               s = s.replace('</body>', js + '\n</body>', 1)
               p.write_text(s, encoding='utf-8')
 
+      - name: Replace animated product ticker with one static delivery-info strip
+        shell: python3 {0}
+        run: |
+          from pathlib import Path
+          import re
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          pattern = r"function skProductTicker\(\)\{.*?\}\nfunction card\(x\)"
+          replacement = "function skProductTicker(){return '<div class=\"skProductTicker\"><span class=\"skTickerItem\">⏱ 20–30 min</span><span class=\"skTickerDot\">•</span><span class=\"skTickerItem\">⚡ Near & Fast</span><span class=\"skTickerDot\">•</span><span class=\"skTickerItem\">🔥 Fresh & Hot</span><span class=\"skTickerDot\">•</span><span class=\"skTickerItem\">🚴 Fast Delivery</span></div>'}\nfunction card(x)"
+          s2, n = re.subn(pattern, replacement, s, count=1, flags=re.S)
+          if n != 1:
+              raise SystemExit('ERROR: skProductTicker function not found exactly once')
+          p.write_text(s2, encoding='utf-8')
+
       - name: Verify customer UI duplicate cleanup
         shell: bash
         run: |
@@ -87,6 +101,7 @@ jobs:
             exit 1
           fi
           grep -F '__APP57_FINAL_DUPLICATE_CLEANUP__' app/src/main/assets/index.html
+          grep -F 'function skProductTicker(){return' app/src/main/assets/index.html
           echo 'Customer duplicate cleanup verified.'
 
       - name: Apply Admin payment verification patch
