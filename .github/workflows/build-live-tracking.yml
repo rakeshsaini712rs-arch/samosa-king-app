@@ -15,12 +15,34 @@ jobs:
         run: python3 tools/final_customer_info_cleanup.py
       - name: Remove App 57 duplicate customer UI
         run: python3 tools/remove_app57_duplicate_ui.py
+      - name: Remove empty latest-order box when there is no active order
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          css_id = 'skEmptyOrderBoxFixStyle'
+          if css_id not in s:
+              css = '''<style id="skEmptyOrderBoxFixStyle">.track.skNoActiveOrder{background:transparent!important;border-color:transparent!important;box-shadow:none!important;padding:0!important}</style>'''
+              if '</head>' not in s:
+                  raise SystemExit('Could not find </head> in customer index.html')
+              s = s.replace('</head>', css + '</head>', 1)
+          js_id = 'skEmptyOrderBoxFixScript'
+          if js_id not in s:
+              js = '''<script id="skEmptyOrderBoxFixScript">(function(){function sync(){var st=document.getElementById('status');if(!st)return;var box=st.closest('.track');if(!box)return;var empty=(st.textContent||'').replace(/\\s+/g,' ').trim()==='No active order';box.classList.toggle('skNoActiveOrder',empty)}function start(){sync();var st=document.getElementById('status');if(st)new MutationObserver(sync).observe(st,{childList:true,subtree:true,characterData:true})}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start()})();</script>'''
+              if '</body>' not in s:
+                  raise SystemExit('Could not find </body> in customer index.html')
+              s = s.replace('</body>', js + '</body>', 1)
+          p.write_text(s, encoding='utf-8')
+          print('Empty latest-order card is now border/background-free when status is No active order; active orders keep the normal tracking card.')
       - name: Verify final customer UI cleanup
         shell: bash
         run: |
           set -e
           grep -F '__SK_FINAL_CUSTOMER_INFO_CLEANUP__' app/src/main/assets/settings-fix.js
           grep -F '__SK_APP57_DUPLICATE_UI_FIX__' app/src/main/assets/settings-fix.js
+          grep -F 'skEmptyOrderBoxFixStyle' app/src/main/assets/index.html
+          grep -F 'skEmptyOrderBoxFixScript' app/src/main/assets/index.html
           if grep -F 'onclick="selectCategory(\'all\')">🍽️ All</button><button class="cat"' app/src/main/assets/index.html; then
             echo 'ERROR: old static duplicate category buttons remain'
             exit 1
