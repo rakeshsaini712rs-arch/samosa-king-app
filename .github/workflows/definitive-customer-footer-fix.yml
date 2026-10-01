@@ -11,20 +11,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Patch only unwanted customer footer/help UI
+      - name: Remove unwanted customer Help Center block
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('MainActivity.java')
           s=p.read_text()
-          marker='DEFINITIVE_CUSTOMER_FOOTER_FIX_V2'
-          if marker not in s:
-              css="<style>/* DEFINITIVE_CUSTOMER_FOOTER_FIX_V2 */ #helpSection{display:none!important} </style>"
-              js="""<script>(function(){function c(){var bad=['Samosa King Services','Delivery ₹30 up to 5 km','Order/help: 7891851475','☎ Help Center','+91XXXXXXXXXX','Send OTP','📍 Nansa Gate, Nawalgarh  •  🚚 Delivery ₹30  •  ₹100 minimum  •  💵 COD'];document.querySelectorAll('body *').forEach(function(e){if(e.children.length===0){var t=(e.textContent||'').replace(/\\s+/g,' ').trim();for(var i=0;i<bad.length;i++){if(t.indexOf(bad[i])!==-1){var x=e.closest('.helpbox')||e.parentElement;if(x&&x!==document.body)x.remove();else e.remove();break;}}}})}new MutationObserver(c).observe(document.documentElement,{childList:true,subtree:true});setTimeout(c,50);setTimeout(c,500);setTimeout(c,1500);})();</script>"""
-              s=s.replace('</style>',css+'</style>',1)
-              s=s.replace('</body>',js+'</body>',1)
-              p.write_text(s)
+          start='<div class=\\\"helpbox\\\" id=\\\"helpSection\\\">'
+          end='</div><div class=\\\"choiceModal\\\" id=\\\"restaurantModal\\\">'
+          a=s.find(start)
+          b=s.find(end, a) if a >= 0 else -1
+          if a >= 0 and b >= 0:
+              s=s[:a]+end[5:]
+          else:
+              import re
+              s=re.sub(r'<div class=\\\"helpbox\\\" id=\\\"helpSection\\\">.*?</div></div>(?=<div class=\\\"choiceModal\\\")','',s,count=1,flags=re.S)
+          s=s.replace('/* DEFINITIVE_CUSTOMER_FOOTER_FIX_V2 */ #helpSection{display:block!important}','')
+          s=s.replace('/* DEFINITIVE_CUSTOMER_FOOTER_FIX_V2 */ #helpSection{display:none!important}','')
+          p.write_text(s)
           PY
       - name: Commit source fix
         run: |
@@ -32,7 +37,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add MainActivity.java
           git diff --cached --quiet || git commit -m 'Definitive customer footer cleanup'
-          git push || true
+          git push
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
