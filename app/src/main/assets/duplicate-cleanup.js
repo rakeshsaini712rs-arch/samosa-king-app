@@ -17,24 +17,6 @@
       if(el && el!==document.body) el.remove();
     });
   }
-  function removePhoneNumberBox(){
-    document.querySelectorAll('input,textarea').forEach(function(el){
-      var value=norm(el.value||el.getAttribute('value')||'').replace(/[\s()-]/g,'');
-      var id=norm(el.id).toLowerCase();
-      var name=norm(el.getAttribute('name')).toLowerCase();
-      var ph=norm(el.getAttribute('placeholder')).toLowerCase();
-      var looksLikePhone=/^\+?91\d{10}$/.test(value)||/^\d{10}$/.test(value);
-      var phoneField=/(phone|mobile|contact|whatsapp|number)/.test(id+' '+name+' '+ph);
-      if(looksLikePhone || (phoneField && (el.type==='tel'||el.type==='text'))){
-        var box=el;
-        for(var n=0;n<5 && box.parentElement;n++){
-          if(box.parentElement.children.length===1) box=box.parentElement;
-          else break;
-        }
-        box.remove();
-      }
-    });
-  }
   function restorePromoBanners(){
     if(document.getElementById('skBannerCarousel')) return;
     var anchor=document.querySelector('.cats') || document.querySelector('.hero');
@@ -92,7 +74,6 @@
     removeExactText('Order/help: 7891851475');
     removeExactText('📞 Call💬 WhatsApp');
     removeExactText('Order/help');
-    removePhoneNumberBox();
     restorePromoBanners();
   }
   function run(){try{clean()}catch(e){}}
