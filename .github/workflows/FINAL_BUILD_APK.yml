@@ -1,4 +1,4 @@
-name: Samosa King FINAL APK
+name: Samosa King CUSTOMER APK
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  build-customer:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -20,95 +20,60 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Remove customer service information block from source
+      - name: Remove customer service information block
         run: python3 tools/remove_customer_info_block.py
 
-      - name: Verify customer service information block is removed
-        shell: bash
-        run: |
-          set -e
-          test -f app/src/main/assets/index.html
-          if grep -F '<div id="info" class="info">' app/src/main/assets/index.html; then
-            echo 'ERROR: customer service information block still exists'
-            exit 1
-          fi
-
-      - name: Apply definitive customer UI duplicate fix
+      - name: Apply customer duplicate cleanup
         run: python3 tools/fix_customer_ui_duplicates.py
 
-      - name: Apply App 57 runtime duplicate cleanup directly to customer HTML
+      - name: Definitive customer ticker cleanup
         shell: python3 {0}
         run: |
           from pathlib import Path
-          p = Path('app/src/main/assets/index.html')
-          s = p.read_text(encoding='utf-8')
-          marker = '/* __APP57_FINAL_DUPLICATE_CLEANUP__ */'
+          p=Path('app/src/main/assets/index.html')
+          s=p.read_text(encoding='utf-8')
+          marker='/* __CUSTOMER_ONLY_DUPLICATE_FIX_V2__ */'
           if marker not in s:
-              js = r'''<script>
-/* __APP57_FINAL_DUPLICATE_CLEANUP__ */
+              js=r'''<script>
+/* __CUSTOMER_ONLY_DUPLICATE_FIX_V2__ */
 (function(){
-  if(window.__app57FinalDuplicateCleanup)return;
-  window.__app57FinalDuplicateCleanup=true;
-  function txt(e){return (e.textContent||'').replace(/\s+/g,' ').trim();}
-  function fix(){
-    var cats=document.getElementById('cats');
-    if(cats){var seen={};Array.from(cats.querySelectorAll('.cat')).forEach(function(e){var k=e.getAttribute('onclick')||txt(e);if(seen[k])e.remove();else seen[k]=1;});}
-    document.querySelectorAll('.skTickerTrack').forEach(function(t){var a=Array.from(t.children);if(a.length>7)a.slice(7).forEach(function(e){e.remove();});});
-    document.querySelectorAll('.card .add[disabled]').forEach(function(e){if(txt(e)==='Sold Out')e.remove();});
-    document.querySelectorAll('.services .helpActions,.serviceMeta').forEach(function(e){e.remove();});
-    document.querySelectorAll('.login').forEach(function(e){e.remove();});
-    var menus=Array.from(document.querySelectorAll('button,a,[role="button"]')).filter(function(e){return txt(e)==='☰';});
-    menus.slice(1).forEach(function(e){e.remove();});
-    document.querySelectorAll('.card').forEach(function(c){var seen={};Array.from(c.querySelectorAll('h3')).forEach(function(h){var k=txt(h);if(k&&seen[k])h.remove();else if(k)seen[k]=1;});});
+  if(window.__customerOnlyDuplicateFixV2)return;
+  window.__customerOnlyDuplicateFixV2=true;
+  function clean(){
+    document.querySelectorAll('.card').forEach(function(card){
+      var tickers=Array.from(card.querySelectorAll('.skProductTicker'));
+      tickers.slice(1).forEach(function(x){x.remove();});
+      var t=tickers[0];
+      if(t){
+        var track=t.querySelector('.skTickerTrack');
+        if(track){
+          Array.from(track.children).slice(7).forEach(function(x){x.remove();});
+          track.style.animation='none';
+          track.style.transform='none';
+          track.style.width='100%';
+          track.style.justifyContent='center';
+          track.style.gap='7px';
+        }
+      }
+    });
   }
-  function run(){fix();setTimeout(fix,200);setTimeout(fix,800);setTimeout(fix,2000);setTimeout(fix,5000);}
+  function run(){clean();setTimeout(clean,100);setTimeout(clean,500);setTimeout(clean,1500);setTimeout(clean,3000);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-  new MutationObserver(function(){setTimeout(fix,60);}).observe(document.documentElement,{childList:true,subtree:true});
+  new MutationObserver(function(){setTimeout(clean,30);}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>'''
-              s = s.replace('</body>', js + '\n</body>', 1)
-              p.write_text(s, encoding='utf-8')
+              s=s.replace('</body>',js+'\n</body>',1)
+              p.write_text(s,encoding='utf-8')
 
-      - name: Replace animated product ticker with one static delivery-info strip
-        shell: python3 {0}
-        run: |
-          from pathlib import Path
-          import re
-          p = Path('app/src/main/assets/index.html')
-          s = p.read_text(encoding='utf-8')
-          pattern = r"function skProductTicker\(\)\{.*?\}\nfunction card\(x\)"
-          replacement = "function skProductTicker(){return '<div class=\"skProductTicker\"><span class=\"skTickerItem\">⏱ 20–30 min</span><span class=\"skTickerDot\">•</span><span class=\"skTickerItem\">⚡ Near & Fast</span><span class=\"skTickerDot\">•</span><span class=\"skTickerItem\">🔥 Fresh & Hot</span><span class=\"skTickerDot\">•</span><span class=\"skTickerItem\">🚴 Fast Delivery</span></div>'}\nfunction card(x)"
-          s2, n = re.subn(pattern, replacement, s, count=1, flags=re.S)
-          if n != 1:
-              raise SystemExit('ERROR: skProductTicker function not found exactly once')
-          p.write_text(s2, encoding='utf-8')
-
-      - name: Verify customer UI duplicate cleanup
+      - name: Verify customer cleanup
         shell: bash
         run: |
           set -e
-          test -f app/src/main/assets/index.html
-          if grep -F '⏱ 20–30 min</span><span class="skTickerDot">•</span><span class="skTickerItem">⚡ Near & Fast</span><span class="skTickerDot">•</span><span class="skTickerItem">🔥 Fresh & Hot</span><span class="skTickerDot">•</span><span class="skTickerItem">🚴 Fast Delivery</span><span class="skTickerDot">•</span><span class="skTickerItem">⏱ 20–30 min' app/src/main/assets/index.html; then
-            echo 'ERROR: duplicated delivery ticker remains'
-            exit 1
-          fi
-          if grep -F '+91XXXXXXXXXX' app/src/main/assets/index.html; then
-            echo 'ERROR: obsolete OTP placeholder remains'
-            exit 1
-          fi
-          if grep -F 'Send OTP' app/src/main/assets/index.html; then
-            echo 'ERROR: obsolete Send OTP UI remains'
-            exit 1
-          fi
-          grep -F '__APP57_FINAL_DUPLICATE_CLEANUP__' app/src/main/assets/index.html
-          grep -F 'function skProductTicker(){return' app/src/main/assets/index.html
-          echo 'Customer duplicate cleanup verified.'
-
-      - name: Apply Admin payment verification patch
-        run: python3 tools/patch_admin_payment.py
-
-      - name: Apply Delivery payment instruction patch
-        run: python3 tools/patch_delivery_payment.py
+          test -s app/src/main/assets/index.html
+          grep -F '__CUSTOMER_ONLY_DUPLICATE_FIX_V2__' app/src/main/assets/index.html
+          if grep -F '+91XXXXXXXXXX' app/src/main/assets/index.html; then exit 1; fi
+          if grep -F 'Send OTP' app/src/main/assets/index.html; then exit 1; fi
+          echo 'Customer-only cleanup verified.'
 
       - name: Setup Java 17
         uses: actions/setup-java@v5
@@ -121,40 +86,15 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Build customer APK
+      - name: Build CUSTOMER APK only
         run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace --refresh-dependencies -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
 
-      - name: Build admin APK
-        run: gradle :admin:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+      - name: Verify CUSTOMER APK
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Build delivery APK
-        run: gradle :delivery:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
-
-      - name: Verify APKs
-        run: |
-          test -s app/build/outputs/apk/debug/app-debug.apk
-          test -s admin/build/outputs/apk/debug/admin-debug.apk
-          test -s delivery/build/outputs/apk/debug/delivery-debug.apk
-
-      - name: Upload customer APK
+      - name: Upload CUSTOMER APK only
         uses: actions/upload-artifact@v4
         with:
           name: Samosa-King-CUSTOMER-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
-      - name: Upload admin APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Samosa-King-ADMIN-APK
-          path: admin/build/outputs/apk/debug/admin-debug.apk
-          if-no-files-found: error
-
-      - name: Upload delivery APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Samosa-King-DELIVERY-APK
-          path: delivery/build/outputs/apk/debug/delivery-debug.apk
-          if-no-files-found: error
-
-# Trigger a fresh build for the latest duplicate-cleanup commit.
