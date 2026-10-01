@@ -11,6 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 tools/patch_customer_delivery_tracking.py
       - run: python3 tools/fix_customer_ui_duplicates.py
+      - run: python3 tools/fix_checkout_phone.py
       - name: Persist final customer info/help removal
         run: python3 tools/final_customer_info_cleanup.py
       - name: Remove App 57 duplicate customer UI
