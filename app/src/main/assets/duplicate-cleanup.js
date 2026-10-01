@@ -34,6 +34,7 @@
         else if(s.indexOf('Available')>=0){av.textContent='● Available';av.classList.add('available');}
       }
     });
+    document.querySelectorAll('.info').forEach(function(el){el.remove();});
     removeExactText('☎ Help Center');
     removeExactText('Order/help: 7891851475');
     removeExactText('📞 Call💬 WhatsApp');
