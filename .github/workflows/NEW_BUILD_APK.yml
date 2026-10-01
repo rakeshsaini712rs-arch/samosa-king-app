@@ -94,7 +94,7 @@ EOF
           marker = '</body>'
           if marker not in s:
               raise SystemExit('ERROR: index.html closing body tag not found')
-          script = r'''<script>
+          script = '''<script>
           (function(){
             if(window.__skCheckoutPhoneFix)return;
             window.__skCheckoutPhoneFix=true;
@@ -127,7 +127,7 @@ EOF
                 if(name && name.parentNode) name.parentNode.insertBefore(phone,name.nextSibling);
                 else sheet.insertBefore(phone,sheet.firstChild);
               }
-              phone.addEventListener('input',function(){this.value=this.value.replace(/\D/g,'').slice(0,10);},{once:false});
+              phone.oninput=function(){this.value=this.value.replace(/\D/g,'').slice(0,10);};
             }
             function run(){cleanMainPhoneFields();ensureCheckoutPhone();}
             if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
@@ -141,7 +141,8 @@ EOF
               setTimeout(function(){window.__skCheckoutPhoneBusy=false;run();},80);
             }).observe(document.documentElement,{childList:true,subtree:true});
           })();
-          </script>\n'''
+          </script>
+'''
           s = s.replace(marker, script + marker, 1)
           p.write_text(s, encoding='utf-8')
           print('Checkout-only mobile number fix injected.')
@@ -182,6 +183,6 @@ EOF
       - name: Upload admin APK
         uses: actions/upload-artifact@v4
         with:
-          name: Samosa-KING-ADMIN-APK-NEW
+          name: Samosa-King-ADMIN-APK-NEW
           path: admin/build/outputs/apk/debug/admin-debug.apk
           if-no-files-found: error
