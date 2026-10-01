@@ -1,0 +1,49 @@
+name: Definitive customer footer fix
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  fix-and-build:
+    if: github.event.head_commit.message != 'Definitive customer footer cleanup'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Patch only unwanted customer footer/help UI
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MainActivity.java')
+          s=p.read_text()
+          marker='DEFINITIVE_CUSTOMER_FOOTER_FIX_V2'
+          if marker not in s:
+              css="<style>/* DEFINITIVE_CUSTOMER_FOOTER_FIX_V2 */ #helpSection{display:none!important} </style>"
+              js="""<script>(function(){function c(){var bad=['Samosa King Services','Delivery ₹30 up to 5 km','Order/help: 7891851475','☎ Help Center','+91XXXXXXXXXX','Send OTP','📍 Nansa Gate, Nawalgarh  •  🚚 Delivery ₹30  •  ₹100 minimum  •  💵 COD'];document.querySelectorAll('body *').forEach(function(e){if(e.children.length===0){var t=(e.textContent||'').replace(/\\s+/g,' ').trim();for(var i=0;i<bad.length;i++){if(t.indexOf(bad[i])!==-1){var x=e.closest('.helpbox')||e.parentElement;if(x&&x!==document.body)x.remove();else e.remove();break;}}}})}new MutationObserver(c).observe(document.documentElement,{childList:true,subtree:true});setTimeout(c,50);setTimeout(c,500);setTimeout(c,1500);})();</script>"""
+              s=s.replace('</style>',css+'</style>',1)
+              s=s.replace('</body>',js+'</body>',1)
+              p.write_text(s)
+          PY
+      - name: Commit source fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add MainActivity.java
+          git diff --cached --quiet || git commit -m 'Definitive customer footer cleanup'
+          git push || true
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Build customer APK
+        run: chmod +x gradlew && ./gradlew clean :app:assembleDebug
+      - name: Upload customer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Samosa-King-CUSTOMER-FOOTER-FIX
+          path: app/build/outputs/apk/debug/*.apk
