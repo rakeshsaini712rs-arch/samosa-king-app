@@ -1,0 +1,61 @@
+name: Add clean Help Center Call WhatsApp
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.event.head_commit.message != 'Add clean Help Center Call WhatsApp'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add only Help Center
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('MainActivity.java')
+          s = p.read_text()
+
+          # Keep all previously removed delivery/payment/OTP/COD/help-number UI removed.
+          s = s.replace('#helpSection{display:none!important}', '#helpSection{display:block!important}')
+
+          start = '<div class=\\"helpbox\\" id=\\"helpSection\\">'
+          end = '</div><div class=\\"choiceModal\\" id=\\"restaurantModal\\">'
+          a = s.find(start)
+          b = s.find(end, a)
+          if a != -1 and b != -1:
+              new_help = '''<div class=\\"helpbox\\" id=\\"helpSection\\"><h2>🆘 Help Center</h2><p>Order, delivery ya payment se related help chahiye? Samosa King support se contact karein.</p><div class=\\"helpactions\\"><a class=\\"helpbtn\\" href=\\"tel:+917891851475\\">📞 Call</a><button class=\\"helpbtn green\\" onclick=\\"AndroidBridge.openWhatsApp()\\">💬 WhatsApp</button></div></div>'''
+              s = s[:a] + new_help + s[b:]
+
+          marker = 'CLEAN_HELP_CENTER_CALL_WHATSAPP_V1'
+          if marker not in s:
+              s = s.replace('</body>', '<!-- CLEAN_HELP_CENTER_CALL_WHATSAPP_V1 --></body>', 1)
+          p.write_text(s)
+          PY
+
+      - name: Commit source change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add MainActivity.java
+          git diff --cached --quiet || git commit -m 'Add clean Help Center Call WhatsApp'
+          git push || true
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Build customer APK
+        run: chmod +x gradlew && ./gradlew clean :app:assembleDebug
+      - name: Upload customer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Samosa-King-CUSTOMER-HELP-CENTER
+          path: app/build/outputs/apk/debug/*.apk
