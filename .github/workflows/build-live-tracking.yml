@@ -11,21 +11,13 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 tools/patch_customer_delivery_tracking.py
       - run: python3 tools/fix_customer_ui_duplicates.py
-      - name: FINAL remove customer Delivery Payment Open Help strip
-        run: python3 tools/remove_customer_info_strip.py
-      - name: FINAL remove customer Help Center block
-        run: python3 tools/remove_customer_help_center.py
-      - name: FINAL remove customer delivery summary line
-        run: python3 tools/remove_customer_delivery_summary_line.py
-      - name: Verify final customer UI removal patches
+      - name: Persist final customer info/help removal
+        run: python3 tools/final_customer_info_cleanup.py
+      - name: Verify final customer UI cleanup
         shell: bash
         run: |
           set -e
-          grep -F '__skFinalRemoveInfoStrip' app/src/main/assets/settings-fix.js
-          grep -F '__skFinalRemoveHelpCenter' app/src/main/assets/settings-fix.js
-          grep -F '__skFinalRemoveDeliverySummary' app/src/main/assets/settings-fix.js
-          grep -F 'sk-final-hide-customer-info' app/src/main/assets/index.html
-          grep -F 'sk-final-hide-customer-help-center' app/src/main/assets/index.html
+          grep -F '__SK_FINAL_CUSTOMER_INFO_CLEANUP__' app/src/main/assets/settings-fix.js
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
