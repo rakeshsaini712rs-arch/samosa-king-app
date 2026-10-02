@@ -1,0 +1,30 @@
+name: Apply real local category photos
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch customer category photos
+        run: python3 tools/patch_customer_category_photos_real.py
+      - name: Commit patched customer source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo "Category photo source already patched."
+          else
+            git commit -m "Fix category photos with bundled local images"
+            git push
+          fi
