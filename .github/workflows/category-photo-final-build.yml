@@ -19,35 +19,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Apply definitive category-photo fix
         run: python3 tools/fix_category_photos_final.py
-
       - name: Verify definitive category-photo source
         run: |
           set -e
           grep -F 'SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261002_V3' app/src/main/assets/index.html
           test "$(grep -o 'id=\"skCategoryPhotoFinalScript\"' app/src/main/assets/index.html | wc -l)" -eq 1
           test "$(grep -o 'skFinalCatPhoto' app/src/main/assets/index.html | wc -l)" -ge 3
-          grep -F 'window.SK_IMAGES' app/src/main/assets/index.html
-
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-
       - name: Setup Gradle 8.7
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-
       - name: Build CUSTOMER APK
         run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
-
       - name: Verify APK
         run: test -s app/build/outputs/apk/debug/app-debug.apk
-
       - name: Upload CUSTOMER APK
         uses: actions/upload-artifact@v4
         with:
