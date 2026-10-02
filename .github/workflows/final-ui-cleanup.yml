@@ -20,63 +20,136 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Clean duplicate customer UI in actual HTML source
+      - name: Final customer UI and category-photo fix
         shell: python {0}
         run: |
           from pathlib import Path
           import re
 
-          files = list(Path('.').rglob('*.html')) + list(Path('.').rglob('*.java')) + list(Path('.').rglob('*.kt'))
-          changed = []
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
 
-          for p in files:
-              try:
-                  s = p.read_text(encoding='utf-8')
-              except Exception:
-                  continue
-              original = s
+          # Remove every previous category-photo runtime patch so only one implementation remains.
+          patterns = [
+              r'<style id="skCategoryPhotoDedupV2">.*?</style>\s*<script id="skCategoryPhotoDedupV2Script">.*?</script>',
+              r'<style id="skCategoryPhotoMatchV3">.*?</style>\s*<script id="skCategoryPhotoMatchV3Script">.*?</script>',
+              r'<style id="skCategoryPhotoMatchV4">.*?</style>\s*<script id="skCategoryPhotoMatchV4Script">.*?</script>',
+              r'<style id="customerCategoryPhotoDedupStyle">.*?</style>\s*<script id="customerCategoryPhotoDedupScript">.*?</script>',
+          ]
+          for pat in patterns:
+              s = re.sub(pat, '', s, flags=re.S)
 
-              if p.name == 'index.html':
-                  s = re.sub(
-                      r'function skProductTicker\(\)\{return .*?\}\s*\nfunction card\(',
-                      "function skProductTicker(){return '<div class=\\\"skProductTicker\\\"><div class=\\\"skTickerTrack\\\"><span class=\\\"skTickerItem\\\">⏱ 20–30 min</span><span class=\\\"skTickerDot\\\">•</span><span class=\\\"skTickerItem\\\">⚡ Near & Fast</span><span class=\\\"skTickerDot\\\">•</span><span class=\\\"skTickerItem\\\">🔥 Fresh & Hot</span><span class=\\\"skTickerDot\\\">•</span><span class=\\\"skTickerItem\\\">🚴 Fast Delivery</span></div></div>'}\nfunction card(",
-                      s,
-                      count=1,
-                      flags=re.S
-                  )
+          marker = 'SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261002'
+          if marker not in s:
+              patch = r'''<style id="skCategoryPhotoFinalStyle">
+/* SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261002 */
+#cats .cat{overflow:hidden!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:0!important}
+#cats .cat .skFinalCatPhoto{display:block!important;width:100%!important;height:72px!important;flex:0 0 72px!important;overflow:hidden!important;margin:0 0 5px!important;border-radius:11px 11px 0 0!important;background:#f4e4c5!important}
+#cats .cat .skFinalCatPhoto img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;visibility:visible!important;opacity:1!important}
+#cats .cat .skFinalCatLabel{display:block!important;padding:4px 4px 8px!important;text-align:center!important;line-height:1.2!important;font-weight:800!important}
+#cats .cat>img,#cats .cat>picture,#cats .cat>svg{display:none!important}
+</style>
+<script id="skCategoryPhotoFinalScript">
+(function(){
+  if(window.__SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE__)return;
+  window.__SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE__=true;
+  function norm(v){return String(v||'').toLowerCase().replace(/[&+]/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
+  function sectionTitle(sec){var h=sec.querySelector('h2,h3,.sectionTitle');return h?norm(h.textContent):''}
+  function imageFrom(sec){
+    if(!sec)return '';
+    var i=sec.querySelector('.card .visual img,.card img');
+    if(!i)return '';
+    return i.getAttribute('src')||i.getAttribute('data-src')||i.getAttribute('data-original')||i.currentSrc||i.src||'';
+  }
+  function findSection(label){
+    var key=norm(label);
+    if(key==='all')return document.querySelector('.section .card .visual img,.section .card img');
+    var aliases={
+      'fast food':'fast food','fastfood':'fast food','snack':'snacks','snacks':'snacks',
+      'chaat special':'chaat and special','chaat and special':'chaat and special',
+      'indian thali':'indian thali','desi rasoi':'desi rasoi','birthday special':'birthday special',
+      'beverages':'beverages','sweets':'sweets','restaurant hotel':'restaurant hotel',
+      'restaurant':'restaurant hotel','hotel':'restaurant hotel'
+    };
+    key=aliases[key]||key;
+    var exact=null, partial=null;
+    document.querySelectorAll('.section').forEach(function(sec){
+      var t=sectionTitle(sec);
+      if(t===key)exact=sec;
+      else if(!partial&&(t.indexOf(key)>=0||key.indexOf(t)>=0))partial=sec;
+    });
+    return exact||partial;
+  }
+  function getLabel(cat){
+    var saved=cat.getAttribute('data-sk-category-label');
+    if(saved)return saved;
+    var old=cat.querySelector('.skCatLabelV4,.skCatLabelV3');
+    if(old)return old.textContent.replace(/\s+/g,' ').trim();
+    var clone=cat.cloneNode(true);
+    clone.querySelectorAll('.skFinalCatPhoto,.skCatPhoto,.skCatPhotoV4,img,picture,svg').forEach(function(x){x.remove()});
+    return (clone.textContent||'').replace(/\s+/g,' ').trim();
+  }
+  function apply(){
+    var root=document.getElementById('cats');if(!root)return;
+    root.querySelectorAll('.cat').forEach(function(cat){
+      var label=getLabel(cat);if(!label)return;
+      cat.setAttribute('data-sk-category-label',label);
+      var source=findSection(label);
+      var src=source&&source.tagName==='IMG' ? (source.getAttribute('src')||source.currentSrc||source.src||'') : imageFrom(source);
+      var holder=cat.querySelector('.skFinalCatPhoto');
+      if(!holder){
+        holder=document.createElement('span');
+        holder.className='skFinalCatPhoto';
+        holder.innerHTML='<img loading="eager" decoding="sync"><span class="skFinalCatLabel"></span>';
+        cat.insertBefore(holder,cat.firstChild);
+      }
+      var img=holder.querySelector('img');
+      var lab=holder.querySelector('.skFinalCatLabel');
+      if(lab)lab.textContent=label;
+      if(img&&src){img.src=src;img.style.display='block';img.style.visibility='visible';img.style.opacity='1'}
+      Array.from(cat.children).forEach(function(ch){
+        if(ch!==holder && (ch.tagName==='IMG'||ch.tagName==='PICTURE'||ch.tagName==='SVG'||(ch.querySelector&&ch.querySelector('img'))))ch.remove();
+      });
+    });
+  }
+  function run(){apply();[100,300,700,1500,3000].forEach(function(ms){setTimeout(apply,ms)})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
+  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cats .cat'))run()},true);
+  var observer=new MutationObserver(function(){setTimeout(apply,20)});
+  function watch(){var root=document.getElementById('cats');if(root)observer.observe(root,{childList:true,subtree:true});else setTimeout(watch,100)}
+  watch();
+})();
+</script>'''
+              s = s.replace('</head>', patch+'\n</head>', 1)
 
-                  labels = ['20–30 min', '20-30 min', 'Near & Fast', 'Fresh & Hot', 'Fast Delivery']
-                  for label in labels:
-                      esc = re.escape(label)
-                      pat = re.compile(rf'({esc})(?:(?:\\n|\\r|\\t|&nbsp;|[•·|]|<[^>]*>|\\s){{0,160}})({esc})', re.IGNORECASE)
-                      s = pat.sub(r'\1', s)
+          # Keep the previously requested customer cleanup rules.
+          s = s.replace('Send OTP','').replace('+91XXXXXXXXXX','')
+          s = s.replace('₹30 up to 5 km','₹30').replace('Delivery ₹30 up to 5 km','Delivery ₹30')
+          p.write_text(s, encoding='utf-8')
 
-                  s = s.replace('Send OTP', '')
-                  s = s.replace('+91XXXXXXXXXX', '')
-                  s = s.replace('₹30 up to 5 km', '₹30')
-                  s = s.replace('Delivery ₹30 up to 5 km', 'Delivery ₹30')
-              else:
-                  s = s.replace('Send OTP', '')
-                  s = s.replace('+91XXXXXXXXXX', '')
-
-              if s != original:
-                  p.write_text(s, encoding='utf-8')
-                  changed.append(str(p))
-
-          print('Changed:', changed)
-
-      - name: Commit cleanup
+      - name: Commit source changes
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add app/src/main/assets/index.html
           if git diff --cached --quiet; then
-            echo 'No changes to commit.'
+            echo 'No source changes.'
           else
-            git commit -m 'Fix duplicate customer delivery UI'
+            git commit -m 'Fix category photos permanently and remove overlap'
             git push
           fi
+
+      - name: Verify final customer source
+        shell: bash
+        run: |
+          set -e
+          test -s app/src/main/assets/index.html
+          grep -F 'SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261002' app/src/main/assets/index.html
+          test "$(grep -o 'skCategoryPhotoFinalScript' app/src/main/assets/index.html | wc -l)" -eq 1
+          if grep -F '+91XXXXXXXXXX' app/src/main/assets/index.html; then exit 1; fi
+          if grep -F 'Send OTP' app/src/main/assets/index.html; then exit 1; fi
+          echo 'Final category-photo source verified.'
 
       - name: Setup Java 17
         uses: actions/setup-java@v5
