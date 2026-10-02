@@ -4,7 +4,7 @@ import re
 P = Path('app/src/main/assets/index.html')
 s = P.read_text(encoding='utf-8')
 
-# Remove every previous category-photo implementation. Only this one must remain.
+# Remove every older category-photo patch so there is exactly one source of truth.
 ids = [
     'skRealCategoryPhotoStyle','skRealCategoryPhotoScript',
     'skCategoryPhotoDedupV2','skCategoryPhotoDedupV2Script',
@@ -18,77 +18,75 @@ for ident in ids:
     s = re.sub(r'<script id="'+re.escape(ident)+r'">.*?</script>', '', s, flags=re.S)
 
 patch = r'''<style id="skCategoryPhotoFinalStyle">
-/* SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261002_V2 */
-#cats .cat{overflow:hidden!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:0!important;min-height:88px!important}
-#cats .cat .skFinalCatPhoto{display:block!important;width:100%!important;height:66px!important;flex:0 0 66px!important;overflow:hidden!important;margin:0 0 4px!important;border-radius:11px 11px 0 0!important;background:#f4e4c5!important}
+/* SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261002_V3 */
+#cats .cat{overflow:hidden!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:0!important;min-height:92px!important}
+#cats .cat .skFinalCatPhoto{display:block!important;width:100%!important;height:68px!important;flex:0 0 68px!important;overflow:hidden!important;margin:0!important;border-radius:11px 11px 0 0!important;background:#f4e4c5!important}
 #cats .cat .skFinalCatPhoto img{display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;visibility:visible!important;opacity:1!important}
-#cats .cat .skFinalCatLabel{display:block!important;padding:3px 4px 7px!important;text-align:center!important;line-height:1.2!important;font-weight:800!important;color:inherit!important}
-#cats .cat>img,#cats .cat>picture,#cats .cat>svg,#cats .cat>.catPhoto,#cats .cat>.categoryImage,#cats .cat>.category-img,#cats .cat>.cat-image{display:none!important}
+#cats .cat .skFinalCatLabel{display:block!important;padding:5px 4px 7px!important;text-align:center!important;line-height:1.15!important;font-weight:800!important;color:inherit!important;font-size:11px!important}
 </style>
 <script id="skCategoryPhotoFinalScript">
 (function(){
-  if(window.__SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_V2__)return;
-  window.__SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_V2__=true;
-  var FALLBACK={
-    'all':'product-images/samosa.jpg',
-    'fast food':'product-images/pizza.jpg',
-    'snacks':'product-images/samosa.jpg',
-    'chaat special':'product-images/dahi-bhalla-1.jpg',
-    'indian thali':'product-images/paneer-tikka.jpg',
-    'desi rasoi':'product-images/manchurian.jpg',
-    'birthday special':'product-images/milk-cake.jpg',
-    'beverages':'product-images/burger.jpg',
-    'sweets':'product-images/gulab-jamun.jpg',
-    'restaurant hotel':'product-images/pizza.jpg'
+  if(window.__SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_V3__)return;
+  window.__SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_V3__=true;
+  var KEY={
+    'all':'samosa','fast food':'pizza','snacks':'samosa','chaat special':'dahi-bhalla-1',
+    'indian thali':'paneer-tikka','desi rasoi':'manchurian','birthday special':'milk-cake',
+    'beverages':'burger','sweets':'gulab-jamun','restaurant hotel':'pizza'
   };
   function norm(v){return String(v||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
-  function sectionImage(label){
-    var key=norm(label), sec=null;
-    if(key==='all') return document.querySelector('.section .card .visual img,.section .card img');
-    var aliases={'chaat special':'chaat and special','restaurant':'restaurant hotel','hotel':'restaurant hotel'};
-    key=aliases[key]||key;
-    document.querySelectorAll('.section').forEach(function(x){
-      var h=x.querySelector('h2,h3,.sectionTitle');
-      var t=norm(h?h.textContent:'');
-      if(!sec && (t===key || t.indexOf(key)>=0 || key.indexOf(t)>=0)) sec=x;
-    });
-    return sec&&sec.querySelector('.card .visual img,.card img');
-  }
-  function labelOf(cat){
+  function cleanLabel(cat){
     var saved=cat.getAttribute('data-sk-category-label');
     if(saved)return saved;
-    var clone=cat.cloneNode(true);
-    clone.querySelectorAll('.skFinalCatPhoto,.skCatPhoto,.skCatPhotoV4,img,picture,svg').forEach(function(x){x.remove()});
-    return (clone.textContent||'').replace(/\s+/g,' ').trim();
+    var text='';
+    cat.childNodes.forEach(function(n){if(n.nodeType===3)text+=' '+n.textContent});
+    if(!text.trim()){
+      var c=cat.cloneNode(true);
+      c.querySelectorAll('img,picture,svg,.skFinalCatPhoto,.skCatPhoto,.skCatPhotoV4').forEach(function(x){x.remove()});
+      text=c.textContent||'';
+    }
+    text=text.replace(/\s+/g,' ').trim();
+    return text;
+  }
+  function findProductImage(label){
+    var key=norm(label), aliases={'chaat special':'chaat special','restaurant':'restaurant hotel','hotel':'restaurant hotel'};
+    key=aliases[key]||key;
+    var found=null;
+    document.querySelectorAll('.section').forEach(function(sec){
+      if(found)return;
+      var h=sec.querySelector('h2,h3,.sectionTitle');
+      var t=norm(h?h.textContent:'');
+      if(t===key || (t&&t.indexOf(key)>=0) || (key&&key.indexOf(t)>=0))found=sec.querySelector('.card .visual img,.card img');
+    });
+    return found;
+  }
+  function srcFor(label){
+    var product=findProductImage(label);
+    var src=product&&(product.currentSrc||product.getAttribute('src')||product.src);
+    if(src)return src;
+    var key=KEY[norm(label)], data=window.SK_IMAGES&&key?window.SK_IMAGES[key]:'';
+    if(data)return data.indexOf('data:')===0?data:'data:image/jpeg;base64,'+data.replace(/^data:image\/[^;]+;base64,/,'').replace(/^\//,'');
+    return '';
   }
   function apply(){
-    var root=document.getElementById('cats'); if(!root)return;
+    var root=document.getElementById('cats');if(!root)return;
     root.querySelectorAll('.cat').forEach(function(cat){
-      var label=labelOf(cat); if(!label)return;
+      var label=cleanLabel(cat);if(!label)return;
       cat.setAttribute('data-sk-category-label',label);
-      var key=norm(label);
-      var source=sectionImage(label);
-      var src=source?(source.getAttribute('src')||source.currentSrc||source.src||''):'';
-      if(!src)src=FALLBACK[key]||'';
-      var holder=cat.querySelector('.skFinalCatPhoto');
-      if(!holder){
-        holder=document.createElement('span');
-        holder.className='skFinalCatPhoto';
-        holder.innerHTML='<img loading="eager" decoding="sync"><span class="skFinalCatLabel"></span>';
-        cat.insertBefore(holder,cat.firstChild);
-      }
-      var img=holder.querySelector('img'), lab=holder.querySelector('.skFinalCatLabel');
-      if(lab)lab.textContent=label;
-      if(img&&src){img.src=src;img.style.display='block';img.style.visibility='visible';img.style.opacity='1'}
-      Array.from(cat.children).forEach(function(ch){
-        if(ch!==holder && (ch.tagName==='IMG'||ch.tagName==='PICTURE'||ch.tagName==='SVG'||(ch.querySelector&&ch.querySelector('img'))))ch.remove();
-      });
+      var src=srcFor(label);
+      /* Keep the category button itself and its click handlers, but replace ALL children.
+         This is what prevents old photo + new photo stacking/overlap. */
+      while(cat.firstChild)cat.removeChild(cat.firstChild);
+      var holder=document.createElement('span');holder.className='skFinalCatPhoto';
+      var img=document.createElement('img');img.loading='eager';img.decoding='sync';img.alt=label;
+      var lab=document.createElement('span');lab.className='skFinalCatLabel';lab.textContent=label;
+      if(src){img.src=src;img.style.display='block';img.style.visibility='visible';img.style.opacity='1'}
+      holder.appendChild(img);cat.appendChild(holder);cat.appendChild(lab);
     });
   }
-  function run(){apply();[100,300,700,1500,3000].forEach(function(ms){setTimeout(apply,ms)})}
+  function run(){apply();[100,300,700,1500,3000,6000].forEach(function(ms){setTimeout(apply,ms)})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cats .cat'))setTimeout(apply,30)},true);
-  var observer=new MutationObserver(function(){setTimeout(apply,30)});
+  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cats .cat'))setTimeout(apply,60)},true);
+  var observer=new MutationObserver(function(){clearTimeout(observer._t);observer._t=setTimeout(apply,60)});
   function watch(){var root=document.getElementById('cats');if(root)observer.observe(root,{childList:true,subtree:true});else setTimeout(watch,100)}
   watch();
 })();
@@ -96,4 +94,4 @@ patch = r'''<style id="skCategoryPhotoFinalStyle">
 
 s = s.replace('</head>', patch + '\n</head>', 1)
 P.write_text(s, encoding='utf-8')
-print('Final category photo implementation written.')
+print('Final category photo implementation V3 written: one image, one label, local SK_IMAGES source, permanent after category taps.')
