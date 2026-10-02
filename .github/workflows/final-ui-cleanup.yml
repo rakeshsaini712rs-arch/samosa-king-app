@@ -31,7 +31,7 @@ jobs:
           test "$(grep -o 'skCategoryPhotoFinalScript' app/src/main/assets/index.html | wc -l)" -eq 1
           test "$(grep -o 'skFinalCatPhoto' app/src/main/assets/index.html | wc -l)" -ge 3
           grep -F 'window.SK_IMAGES' app/src/main/assets/index.html
-          echo 'Category photo source verified: one implementation, local embedded images, no duplicate image children.'
+          echo 'Category photo source verified: one implementation, permanent embedded images, no stacked photo children.'
 
       - name: Commit source fix
         shell: bash
@@ -42,7 +42,7 @@ jobs:
           if git diff --cached --quiet; then
             echo 'No source changes.'
           else
-            git commit -m 'Fix category photos permanently and remove duplicate images'
+            git commit -m 'Fix category photos permanently and remove duplicates'
             git push
           fi
 
