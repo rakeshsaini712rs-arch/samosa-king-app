@@ -16,6 +16,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: python3 tools/harden_category_photo_text_match.py
+      - run: python3 tools/fix_category_photo_matching_v3.py
       - name: Commit hardening
         run: |
           git config user.name "github-actions[bot]"
@@ -24,6 +25,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No category photo hardening changes needed."
           else
-            git commit -m "Harden category photo matching"
+            git commit -m "Fix category photos to match category products"
             git push
           fi
