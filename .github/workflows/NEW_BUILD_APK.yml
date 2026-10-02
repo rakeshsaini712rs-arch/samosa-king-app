@@ -33,16 +33,42 @@ jobs:
             exit 1
           fi
 
-      - name: Apply definitive category image fix
+      - name: CLEAN category renderer - remove all experimental category patches
         shell: bash
         run: |
           set -e
-          test -f tools/fix_category_photos_final.py
-          python3 tools/fix_category_photos_final.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          ids = [
+            'skRealCategoryPhotoStyle','skRealCategoryPhotoScript',
+            'skCategoryPhotoDedupV2','skCategoryPhotoDedupV2Script',
+            'skCategoryPhotoMatchV3','skCategoryPhotoMatchV3Script',
+            'skCategoryPhotoMatchV4','skCategoryPhotoMatchV4Script',
+            'skCategoryPhotoFinalStyle','skCategoryPhotoFinalScript',
+            'skCategoryPhotoGuaranteedStyle','skCategoryPhotoGuaranteedScript',
+            'customerCategoryPhotoDedupStyle','customerCategoryPhotoDedupScript',
+          ]
+          for ident in ids:
+              s = re.sub(r'<style id="'+re.escape(ident)+r'">.*?</style>', '', s, flags=re.S)
+              s = re.sub(r'<script id="'+re.escape(ident)+r'">.*?</script>', '', s, flags=re.S)
+          # Remove any leftover category-photo experiment blocks by known markers.
+          s = re.sub(r'<style id="skCategoryPhoto[^>]*">.*?</style>', '', s, flags=re.S)
+          s = re.sub(r'<script id="skCategoryPhoto[^>]*">.*?</script>', '', s, flags=re.S)
+          p.write_text(s, encoding='utf-8')
+          PY
           test -f app/src/main/assets/index.html
-          grep -F 'SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261002_V4' app/src/main/assets/index.html
-          grep -F 'skCategoryPhotoFinalScript' app/src/main/assets/index.html
-          echo 'Category image implementation verified in APK source.'
+          if grep -E 'skCategoryPhoto|skRealCategoryPhoto|skGuaranteedPhoto|skFinalCatPhoto|customerCategoryPhoto' app/src/main/assets/index.html; then
+            echo 'ERROR: experimental category patch remains in customer source'
+            exit 1
+          fi
+          grep -F 'function renderCats()' app/src/main/assets/index.html
+          grep -F 'catImgs=' app/src/main/assets/index.html
+          grep -F 'catImg' app/src/main/assets/index.html
+          grep -F 'catName' app/src/main/assets/index.html
+          echo 'Native renderCats category image renderer verified.'
 
       - name: Keep mobile number only inside Buy Now checkout
         shell: bash
