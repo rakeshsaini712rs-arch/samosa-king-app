@@ -33,6 +33,9 @@ tasks.register('patchProductImages') {
         } else if (!s.contains('<script src="runtime-fix.js"></script>')) {
             s = s.replace('</body>', '<script src="order-fix.js"></script><script src="runtime-fix.js"></script></body>')
         }
+        if (!s.contains('<script src="category-photo-final.js"></script>')) {
+            s = s.replace('</body>', '<script src="category-photo-final.js"></script></body>')
+        }
         def css = '.photo{width:100%;height:112px;object-fit:cover;display:block;border-radius:13px;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0)}.visual{overflow:hidden}'
         if (!s.contains('image-rendering:auto')) s = s.replace('</style>', css + '</style>')
         f.setText(s, 'UTF-8')
