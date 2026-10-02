@@ -17,9 +17,9 @@ if marker not in s:
     captainOrderListener=db.collection("orders").document(oid).addSnapshotListener((snap,err)->{
       try{
         if(err!=null||snap==null||!snap.exists())return;
-        String status=snap.getString("status"); if(status==null)status="";
-        Double clat=snap.getDouble("latitude"), clon=snap.getDouble("longitude");
-        String email=snap.getString("deliveryBoyEmail"); if(email==null)email=""; email=email.trim();
+        String status0=snap.getString("status"); final String status=status0==null?"":status0;
+        final Double clat=snap.getDouble("latitude"), clon=snap.getDouble("longitude");
+        String email0=snap.getString("deliveryBoyEmail"); final String email=(email0==null?"":email0).trim();
         JSONObject out=new JSONObject();out.put("orderId",oid);out.put("status",status);if(clat!=null)out.put("customerLat",clat);if(clon!=null)out.put("customerLon",clon);out.put("online",false);
         js("window.captainLiveData("+JSONObject.quote(out.toString())+");");
         boolean active="OUT_FOR_DELIVERY".equals(status)&&!email.isEmpty();
