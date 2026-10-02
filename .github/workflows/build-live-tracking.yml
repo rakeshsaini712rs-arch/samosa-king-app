@@ -10,6 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 tools/patch_customer_delivery_tracking.py
+      - run: python3 tools/patch_captain_live.py
       - run: python3 tools/fix_customer_ui_duplicates.py
       - run: python3 tools/fix_checkout_phone.py
       - name: Persist final customer info/help removal
@@ -44,6 +45,8 @@ jobs:
           grep -F '__SK_APP57_DUPLICATE_UI_FIX__' app/src/main/assets/settings-fix.js
           grep -F 'skEmptyOrderBoxFixStyle' app/src/main/assets/index.html
           grep -F 'skEmptyOrderBoxFixScript' app/src/main/assets/index.html
+          grep -F 'captain-live.js' app/src/main/assets/index.html
+          grep -F 'CAPTAIN_LIVE_NATIVE_V1' app/src/main/java/com/samosaking/nawalgarh/MainActivity.java
           if grep -F 'onclick="selectCategory(\'all\')">🍽️ All</button><button class="cat"' app/src/main/assets/index.html; then
             echo 'ERROR: old static duplicate category buttons remain'
             exit 1
