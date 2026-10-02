@@ -10,8 +10,8 @@ android {
         applicationId 'com.samosaking.nawalgarh'
         minSdk 23
         targetSdk 35
-        versionCode 39
-        versionName '3.9'
+        versionCode 40
+        versionName '4.0'
     }
 }
 
@@ -27,7 +27,7 @@ tasks.register('patchProductImages') {
     doLast {
         def f = file('src/main/assets/index.html')
         def s = f.getText('UTF-8')
-        def scripts = '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script><script src="navigation-fix.js"></script><script src="live-order-fix.js"></script><script src="order-fix.js"></script><script src="runtime-fix.js"></script><script src="cart-fix.js"></script><script src="product-video.js"></script><script src="category-photo-final.js"></script>'
+        def scripts = '<script src="admin.js"></script><script src="production.js"></script><script src="drawer-fix.js"></script><script src="all-buttons-fix.js"></script><script src="navigation-fix.js"></script><script src="live-order-fix.js"></script><script src="order-fix.js"></script><script src="runtime-fix.js"></script><script src="product-video.js"></script><script src="category-photo-final.js"></script><script src="captain-live.js"></script>'
         if (!s.contains('<script src="admin.js"></script>')) {
             s = s.replace('</body>', scripts + '</body>')
         } else if (!s.contains('<script src="runtime-fix.js"></script>')) {
@@ -35,6 +35,9 @@ tasks.register('patchProductImages') {
         }
         if (!s.contains('<script src="category-photo-final.js"></script>')) {
             s = s.replace('</body>', '<script src="category-photo-final.js"></script></body>')
+        }
+        if (!s.contains('<script src="captain-live.js"></script>')) {
+            s = s.replace('</body>', '<script src="captain-live.js"></script></body>')
         }
         def css = '.photo{width:100%;height:112px;object-fit:cover;display:block;border-radius:13px;image-rendering:auto;-webkit-backface-visibility:hidden;backface-visibility:hidden;transform:translateZ(0)}.visual{overflow:hidden}'
         if (!s.contains('image-rendering:auto')) s = s.replace('</style>', css + '</style>')
