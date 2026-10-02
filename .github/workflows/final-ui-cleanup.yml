@@ -12,6 +12,10 @@ jobs:
   cleanup:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
+      GRADLE_USER_HOME: ${{ runner.temp }}/samosa-gradle-home
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,8 +37,6 @@ jobs:
               original = s
 
               if p.name == 'index.html':
-                  # The actual customer card renderer contains the duplicate
-                  # delivery ticker in one function. Keep exactly one set.
                   s = re.sub(
                       r'function skProductTicker\(\)\{return .*?\}\s*\nfunction card\(',
                       "function skProductTicker(){return '<div class=\\\"skProductTicker\\\"><div class=\\\"skTickerTrack\\\"><span class=\\\"skTickerItem\\\">⏱ 20–30 min</span><span class=\\\"skTickerDot\\\">•</span><span class=\\\"skTickerItem\\\">⚡ Near & Fast</span><span class=\\\"skTickerDot\\\">•</span><span class=\\\"skTickerItem\\\">🔥 Fresh & Hot</span><span class=\\\"skTickerDot\\\">•</span><span class=\\\"skTickerItem\\\">🚴 Fast Delivery</span></div></div>'}\nfunction card(",
@@ -43,22 +45,16 @@ jobs:
                       flags=re.S
                   )
 
-                  # Remove duplicate delivery labels if any are still emitted
-                  # elsewhere in the HTML source.
                   labels = ['20–30 min', '20-30 min', 'Near & Fast', 'Fresh & Hot', 'Fast Delivery']
                   for label in labels:
                       esc = re.escape(label)
                       pat = re.compile(rf'({esc})(?:(?:\\n|\\r|\\t|&nbsp;|[•·|]|<[^>]*>|\\s){{0,160}})({esc})', re.IGNORECASE)
                       s = pat.sub(r'\1', s)
 
-                  # Remove obsolete customer OTP prompt text.
                   s = s.replace('Send OTP', '')
                   s = s.replace('+91XXXXXXXXXX', '')
-
-                  # Remove the old 5 km wording everywhere in customer UI.
                   s = s.replace('₹30 up to 5 km', '₹30')
                   s = s.replace('Delivery ₹30 up to 5 km', 'Delivery ₹30')
-
               else:
                   s = s.replace('Send OTP', '')
                   s = s.replace('+91XXXXXXXXXX', '')
@@ -77,7 +73,31 @@ jobs:
           git add -A
           if git diff --cached --quiet; then
             echo 'No changes to commit.'
-            exit 0
+          else
+            git commit -m 'Fix duplicate customer delivery UI'
+            git push
           fi
-          git commit -m 'Fix duplicate customer delivery UI'
-          git push
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build CUSTOMER APK
+        run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+
+      - name: Verify CUSTOMER APK
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload CUSTOMER APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Samosa-King-CUSTOMER-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
