@@ -44,7 +44,63 @@ body.skDark .top .brand{color:#ffffff!important;opacity:1!important;visibility:v
 body.skDark .top .brand b{color:#f6c94a!important;opacity:1!important;visibility:visible!important}
 body.skDark .top .brand::first-letter{color:#ffffff!important}
 </style>
-</head>
+<style id="skRealCategoryPhotoStyle">
+/* SK_CATEGORY_PHOTOS_REAL_LOCAL_20261002 */
+#cats .cat{position:relative!important;overflow:hidden!important;min-height:78px!important;height:78px!important;padding:53px 8px 6px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;background-image:none!important}
+#cats .cat .skCatPhoto{position:absolute!important;top:5px!important;left:50%!important;transform:translateX(-50%)!important;width:46px!important;height:46px!important;border-radius:50%!important;overflow:hidden!important;border:2px solid #ffffff!important;box-shadow:0 2px 8px #00000022!important;background:#fff!important;display:block!important;z-index:1!important}
+#cats .cat .skCatPhoto img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;visibility:visible!important;opacity:1!important}
+#cats .cat.active .skCatPhoto{border-color:#17100b!important;box-shadow:0 2px 8px #00000033!important}
+#cats .cat>span:not(.skCatPhoto){position:relative!important;z-index:2!important;display:block!important}
+</style>
+<script id="skRealCategoryPhotoScript">
+(function(){
+  if(window.__SK_CATEGORY_PHOTOS_REAL_LOCAL__) return;
+  window.__SK_CATEGORY_PHOTOS_REAL_LOCAL__=true;
+  var MAP={
+    'All':'product-images/samosa.jpg',
+    'Fast Food':'product-images/pizza.jpg',
+    'Snacks':'product-images/samosa.jpg',
+    'Chaat & Special':'product-images/dahi-bhalla-1.jpg',
+    'Indian Thali':'product-images/manchurian.jpg',
+    'Desi Rasoi':'product-images/manchurian.jpg',
+    'Birthday Special':'product-images/gulab-jamun.jpg',
+    'Beverages':'product-images/burger.jpg',
+    'Sweets':'product-images/gulab-jamun.jpg',
+    'Restaurant / Hotel':'product-images/pizza.jpg'
+  };
+  function cleanText(el){return (el.textContent||'').replace(/\\s+/g,' ').trim();}
+  function fix(){
+    var root=document.getElementById('cats');
+    if(!root) return;
+    root.querySelectorAll('.cat').forEach(function(el){
+      var key=cleanText(el);
+      var src=MAP[key];
+      if(!src) return;
+      var holder=el.querySelector('.skCatPhoto');
+      if(!holder){
+        holder=document.createElement('span');
+        holder.className='skCatPhoto';
+        var img=document.createElement('img');
+        img.alt=key+' category';
+        img.loading='eager';
+        img.decoding='sync';
+        img.src=src;
+        img.onerror=function(){this.style.display='none';};
+        holder.appendChild(img);
+        el.insertBefore(holder,el.firstChild);
+      }else{
+        var img=holder.querySelector('img');
+        if(img && img.getAttribute('src')!==src) img.src=src;
+        if(img) {img.style.setProperty('display','block','important');img.style.setProperty('visibility','visible','important');img.style.setProperty('opacity','1','important');}
+      }
+    });
+  }
+  function run(){fix();setTimeout(fix,50);setTimeout(fix,200);setTimeout(fix,500);setTimeout(fix,1000);setTimeout(fix,2000);}
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cats .cat')) run();},true);
+  new MutationObserver(function(){fix();}).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script></head>
 <body><div id="productImageViewer" class="imageViewer" onclick="closeProductImage(event)"><button class="imageViewerClose" type="button" onclick="closeProductImage()">✕</button><div class="imageViewerHint">Tap outside to close</div><img id="productImageViewerImg" src="" alt=""><div id="productImageViewerTitle" class="imageViewerTitle"></div></div><div id="settingsModal" class="modal"><div class="sheet"><button class="close" onclick="closeSettings()">✕</button><h2>⚙️ Setting</h2><div class="settingsList">
 <button type="button" class="appearanceSettingsBtn" onclick="openAppearance()">🎨 Appearance</button>
 <button type="button" onclick="openProfile()">👤 Profile</button>
