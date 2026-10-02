@@ -68,13 +68,14 @@ body.skDark .top .brand::first-letter{color:#ffffff!important}
     'Sweets':'product-images/gulab-jamun.jpg',
     'Restaurant / Hotel':'product-images/pizza.jpg'
   };
-  function cleanText(el){return (el.textContent||'').replace(/\\s+/g,' ').trim();}
+  /* SK_CATEGORY_PHOTOS_MATCH_HARDEN_20261002 */ function cleanText(el){return (el.textContent||'').replace(/\s+/g,' ').trim().replace(/\s*\/\s*/g,' / ');}
   function fix(){
     var root=document.getElementById('cats');
     if(!root) return;
     root.querySelectorAll('.cat').forEach(function(el){
       var key=cleanText(el);
       var src=MAP[key];
+      if(!src){var compact=key.replace(/\s*\/\s*/g,'/');Object.keys(MAP).some(function(k){if(k.replace(/\s*\/\s*/g,'/')===compact){src=MAP[k];return true;}return false;});}
       if(!src) return;
       var holder=el.querySelector('.skCatPhoto');
       if(!holder){
