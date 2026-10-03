@@ -41,7 +41,7 @@ jobs:
           grep -q 'CAPTAIN_LIVE_NATIVE_V1' app/src/main/java/com/samosaking/nawalgarh/MainActivity.java
           grep -q 'captain-live.js' app/src/main/assets/index.html
           echo "CAPTAIN LIVE PATCH APPLIED"
-      - name: Build Final APK
+      - name: Build Final APK (category photo fix)
         shell: bash
         run: |
           gradle clean assembleDebug --no-daemon --stacktrace
