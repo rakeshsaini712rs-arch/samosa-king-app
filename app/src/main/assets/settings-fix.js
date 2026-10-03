@@ -2,7 +2,6 @@
 (function(){
   'use strict';
 
-  /* Keep the existing Captain Live module loading unchanged. */
   function loadCaptain(){
     if(window.__SK_CAPTAIN_LIVE_V2__||window.__SK_CAPTAIN_LIVE_LOADER__)return;
     window.__SK_CAPTAIN_LIVE_LOADER__=true;
@@ -13,48 +12,52 @@
     document.head.appendChild(s);
   }
 
-  /* OTP removal: remove only the OTP controls, never the checkout/customer form. */
+  /* Remove OTP controls without touching checkout/customer fields. */
   function removeOtp(){
     try{
-      var selectors=[
-        '.otpbox',
-        '#otpBox',
-        '#otpInput',
-        'input[name="otp"]',
-        'input[placeholder*="OTP" i]',
-        'button[onclick*="otp" i]',
-        'button[id*="otp" i]',
-        '[class*="otp" i]'
-      ];
+      var selectors=['.otpbox','#otpBox','#otpInput','input[name="otp"]','input[placeholder*="OTP" i]','button[onclick*="otp" i]','button[id*="otp" i]','[class*="otp" i]'];
       document.querySelectorAll(selectors.join(',')).forEach(function(el){
-        if(el && el.id!=='checkout' && !el.closest('#checkout')) el.remove();
+        if(el&&el.id!=='checkout'&&!el.closest('#checkout'))el.remove();
       });
-
-      /* Remove a Send OTP button and its tiny OTP-only wrapper without touching
-         the customer's name/mobile/address checkout fields. */
       document.querySelectorAll('button,input[type="button"],input[type="submit"],a').forEach(function(el){
         var t=(el.textContent||el.value||'').replace(/\s+/g,' ').trim().toLowerCase();
         if(t==='send otp'||t==='verify otp'||t==='resend otp'||t==='send otp again'){
-          var p=el.parentElement;
-          el.remove();
-          if(p && !p.querySelector('input,button,textarea,select') && /otp/i.test(p.textContent||'')) p.remove();
+          var p=el.parentElement;el.remove();
+          if(p&&!p.querySelector('input,button,textarea,select')&&/otp/i.test(p.textContent||''))p.remove();
         }
       });
-
-      /* Remove standalone OTP/help text left by older UI patches. */
       document.querySelectorAll('body *').forEach(function(el){
-        if(el.children.length) return;
+        if(el.children.length)return;
         var t=(el.textContent||'').replace(/\s+/g,' ').trim();
-        if(/^\+91X{4,}\d*$/i.test(t) || /^Send OTP$/i.test(t) || /^Verify OTP$/i.test(t)) el.remove();
+        if(/^\+91X{4,}\d*$/i.test(t)||/^Send OTP$/i.test(t)||/^Verify OTP$/i.test(t))el.remove();
+      });
+    }catch(e){}
+  }
+
+  /* Category labels were being rendered twice (e.g. "All category" + "All").
+     Keep the existing category click handlers, but normalize only their visible text. */
+  function cleanCategories(){
+    try{
+      var names=['All','Fast Food','Snacks','Chaat & Special','Indian Thali','Desi Rasoi','Birthday Special','Beverages','Sweets','Restaurant / Hotel'];
+      document.querySelectorAll('.cat').forEach(function(el){
+        var t=(el.textContent||'').replace(/\s+/g,' ').trim();
+        for(var i=0;i<names.length;i++){
+          var n=names[i];
+          if(t===n||t===n+' category'||t.indexOf(n+' category')===0||t.indexOf('category '+n)===0){
+            el.textContent=n;
+            break;
+          }
+        }
       });
     }catch(e){}
   }
 
   function start(){
     removeOtp();
-    [100,300,700,1500,3000].forEach(function(ms){setTimeout(removeOtp,ms);});
+    cleanCategories();
+    [100,300,700,1500,3000].forEach(function(ms){setTimeout(function(){removeOtp();cleanCategories();},ms);});
     if(!window.__SK_OTP_OBSERVER__){
-      window.__SK_OTP_OBSERVER__=new MutationObserver(function(){removeOtp();});
+      window.__SK_OTP_OBSERVER__=new MutationObserver(function(){removeOtp();cleanCategories();});
       window.__SK_OTP_OBSERVER__.observe(document.documentElement,{childList:true,subtree:true});
     }
   }
