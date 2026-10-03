@@ -1,0 +1,50 @@
+name: Samosa King Category UI Fix APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GRADLE_OPTS: -Xmx4g -Dfile.encoding=UTF-8
+      GRADLE_USER_HOME: ${{ runner.temp }}/samosa-gradle-home
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply final category photo and dark-mode UI fix
+        run: python3 tools/fix_category_photos_final.py
+      - name: Verify final category UI fix
+        run: |
+          set -e
+          grep -F 'SK_CATEGORY_PHOTOS_FINAL_SINGLE_SOURCE_20261003_V4' app/src/main/assets/index.html
+          test "$(grep -o 'id=\"skCategoryPhotoFinalScript\"' app/src/main/assets/index.html | wc -l)" -eq 1
+          test "$(grep -o 'skFinalCatPhoto' app/src/main/assets/index.html | wc -l)" -ge 3
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Build CUSTOMER APK
+        run: gradle clean :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+      - name: Verify APK
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload CUSTOMER APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Samosa-King-CATEGORY-UI-FIX-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
