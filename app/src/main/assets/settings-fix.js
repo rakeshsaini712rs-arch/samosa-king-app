@@ -1,14 +1,32 @@
-/* FINAL CUSTOMER CATEGORY CLEANUP — 2026-10-02 */
+/* FINAL CUSTOMER CATEGORY BAR REMOVAL — 2026-10-03 */
 (function(){
   'use strict';
-  if(window.__SK_CATEGORY_CLEAN_V2) return;
-  window.__SK_CATEGORY_CLEAN_V2=true;
-  var ORDER=['All','Fast Food','Snacks','Chaat & Special','Indian Thali','Desi Rasoi','Birthday Special','Beverages','Sweets','Restaurant / Hotel'];
-  var running=false;
-  function labelOf(el){var raw=(el.textContent||'').replace(/\s+/g,' ').trim();for(var i=0;i<ORDER.length;i++) if(raw.indexOf(ORDER[i])!==-1) return ORDER[i];return null;}
-  function cleanOne(el,label){var img=el.querySelector('img');var imgClone=img?img.cloneNode(true):null;var changed=false;Array.prototype.slice.call(el.childNodes).forEach(function(n){if(n.nodeType===3){if((n.nodeValue||'').trim()){n.remove();changed=true;}}else if(n.nodeType===1&&!n.classList.contains('sk-category-label')&&n.tagName!=='IMG'){n.remove();changed=true;}});var lab=el.querySelector('.sk-category-label');if(!lab){lab=document.createElement('span');lab.className='sk-category-label';lab.style.cssText='display:block!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.15!important;text-align:center!important;font-weight:800!important;';el.appendChild(lab);changed=true;}if(lab.textContent!==label){lab.textContent=label;changed=true;}if(imgClone&&!el.querySelector('img')){el.insertBefore(imgClone,el.firstChild);changed=true;}return changed;}
-  function clean(){if(running)return;var wrap=document.getElementById('cats')||document.querySelector('.cats');if(!wrap)return;var cats=Array.prototype.slice.call(wrap.querySelectorAll('.cat'));if(!cats.length)return;running=true;try{var seen={},keep=[];cats.forEach(function(el){var label=labelOf(el);if(!label)return;if(seen[label]){el.remove();return;}seen[label]=el;cleanOne(el,label);keep.push({label:label,el:el});});var desired=ORDER.map(function(x){for(var i=0;i<keep.length;i++)if(keep[i].label===x)return keep[i].el;return null;}).filter(Boolean);var actual=Array.prototype.slice.call(wrap.querySelectorAll('.cat'));var different=actual.length!==desired.length;if(!different)for(var j=0;j<desired.length;j++)if(actual[j]!==desired[j]){different=true;break;}if(different)desired.forEach(function(el){wrap.appendChild(el);});}catch(e){}finally{running=false;}}
-  clean();[50,250,700,1500,3000].forEach(function(ms){setTimeout(clean,ms);});new MutationObserver(function(){setTimeout(clean,0);}).observe(document.documentElement,{childList:true,subtree:true});
+  if(window.__SK_CATEGORY_BAR_REMOVED_V1) return;
+  window.__SK_CATEGORY_BAR_REMOVED_V1=true;
+  function hide(){
+    var wrap=document.getElementById('cats')||document.querySelector('.cats');
+    if(wrap){
+      wrap.style.setProperty('display','none','important');
+      wrap.setAttribute('aria-hidden','true');
+      wrap.querySelectorAll('.cat').forEach(function(el){el.style.setProperty('display','none','important');});
+    }
+  }
+  hide();
+  [0,50,150,300,700,1200,2000,3500,5000].forEach(function(ms){setTimeout(hide,ms);});
+  new MutationObserver(function(){hide();}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 /* Load the already-built real Captain Live module into the customer page. */
-(function(){'use strict';function loadCaptain(){if(window.__SK_CAPTAIN_LIVE_V2__||window.__SK_CAPTAIN_LIVE_LOADER__)return;window.__SK_CAPTAIN_LIVE_LOADER__=true;var s=document.createElement('script');s.src='captain-live.js?v=20261002-1';s.onload=function(){window.__SK_CAPTAIN_LIVE_LOADED__=true;};s.onerror=function(){window.__SK_CAPTAIN_LIVE_LOADER__=false;};document.head.appendChild(s);}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadCaptain);else loadCaptain();[300,1000,2500,2500].forEach(function(ms){setTimeout(loadCaptain,ms);});})();
+(function(){
+  'use strict';
+  function loadCaptain(){
+    if(window.__SK_CAPTAIN_LIVE_V2__||window.__SK_CAPTAIN_LIVE_LOADER__)return;
+    window.__SK_CAPTAIN_LIVE_LOADER__=true;
+    var s=document.createElement('script');
+    s.src='captain-live.js?v=20261002-1';
+    s.onload=function(){window.__SK_CAPTAIN_LIVE_LOADED__=true;};
+    s.onerror=function(){window.__SK_CAPTAIN_LIVE_LOADER__=false;};
+    document.head.appendChild(s);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadCaptain);else loadCaptain();
+  [300,1000,2500,4000].forEach(function(ms){setTimeout(loadCaptain,ms);});
+})();
