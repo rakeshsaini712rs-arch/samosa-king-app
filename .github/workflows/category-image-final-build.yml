@@ -1,0 +1,125 @@
+name: Samosa King - FINAL Category Images APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply final category image fix
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('app/src/main/assets/index.html')
+          s=p.read_text(encoding='utf-8')
+
+          # Remove older category-photo controllers so only this deterministic renderer remains.
+          ids=[
+            'categoryDuplicateCleanupFinalCss','categoryDuplicateCleanupFinal',
+            'categoryFinalCleanV2Css','categoryFinalCleanV2Script',
+            'skRealCategoryPhotoStyle','skRealCategoryPhotoScript',
+            'skCategoryPhotoDedupV2','skCategoryPhotoDedupV2Script',
+            'skCategoryPhotoMatchV3','skCategoryPhotoMatchV3Script',
+            'skCategoryPhotoMatchV4','skCategoryPhotoMatchV4Script',
+            'skCategoryPhotoFinalStyle','skCategoryPhotoFinalScript',
+            'skCategoryPhotoGuaranteedStyle','skCategoryPhotoGuaranteedScript',
+            'customerCategoryPhotoDedupStyle','customerCategoryPhotoDedupScript',
+            'categoryPhotoEmbeddedFinal','categoryPhotoEmbeddedFinalStyle',
+            'skStableCategoryCss','skStableCategoryController'
+          ]
+          for ident in ids:
+              s=re.sub(r'<(?:style|script)\\b[^>]*\\bid=["\\']'+re.escape(ident)+r'["\\'][^>]*>.*?</(?:style|script)>','',s,flags=re.I|re.S)
+
+          cats='''<div id="cats" class="cats" aria-label="Food categories">
+          <button class="cat active" type="button" data-category="all"><img src="product-images/samosa.jpg" alt="All"><span>All</span></button>
+          <button class="cat" type="button" data-category="fast"><img src="product-images/pizza.jpg" alt="Fast Food"><span>Fast Food</span></button>
+          <button class="cat" type="button" data-category="snacks"><img src="product-images/mirchi-bada.jpg" alt="Snacks"><span>Snacks</span></button>
+          <button class="cat" type="button" data-category="chaat"><img src="product-images/dahi-bhalla-1.jpg" alt="Chaat &amp; Special"><span>Chaat &amp; Special</span></button>
+          <button class="cat" type="button" data-category="thali"><img src="product-images/manchurian.jpg" alt="Indian Thali"><span>Indian Thali</span></button>
+          <button class="cat" type="button" data-category="desirsoi"><img src="product-images/pasta.jpg" alt="Desi Rasoi"><span>Desi Rasoi</span></button>
+          <button class="cat" type="button" data-category="birthday"><img src="product-images/gulab-jamun.jpg" alt="Birthday Special"><span>Birthday Special</span></button>
+          <button class="cat" type="button" data-category="beverages"><img src="product-images/burger.jpg" alt="Beverages"><span>Beverages</span></button>
+          <button class="cat" type="button" data-category="sweets"><img src="product-images/kaju-katli.jpg" alt="Sweets"><span>Sweets</span></button>
+          <button class="cat" type="button" data-category="restaurants"><img src="product-images/wraps.jpg" alt="Restaurant / Hotel"><span>Restaurant / Hotel</span></button>
+          </div>'''
+          s,n=re.subn(r'<div\\s+id=["\\']cats["\\'][^>]*>.*?</div>',cats,s,count=1,flags=re.I|re.S)
+          if n!=1: raise SystemExit('category bar not found')
+
+          css='''<style id="FINAL_CATEGORY_IMAGES_CSS">
+          #cats{display:flex!important;align-items:center!important;gap:8px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:10px 12px!important;background:#17120f!important;scrollbar-width:none!important;position:relative!important;z-index:15!important}
+          #cats::-webkit-scrollbar{display:none!important}
+          #cats .cat{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;flex:0 0 88px!important;width:88px!important;min-height:88px!important;padding:6px 4px 7px!important;box-sizing:border-box!important;border:1px solid #4a3b30!important;border-radius:14px!important;background:#241c17!important;color:#fff!important;font-size:10px!important;font-weight:900!important;line-height:1.1!important;white-space:normal!important}
+          #cats .cat img{display:block!important;width:58px!important;height:50px!important;flex:0 0 50px!important;object-fit:cover!important;border-radius:10px!important;background:#33251d!important}
+          #cats .cat span{display:block!important;max-width:100%!important;text-align:center!important;white-space:normal!important;overflow:hidden!important;text-overflow:ellipsis!important}
+          #cats .cat.active{background:#f6c94a!important;border-color:#f6c94a!important;color:#17100b!important}
+          </style>'''
+          js='''<script id="FINAL_CATEGORY_IMAGES_CONTROLLER">
+          (function(){
+            if(window.__FINAL_CATEGORY_IMAGES_V1__)return;
+            window.__FINAL_CATEGORY_IMAGES_V1__=true;
+            function bind(){
+              var root=document.getElementById('cats'); if(!root)return;
+              if(root.dataset.finalBound==='1')return; root.dataset.finalBound='1';
+              root.addEventListener('click',function(e){
+                var b=e.target.closest('.cat'); if(!b)return;
+                document.querySelectorAll('#cats .cat').forEach(function(x){x.classList.toggle('active',x===b);});
+                var k=b.getAttribute('data-category')||'all';
+                try{if(typeof window.selectCategory==='function')window.selectCategory(k);}catch(_){ }
+                var label=(b.innerText||'').trim().toLowerCase();
+                var sections=document.querySelectorAll('.section');
+                for(var i=0;i<sections.length;i++){
+                  var h=sections[i].querySelector('h2,h3');
+                  if(h && h.textContent.trim().toLowerCase().indexOf(label)>=0){sections[i].scrollIntoView({behavior:'smooth',block:'start'});break;}
+                }
+              },true);
+            }
+            if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+            setTimeout(bind,300);setTimeout(bind,1000);
+          })();
+          </script>'''
+          pos=s.lower().rfind('</body>')
+          if pos<0: raise SystemExit('no body')
+          s=s[:pos]+css+js+s[pos:]
+          p.write_text(s,encoding='utf-8')
+          print('FINAL CATEGORY IMAGE FIX APPLIED')
+          PY
+
+          grep -q 'FINAL_CATEGORY_IMAGES_CSS' app/src/main/assets/index.html
+          grep -q 'product-images/samosa.jpg' app/src/main/assets/index.html
+          grep -q 'product-images/pizza.jpg' app/src/main/assets/index.html
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build customer APK
+        run: gradle :app:assembleDebug --no-daemon --no-parallel --stacktrace -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
+
+      - name: Verify APK
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload final customer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Samosa-King-FINAL-CATEGORY-IMAGES-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
