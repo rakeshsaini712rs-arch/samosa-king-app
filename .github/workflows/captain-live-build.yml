@@ -20,6 +20,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Apply secure Captain Live native bridge
         run: python3 tools/patch_captain_live.py
+      - name: Verify final category photo renderer
+        run: |
+          test -s app/src/main/assets/category-photo-final.js
+          grep -q 'file:///android_asset/product-images/' app/src/main/assets/category-photo-final.js
+          echo "FINAL CATEGORY PHOTO RENDERER VERIFIED"
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
