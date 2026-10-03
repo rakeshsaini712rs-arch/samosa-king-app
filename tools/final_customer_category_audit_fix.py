@@ -4,8 +4,6 @@ import re
 HTML = Path('app/src/main/assets/index.html')
 s = HTML.read_text(encoding='utf-8')
 
-# Remove all previous category photo/controller patches. The category bar will be
-# rendered exactly once below; no MutationObserver or second renderer is used.
 ids = [
     'categoryDuplicateCleanupFinalCss','categoryDuplicateCleanupFinal',
     'categoryFinalCleanV2Css','categoryFinalCleanV2Script',
@@ -25,12 +23,11 @@ for ident in ids:
     pat = r'<(?:style|script)\b[^>]*\bid=["\']' + re.escape(ident) + r'["\'][^>]*>.*?</(?:style|script)>'
     s = re.sub(pat, '', s, flags=re.I | re.S)
 
+# Remove old category-specific scripts so their click handlers cannot fight the final controller.
 def strip_bad_script(m):
     b = m.group(0).lower()
     markers = ('skcatphoto','skcategoryphoto','categoryphotoembedded','categoryfinalclean','categoryduplicatecleanup','skembeddedlabel','final_category_images')
-    if any(x in b for x in markers):
-        return ''
-    return m.group(0)
+    return '' if any(x in b for x in markers) else m.group(0)
 s = re.sub(r'<script\b[^>]*>.*?</script>', strip_bad_script, s, flags=re.I | re.S)
 
 cats = '''<div id="cats" class="cats" aria-label="Food categories">
@@ -45,9 +42,14 @@ cats = '''<div id="cats" class="cats" aria-label="Food categories">
 <button class="cat" type="button" data-category="sweets"><img src="product-images/kaju-katli.jpg" alt="Sweets"><span>Sweets</span></button>
 <button class="cat" type="button" data-category="restaurants"><img src="product-images/wraps.jpg" alt="Restaurant / Hotel"><span>Restaurant / Hotel</span></button>
 </div>'''
-s, n = re.subn(r'<div\s+id=["\']cats["\'][^>]*>.*?</div>', cats, s, count=1, flags=re.I | re.S)
-if n != 1:
-    raise RuntimeError('Could not replace customer category bar')
+
+# Remove EVERY existing category container, then insert exactly one canonical container.
+s = re.sub(r'<div\s+id=["\']cats["\'][^>]*>.*?</div>', '', s, flags=re.I | re.S)
+pos = s.lower().find('</header>')
+if pos < 0:
+    pos = s.lower().find('<body')
+    pos = s.find('>', pos) + 1 if pos >= 0 else 0
+s = s[:pos] + cats + s[pos:]
 
 css = '''<style id="skStableCategoryCss">
 #cats{display:flex!important;align-items:center!important;gap:8px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:10px 12px!important;position:relative!important;top:auto!important;z-index:15!important;scrollbar-width:none!important;background:#17120f!important;border-bottom:1px solid #3a3028!important;-webkit-overflow-scrolling:touch!important}
@@ -79,8 +81,8 @@ function sectionFor(key){
 function activate(btn){document.querySelectorAll('#cats .cat').forEach(function(b){b.classList.toggle('active',b===btn);});}
 function choose(key,btn){
  activate(btn);
- if(key==='restaurants'){if(typeof window.openRestaurants==='function')window.openRestaurants();return;}
  try{if(typeof window.selectCategory==='function')window.selectCategory(key);}catch(e){}
+ if(key==='restaurants'&&typeof window.openRestaurants==='function'){window.openRestaurants();return;}
  var tries=0;
  function jump(){
   var el=key==='all'?document.querySelector('#sections .section'):sectionFor(key);
@@ -88,26 +90,47 @@ function choose(key,btn){
    var top=document.querySelector('.top');
    var offset=(top?top.getBoundingClientRect().height:0)+8;
    var y=el.getBoundingClientRect().top+window.pageYOffset-offset;
-   window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
-   return;
+   window.scrollTo({top:Math.max(0,y),behavior:'smooth'}); return;
   }
-  if(tries++<12)setTimeout(jump,100);
+  if(tries++<15)setTimeout(jump,100);
  }
  setTimeout(jump,30);
 }
-function bind(){
- var root=document.getElementById('cats');
- if(!root||root.getAttribute('data-stable-bound')==='1')return;
+function sanitizeAndBind(){
+ var roots=document.querySelectorAll('.cats');
+ var root=document.getElementById('cats')||roots[0];
+ if(!root)return;
+ // If another renderer creates a second category bar, remove it.
+ for(var i=0;i<roots.length;i++) if(roots[i]!==root) roots[i].remove();
+ // Remove duplicate images/labels inside every category and detach old handlers by cloning buttons.
+ var buttons=Array.prototype.slice.call(root.querySelectorAll('.cat'));
+ buttons.forEach(function(old){
+  var b=old.cloneNode(true);
+  var imgs=b.querySelectorAll('img');
+  for(var i=1;i<imgs.length;i++)imgs[i].remove();
+  var spans=b.querySelectorAll('span');
+  for(var j=1;j<spans.length;j++)spans[j].remove();
+  b.type='button';
+  b.onclick=null;
+  old.replaceWith(b);
+ });
  root.setAttribute('data-stable-bound','1');
- root.addEventListener('click',function(e){
+ root.onclick=function(e){
   var b=e.target.closest('.cat');
   if(!b||!root.contains(b))return;
-  e.preventDefault();e.stopPropagation();
+  e.preventDefault();e.stopImmediatePropagation();
   choose(b.getAttribute('data-category')||'all',b);
- },true);
+ };
 }
+function bind(){sanitizeAndBind();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
-setTimeout(bind,500);setTimeout(bind,1500);
+setTimeout(bind,250);setTimeout(bind,800);setTimeout(bind,1600);
+var mo=new MutationObserver(function(){
+ if(window.__SK_CATEGORY_GUARD__)return;
+ window.__SK_CATEGORY_GUARD__=true;
+ setTimeout(function(){window.__SK_CATEGORY_GUARD__=false;sanitizeAndBind();},0);
+});
+if(document.body)mo.observe(document.body,{childList:true,subtree:true});
 })();
 </script>'''
 
@@ -115,4 +138,4 @@ pos=s.lower().rfind('</body>')
 if pos<0: raise RuntimeError('No </body> found')
 s=s[:pos]+css+js+s[pos:]
 HTML.write_text(s,encoding='utf-8')
-print('FINAL_CUSTOMER_CATEGORY_AUDIT_FIX_APPLIED')
+print('FINAL_CUSTOMER_CATEGORY_AUDIT_FIX_APPLIED_V2')
