@@ -1,0 +1,1 @@
+Run final category-image approval build after embedded-photo renderer fix. Do not change any other app feature.
