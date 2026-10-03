@@ -14,77 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install real local category photos
-        shell: python
+      - name: Install deterministic embedded category photos
+        shell: bash
         run: |
-          from pathlib import Path
-          import re
-          p=Path('app/src/main/assets/index.html')
-          s=p.read_text(encoding='utf-8')
-          for ident in ['skCategoryPhotoGuaranteedStyle','skCategoryPhotoGuaranteedScript']:
-              s=re.sub(r'<style id="'+ident+r'">.*?</style>','',s,flags=re.S)
-              s=re.sub(r'<script id="'+ident+r'">.*?</script>','',s,flags=re.S)
-          patch=r'''<style id="skCategoryPhotoGuaranteedStyle">
-          /* FINAL_REAL_CATEGORY_PHOTOS_20261003 */
-          #cats .cat{overflow:hidden!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;min-height:102px!important;height:auto!important;background:#fff!important;text-align:center!important}
-          #cats .cat .skGuaranteedPhoto{display:block!important;width:100%!important;height:70px!important;min-height:70px!important;flex:0 0 70px!important;overflow:hidden!important;border-radius:11px 11px 0 0!important;background:#f4e4c5!important}
-          #cats .cat .skGuaranteedPhoto img{display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;object-fit:cover!important;visibility:visible!important;opacity:1!important}
-          #cats .cat .skGuaranteedLabel{display:block!important;padding:6px 3px 8px!important;text-align:center!important;line-height:1.15!important;font-weight:900!important;font-size:11px!important;color:inherit!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-          </style>
-          <script id="skCategoryPhotoGuaranteedScript">
-          (function(){
-            if(window.__SK_CATEGORY_IMAGES_GUARANTEED_V2__)return;
-            window.__SK_CATEGORY_IMAGES_GUARANTEED_V2__=true;
-            var MAP={
-              'All':'product-images/samosa.jpg',
-              'Fast Food':'product-images/pizza.jpg',
-              'Snacks':'product-images/mirchi-bada.jpg',
-              'Chaat & Special':'product-images/dahi-bhalla-1.jpg',
-              'Indian Thali':'product-images/manchurian.jpg',
-              'Desi Rasoi':'product-images/pasta.jpg',
-              'Birthday Special':'product-images/gulab-jamun.jpg',
-              'Beverages':'product-images/burger.jpg',
-              'Sweets':'product-images/kaju-katli.jpg',
-              'Restaurant / Hotel':'product-images/wraps.jpg'
-            };
-            var KEYS=Object.keys(MAP);
-            function clean(v){return String(v||'').replace(/\\s+/g,' ').trim();}
-            function keyFor(cat,i){
-              var raw=clean(cat.getAttribute('data-label')||cat.textContent);
-              var low=raw.toLowerCase().replace(/\\s*category\\s*/g,' ').replace(/\\s+/g,' ').trim();
-              if(low==='all'||low.indexOf('all')===0)return 'All';
-              if(low.indexOf('fast food')>=0)return 'Fast Food';
-              if(low.indexOf('snacks')>=0)return 'Snacks';
-              if(low.indexOf('chaat')>=0)return 'Chaat & Special';
-              if(low.indexOf('indian thali')>=0)return 'Indian Thali';
-              if(low.indexOf('desi rasoi')>=0)return 'Desi Rasoi';
-              if(low.indexOf('birthday')>=0)return 'Birthday Special';
-              if(low.indexOf('beverages')>=0)return 'Beverages';
-              if(low.indexOf('sweets')>=0)return 'Sweets';
-              if(low.indexOf('restaurant')>=0||low.indexOf('hotel')>=0)return 'Restaurant / Hotel';
-              return KEYS[i%KEYS.length];
-            }
-            function apply(){
-              var root=document.getElementById('cats')||document.querySelector('.cats');
-              if(!root)return;
-              root.querySelectorAll('.cat').forEach(function(cat,i){
-                var key=keyFor(cat,i),holder=document.createElement('span'),img=document.createElement('img'),lab=document.createElement('span');
-                holder.className='skGuaranteedPhoto';
-                img.src=MAP[key];img.alt=key+' category';img.loading='eager';img.decoding='sync';
-                img.onerror=function(){this.style.visibility='hidden';};
-                holder.appendChild(img);
-                lab.className='skGuaranteedLabel';lab.textContent=key;
-                cat.innerHTML='';cat.appendChild(holder);cat.appendChild(lab);cat.setAttribute('data-sk-category',key);
-              });
-            }
-            function run(){apply();[100,300,700,1500,3000,6000].forEach(function(t){setTimeout(apply,t);});}
-            if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-            document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cats .cat'))setTimeout(apply,30);},true);
-            new MutationObserver(function(){clearTimeout(window.__SK_CAT_IMG_TIMER__);window.__SK_CAT_IMG_TIMER__=setTimeout(apply,100);}).observe(document.documentElement,{childList:true,subtree:true});
-          })();
-          </script>'''
-          s=s.replace('</head>',patch+'\n</head>',1)
-          p.write_text(s,encoding='utf-8')
+          python3 tools/fix_category_bar_final.py
+          grep -q 'CATEGORY_PHOTO_EMBEDDED_FINAL_V1' app/src/main/assets/index.html
+          echo 'CATEGORY PHOTO EMBEDDED FIX APPLIED'
       - name: Commit fallback
         run: |
           git config user.name 'github-actions[bot]'
