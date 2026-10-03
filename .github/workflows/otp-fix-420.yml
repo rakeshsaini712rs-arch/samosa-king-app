@@ -1,0 +1,35 @@
+name: One-time OTP fix for workflow 420
+on:
+  push:
+    branches:
+      - otp-fix-420
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove OTP UI only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('MainActivity.java')
+          s = p.read_text(encoding='utf-8')
+          marker = '</body></html>'
+          patch = r'''<script>(function(){function hideOtp(){document.querySelectorAll('.otpbox,input[name*="otp" i],input[placeholder*="otp" i]').forEach(function(e){e.remove();});document.querySelectorAll('body *').forEach(function(e){if(e.children.length===0){var t=(e.textContent||'').replace(/\s+/g,' ').trim();if(t==='Send OTP'||t==='☎ Help Center'||t.indexOf('Order/help:')===0){var p=e.parentElement;if(p&&p.classList.contains('helpbox')){e.remove();}else{e.remove();}}}});}hideOtp();new MutationObserver(hideOtp).observe(document.documentElement,{childList:true,subtree:true});setTimeout(hideOtp,500);setTimeout(hideOtp,1500);})();</script>'''
+          if 'One-time OTP UI removal for workflow 420' not in s:
+              if marker not in s:
+                  raise SystemExit('HTML end marker not found')
+              s = s.replace(marker, '/* One-time OTP UI removal for workflow 420 */'+patch+marker, 1)
+              p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit patch and remove helper workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add MainActivity.java
+          git commit -m 'Remove OTP prompt from workflow 420 base'
+          git rm .github/workflows/otp-fix-420.yml
+          git commit -m 'Remove one-time OTP patch workflow'
+          git push origin HEAD:otp-fix-420
