@@ -46,7 +46,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       {url:'https://videos.pexels.com/video-files/6603825/6603825-hd_1920_1080_25fps.mp4',tag:'👑 SAMOSA KING',title:'Fresh Food',sub:'Order your favourite food now'}
     ];
     var i=0,loading=false,retries=0;
-    function setText(x){t.innerHTML='<span>'+x.tag+'</span><b>'+x.title+'</b><small>'+x.sub+'</small>'}
+    function setText(x){t.innerHTML='<span>'+x.tag+'</span><b>'+x.title+'</b><small>'+x.sub+'</small>}
     function play(){var p=v.play();if(p&&p.catch)p.catch(function(){})}
     function show(n){if(loading)return;loading=true;var x=slides[n%slides.length];i=n%slides.length;setText(x);s.src=x.url;v.load();retries=0;setTimeout(function(){loading=false;play()},80)}
     function next(){show((i+1)%slides.length)}
@@ -57,4 +57,13 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     show(0);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installPromoFix);else installPromoFix();
+})();
+(function(){
+  function removeOtpUi(){
+    ['loginPhone','otpbox','loginMsg'].forEach(function(id){var x=document.getElementById(id);if(x){var p=x.parentElement;if(id==='loginPhone'&&p&&p.children.length<=6){p.remove()}else{x.remove()}}});
+    document.querySelectorAll('button').forEach(function(b){var t=(b.textContent||'').trim().toLowerCase();if(t==='send otp'||t==='verify otp')b.remove()});
+    document.querySelectorAll('.help').forEach(function(x){var t=(x.textContent||'').toLowerCase();if(t.indexOf('help center')>=0&&t.indexOf('order/help')>=0)x.remove()});
+  }
+  function installOtpRemoval(){removeOtpUi();var o=new MutationObserver(function(){removeOtpUi()});o.observe(document.documentElement,{childList:true,subtree:true});setTimeout(function(){o.disconnect()},10000)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installOtpRemoval);else installOtpRemoval();
 })();
