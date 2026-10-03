@@ -47,8 +47,8 @@ service cloud.firestore {
     match /reviews/{reviewId} { allow create: if signedIn() && request.resource.data.userId == request.auth.uid && exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == 'DELIVERED' && request.resource.data.rating >= 1 && request.resource.data.rating <= 5; allow read: if signedIn() && (resource.data.userId == request.auth.uid || admin()); allow update, delete: if false; }
     match /admins/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
     match /menu/{itemId} { allow read: if true; allow write: if admin(); }
-    match /offers/{offerId} { allow read: true; allow write: if admin(); }
-    match /coupons/{couponId} { allow read: true; allow write: if admin(); }
+    match /offers/{offerId} { allow read: if true; allow write: if admin(); }
+    match /coupons/{couponId} { allow read: if true; allow write: if admin(); }
     match /{document=**} { allow read, write: if false; }
   }
 }
