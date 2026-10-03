@@ -25,7 +25,33 @@ public class MainActivity extends Activity {
         v.evaluateJavascript("(function(){var st=document.createElement('style');st.textContent="+q(FIX_CSS)+";document.head.appendChild(st);"+CATEGORY_JS+"document.querySelectorAll('.section').forEach(function(x){x.style.display='block';x.style.visibility='visible';x.style.opacity='1'});document.querySelectorAll('.cards,.card,.photo,.photo img').forEach(function(x){x.style.visibility='visible';x.style.opacity='1'});})();",null);
       }
     });
-    web.loadDataWithBaseURL(null,"<!doctype html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Samosa King</title></head><body><div id=\"app\"></div><script>document.addEventListener('click',function(e){setTimeout(function(){document.querySelectorAll('#cats,.cats,.category-bar,.categoryBar,.categories,.category-chips,.category-nav').forEach(function(x){x.remove()});},50)},true);</script></body></html>","text/html","UTF-8",null);
+    web.loadDataWithBaseURL(null,"<!doctype html><html><head><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Samosa King</title></head><body><div id=\"app\"></div><script>document.addEventListener('click',function(e){setTimeout(function(){document.querySelectorAll('#cats,.cats,.category-bar,.categoryBar,.categories,.category-chips,.category-nav').forEach(function(x){x.remove()});},50)},true);</script><script>/* CUSTOMER_FOOTER_CLEANUP_V1 */
+(function(){
+  function clean(){
+    const needles=[
+      'Delivery ₹30 up to 5 km','PaymentCash on Delivery','Open8:30 AM–6:00 PM','Help7891851475',
+      '☎ Help Center','Order/help: 7891851475','Call💬 WhatsApp',
+      '📍 Nansa Gate, Nawalgarh  •  🚚 Delivery ₹30  •  ₹100 minimum  •  💵 COD'
+    ];
+    document.querySelectorAll('body *').forEach(function(el){
+      if(el.children.length===0){
+        const t=(el.textContent||'').replace(/\\s+/g,' ').trim();
+        if(needles.some(function(n){return t===n || t.includes(n)})){
+          const box=el.closest('.helpbox') || el.parentElement;
+          if(box && box.id==='helpSection') box.remove();
+          else if(box && !box.id && box.children.length<=4) box.remove();
+          else el.remove();
+        }
+      }
+    });
+    document.querySelectorAll('.helpbox').forEach(function(el){
+      const t=(el.textContent||'').replace(/\\s+/g,' ').trim();
+      if(t.includes('Order/help: 7891851475') || t.includes('Delivery ₹30 up to 5 km')) el.remove();
+    });
+  }
+  new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('load',clean); setTimeout(clean,200); setTimeout(clean,1000);
+})();</script></body></html>","text/html","UTF-8",null);
   }
   private static String q(String x){return "'"+x.replace("\\","\\\\").replace("'","\\'").replace("\n","\\n")+"'";}
 }
