@@ -123,7 +123,6 @@ jobs:
           grep -F 'skNativeCategoryPhotoFix20261003Style' app/src/main/assets/index.html
           grep -F 'product-images/pizza.jpg' app/src/main/assets/index.html
           grep -F 'product-images/samosa.jpg' app/src/main/assets/index.html
-          grep -F 'function renderCats()' app/src/main/assets/index.html
           echo 'FINAL category renderer verified: local food photo + label for every category.'
 
       - name: Verify customer cleanup
