@@ -1,4 +1,4 @@
-name: Remove Category Bar
+name: Restore Category Bar
 
 on:
   push:
@@ -9,27 +9,34 @@ permissions:
   contents: write
 
 jobs:
-  remove:
-    if: ${{ !contains(github.event.head_commit.message, 'Remove category bar') }}
+  restore:
+    if: ${{ !contains(github.event.head_commit.message, 'Restore category bar') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Hide category bar only
+      - name: Restore the existing category menu
         shell: python
         run: |
           from pathlib import Path
           import re
           p = Path('app/src/main/assets/index.html')
           s = p.read_text(encoding='utf-8')
-          marker = '/* FINAL_REMOVE_CATEGORY_BAR_20261003 */'
-          if marker not in s:
-              patch = '<style id="skRemoveCategoryBar">'+marker+' #cats,.cats{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}</style>'
-              s = s.replace('</head>', patch+'\n</head>', 1)
-              p.write_text(s, encoding='utf-8')
-      - name: Commit
+          s2 = re.sub(r'<style id="skRemoveCategoryBar">.*?</style>\s*', '', s, flags=re.S)
+          if s2 == s and 'FINAL_REMOVE_CATEGORY_BAR_20261003' in s2:
+              raise SystemExit('Category-hide marker still present; refusing to build a hidden category bar.')
+          if '<div id="cats" class="cats">' not in s2:
+              raise SystemExit('Existing category menu markup is missing; refusing to invent a replacement.')
+          p.write_text(s2, encoding='utf-8')
+      - name: Verify one real category menu remains
+        run: |
+          set -e
+          grep -F '<div id="cats" class="cats">' app/src/main/assets/index.html
+          if grep -F 'FINAL_REMOVE_CATEGORY_BAR_20261003' app/src/main/assets/index.html; then exit 1; fi
+          echo 'Category menu restored; no category-hide rule remains.'
+      - name: Commit restore
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add app/src/main/assets/index.html
-          git diff --cached --quiet || git commit -m 'Remove category bar'
+          git diff --cached --quiet || git commit -m 'Restore category bar'
           git push
