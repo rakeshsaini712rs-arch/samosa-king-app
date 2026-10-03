@@ -1,0 +1,1 @@
+FINAL CATEGORY MENU FIX — build from current main using the existing single-source category photo renderer. No other customer features should be changed.
