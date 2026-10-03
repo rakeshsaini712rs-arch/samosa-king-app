@@ -35,10 +35,49 @@
       }
     }catch(e){}
   }
+  function findSection(name){
+    var wanted=(name||'').trim().toLowerCase();
+    if(wanted==='all')return document.getElementById('homePage')||document.body;
+    var sections=document.querySelectorAll('.section');
+    for(var i=0;i<sections.length;i++){
+      var h=sections[i].querySelector('h2');
+      var text=(h?h.textContent:sections[i].textContent).replace(/[^a-z0-9 &/]/gi,' ').replace(/\s+/g,' ').trim().toLowerCase();
+      if(text.indexOf(wanted)!==-1)return sections[i];
+    }
+    return null;
+  }
+  function wireCategories(){
+    var root=document.getElementById('cats');
+    if(!root||root.getAttribute('data-sk-wired')==='1')return;
+    root.setAttribute('data-sk-wired','1');
+    root.addEventListener('click',function(e){
+      var cat=e.target.closest&&e.target.closest('.cat');
+      if(!cat||!root.contains(cat))return;
+      e.preventDefault();
+      var name=(cat.getAttribute('aria-label')||cat.textContent||'').replace(/\s+/g,' ').trim();
+      var section=findSection(name);
+      root.querySelectorAll('.cat').forEach(function(x){x.classList.toggle('active',x===cat);});
+      if(section){
+        section.scrollIntoView({behavior:'smooth',block:'start'});
+      }else if(name.toLowerCase()==='all'){
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+    });
+  }
+  function themeMenu(){
+    var root=document.getElementById('cats');
+    if(!root||root.getAttribute('data-sk-theme')==='1')return;
+    root.setAttribute('data-sk-theme','1');
+    var style=document.createElement('style');
+    style.textContent='#cats{background:#17110d!important;border-color:#3a2a20!important}#cats .cat{background:#241a14!important;color:#f7eee5!important;border-color:#4b392c!important;box-shadow:none!important}#cats .cat:hover,#cats .cat:focus{background:#302219!important;color:#fff!important;border-color:#d99d18!important}#cats .cat.active{background:#d99d18!important;color:#17100b!important;border-color:#f6c94a!important;box-shadow:0 3px 10px #0008!important}';
+    document.head.appendChild(style);
+  }
   function start(){
     removeOtp();
     cleanCategories();
-    [300,1000,2500].forEach(function(ms){setTimeout(function(){removeOtp();cleanCategories();},ms);});
+    wireCategories();
+    themeMenu();
+    [300,1000,2500].forEach(function(ms){setTimeout(function(){removeOtp();cleanCategories();wireCategories();themeMenu();},ms);});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
   [300,1000,2500,4000].forEach(function(ms){setTimeout(loadCaptain,ms);});
