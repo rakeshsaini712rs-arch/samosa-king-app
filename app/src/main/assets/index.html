@@ -293,76 +293,65 @@ body.skDark .top .brand::first-letter{color:#ffffff!important}
 
 
 
+
+
 <style id="skCategoryPhotoGuaranteedStyle">
-/* GUARANTEED_CATEGORY_IMAGES_20261002_V1 */
-#cats .cat{overflow:hidden!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;min-height:96px!important;background:#fff!important}
-#cats .cat .skGuaranteedPhoto{display:block!important;width:100%!important;height:70px!important;min-height:70px!important;flex:0 0 70px!important;overflow:hidden!important;border-radius:11px 11px 0 0!important;position:relative!important;background:#f4e4c5!important}
+/* FINAL_REAL_CATEGORY_PHOTOS_20261003 */
+#cats .cat{overflow:hidden!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;min-height:102px!important;height:auto!important;background:#fff!important;text-align:center!important}
+#cats .cat .skGuaranteedPhoto{display:block!important;width:100%!important;height:70px!important;min-height:70px!important;flex:0 0 70px!important;overflow:hidden!important;border-radius:11px 11px 0 0!important;background:#f4e4c5!important}
 #cats .cat .skGuaranteedPhoto img{display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;object-fit:cover!important;visibility:visible!important;opacity:1!important}
-#cats .cat .skGuaranteedLabel{display:block!important;padding:5px 3px 7px!important;text-align:center!important;line-height:1.15!important;font-weight:800!important;font-size:11px!important;color:inherit!important}
+#cats .cat .skGuaranteedLabel{display:block!important;padding:6px 3px 8px!important;text-align:center!important;line-height:1.15!important;font-weight:900!important;font-size:11px!important;color:inherit!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
 </style>
 <script id="skCategoryPhotoGuaranteedScript">
 (function(){
-  if(window.__SK_CATEGORY_IMAGES_GUARANTEED_V1__)return;
-  window.__SK_CATEGORY_IMAGES_GUARANTEED_V1__=true;
-  var FALL=['🥟','🍕','🥟','🥗','🍛','🍲','🎂','🥤','🍬','🍽️'];
-  var COLORS=['#f7d7a8','#f3c2a2','#f6d49b','#cce8d0','#f4d6a0','#d9e7c7','#f7c7d5','#cce8f4','#ead2f0','#ddd8cc'];
-  var KEYS=['all','fast food','snacks','chaat special','indian thali','desi rasoi','birthday special','beverages','sweets','restaurant hotel'];
-  function norm(v){return String(v||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
-  function fallback(i){
-    var bg=COLORS[i%COLORS.length],e=FALL[i%FALL.length];
-    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360"><rect width="600" height="360" rx="32" fill="'+bg+'"/><circle cx="300" cy="175" r="112" fill="#ffffff99"/><text x="300" y="215" text-anchor="middle" font-size="132">'+e+'</text></svg>';
-    return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
-  }
-  function label(cat){
-    var t=(cat.textContent||'').replace(/\s+/g,' ').trim();
-    var img=cat.querySelector('img');
-    if(img&&img.alt)t=img.alt;
-    return t;
-  }
-  function indexFor(cat,i){
-    var k=norm(label(cat));
-    var x=KEYS.indexOf(k); if(x>=0)return x;
-    if(k.indexOf('fast food')>=0)return 1;
-    if(k.indexOf('snack')>=0)return 2;
-    if(k.indexOf('chaat')>=0)return 3;
-    if(k.indexOf('thali')>=0)return 4;
-    if(k.indexOf('desi')>=0)return 5;
-    if(k.indexOf('birthday')>=0)return 6;
-    if(k.indexOf('beverage')>=0)return 7;
-    if(k.indexOf('sweet')>=0)return 8;
-    if(k.indexOf('restaurant')>=0||k.indexOf('hotel')>=0)return 9;
-    return i%10;
-  }
-  function productSrc(cat){
-    var key=norm(label(cat));
-    var terms={
-      'all':['samosa'],'fast food':['pizza','sandwich','burger','maggi','chili potato'],'snacks':['samosa','kachori','mirchi bada','pakoda'],
-      'chaat special':['chole kulche','chole bhature','dahi','chaat'],'indian thali':['indian thali','thali'],'desi rasoi':['sabji','dal','roti'],
-      'birthday special':['cake','balloon','birthday'],'beverages':['cold drink','beverage','juice','lassi'],'sweets':['besan laddu','bundi ladoo','gulab','ladoo','sweet'],
-      'restaurant hotel':['dosa','idli','vada pav','restaurant','hotel']};
-    var arr=terms[key]||[]; var found='';
-    document.querySelectorAll('.card').forEach(function(c){if(found)return;var tx=norm(c.textContent||'');if(arr.some(function(t){return tx.indexOf(norm(t))>=0})){var im=c.querySelector('.visual img, img');if(im)found=im.currentSrc||im.src||im.getAttribute('src')||'';}});
-    return found;
+  if(window.__SK_CATEGORY_IMAGES_GUARANTEED_V2__)return;
+  window.__SK_CATEGORY_IMAGES_GUARANTEED_V2__=true;
+  var MAP={
+    'All':'product-images/samosa.jpg',
+    'Fast Food':'product-images/pizza.jpg',
+    'Snacks':'product-images/mirchi-bada.jpg',
+    'Chaat & Special':'product-images/dahi-bhalla-1.jpg',
+    'Indian Thali':'product-images/manchurian.jpg',
+    'Desi Rasoi':'product-images/pasta.jpg',
+    'Birthday Special':'product-images/gulab-jamun.jpg',
+    'Beverages':'product-images/burger.jpg',
+    'Sweets':'product-images/kaju-katli.jpg',
+    'Restaurant / Hotel':'product-images/wraps.jpg'
+  };
+  var KEYS=Object.keys(MAP);
+  function clean(v){return String(v||'').replace(/\\s+/g,' ').trim();}
+  function keyFor(cat,i){
+    var raw=clean(cat.getAttribute('data-label')||cat.textContent);
+    var low=raw.toLowerCase().replace(/\\s*category\\s*/g,' ').replace(/\\s+/g,' ').trim();
+    if(low==='all'||low.indexOf('all')===0)return 'All';
+    if(low.indexOf('fast food')>=0)return 'Fast Food';
+    if(low.indexOf('snacks')>=0)return 'Snacks';
+    if(low.indexOf('chaat')>=0)return 'Chaat & Special';
+    if(low.indexOf('indian thali')>=0)return 'Indian Thali';
+    if(low.indexOf('desi rasoi')>=0)return 'Desi Rasoi';
+    if(low.indexOf('birthday')>=0)return 'Birthday Special';
+    if(low.indexOf('beverages')>=0)return 'Beverages';
+    if(low.indexOf('sweets')>=0)return 'Sweets';
+    if(low.indexOf('restaurant')>=0||low.indexOf('hotel')>=0)return 'Restaurant / Hotel';
+    return KEYS[i%KEYS.length];
   }
   function apply(){
-    var root=document.getElementById('cats');if(!root)return;
+    var root=document.getElementById('cats')||document.querySelector('.cats');
+    if(!root)return;
     root.querySelectorAll('.cat').forEach(function(cat,i){
-      var old=cat.querySelector('.skGuaranteedPhoto');
-      var holder=old||document.createElement('span');holder.className='skGuaranteedPhoto';
-      var img=holder.querySelector('img')||document.createElement('img');
-      var idx=indexFor(cat,i),src=productSrc(cat)||fallback(idx);
-      img.src=src;img.alt='';img.loading='eager';img.decoding='sync';img.style.display='block';img.style.visibility='visible';img.style.opacity='1';
-      img.onerror=function(){if(img.src!==fallback(idx))img.src=fallback(idx)};
-      if(!img.parentNode)holder.appendChild(img);
-      var lab=cat.querySelector('.skGuaranteedLabel')||document.createElement('span');lab.className='skGuaranteedLabel';lab.textContent=label(cat)||KEYS[idx];
-      if(holder.parentNode!==cat)cat.insertBefore(holder,cat.firstChild);
-      if(lab.parentNode!==cat)cat.appendChild(lab);
+      var key=keyFor(cat,i),holder=document.createElement('span'),img=document.createElement('img'),lab=document.createElement('span');
+      holder.className='skGuaranteedPhoto';
+      img.src=MAP[key];img.alt=key+' category';img.loading='eager';img.decoding='sync';
+      img.onerror=function(){this.style.visibility='hidden';};
+      holder.appendChild(img);
+      lab.className='skGuaranteedLabel';lab.textContent=key;
+      cat.innerHTML='';cat.appendChild(holder);cat.appendChild(lab);cat.setAttribute('data-sk-category',key);
     });
   }
-  function run(){apply();[100,400,900,1800,3500,7000].forEach(function(t){setTimeout(apply,t)})}
+  function run(){apply();[100,300,700,1500,3000,6000].forEach(function(t){setTimeout(apply,t);});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-  var mo=new MutationObserver(function(){clearTimeout(mo.t);mo.t=setTimeout(apply,120)});
-  function watch(){var r=document.getElementById('cats');if(r)mo.observe(r,{childList:true,subtree:true});else setTimeout(watch,100)}watch();
+  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cats .cat'))setTimeout(apply,30);},true);
+  new MutationObserver(function(){clearTimeout(window.__SK_CAT_IMG_TIMER__);window.__SK_CAT_IMG_TIMER__=setTimeout(apply,100);}).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
 </head>
