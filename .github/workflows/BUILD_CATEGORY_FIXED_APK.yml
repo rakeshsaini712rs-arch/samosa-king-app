@@ -16,6 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Apply final customer category audit fix
+        run: python tools/final_customer_category_audit_fix.py
+
       - name: Setup Java 17
         uses: actions/setup-java@v5
         with:
