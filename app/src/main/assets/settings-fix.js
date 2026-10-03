@@ -12,7 +12,6 @@
     document.head.appendChild(s);
   }
 
-  /* Remove OTP controls without touching checkout/customer fields. */
   function removeOtp(){
     try{
       var selectors=['.otpbox','#otpBox','#otpInput','input[name="otp"]','input[placeholder*="OTP" i]','button[onclick*="otp" i]','button[id*="otp" i]','[class*="otp" i]'];
@@ -34,31 +33,36 @@
     }catch(e){}
   }
 
-  /* Category labels were being rendered twice (e.g. "All category" + "All").
-     Keep the existing category click handlers, but normalize only their visible text. */
+  /* Category buttons were rendered with duplicate visible labels such as
+     "All category" + "All". Normalize each button by position so the
+     existing click handlers/listeners remain attached to the same element. */
   function cleanCategories(){
     try{
       var names=['All','Fast Food','Snacks','Chaat & Special','Indian Thali','Desi Rasoi','Birthday Special','Beverages','Sweets','Restaurant / Hotel'];
-      document.querySelectorAll('.cat').forEach(function(el){
-        var t=(el.textContent||'').replace(/\s+/g,' ').trim();
-        for(var i=0;i<names.length;i++){
-          var n=names[i];
-          if(t===n||t===n+' category'||t.indexOf(n+' category')===0||t.indexOf('category '+n)===0){
-            el.textContent=n;
-            break;
-          }
+      var cats=document.querySelectorAll('.cat');
+      for(var i=0;i<cats.length&&i<names.length;i++){
+        var el=cats[i];
+        if(el.textContent.replace(/\s+/g,' ').trim()!==names[i]){
+          el.textContent=names[i];
         }
-      });
+        el.setAttribute('aria-label',names[i]);
+        el.setAttribute('title',names[i]);
+      }
     }catch(e){}
   }
 
   function start(){
     removeOtp();
     cleanCategories();
-    [100,300,700,1500,3000].forEach(function(ms){setTimeout(function(){removeOtp();cleanCategories();},ms);});
-    if(!window.__SK_OTP_OBSERVER__){
-      window.__SK_OTP_OBSERVER__=new MutationObserver(function(){removeOtp();cleanCategories();});
-      window.__SK_OTP_OBSERVER__.observe(document.documentElement,{childList:true,subtree:true});
+    [50,150,300,700,1500,3000,5000].forEach(function(ms){
+      setTimeout(function(){removeOtp();cleanCategories();},ms);
+    });
+    if(!window.__SK_UI_FIX_OBSERVER__){
+      window.__SK_UI_FIX_OBSERVER__=new MutationObserver(function(){
+        removeOtp();
+        cleanCategories();
+      });
+      window.__SK_UI_FIX_OBSERVER__.observe(document.documentElement,{childList:true,subtree:true});
     }
   }
 
