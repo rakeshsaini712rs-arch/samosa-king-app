@@ -1,0 +1,35 @@
+name: Remove Category Bar
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  remove:
+    if: ${{ !contains(github.event.head_commit.message, 'Remove category bar') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hide category bar only
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p = Path('app/src/main/assets/index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '/* FINAL_REMOVE_CATEGORY_BAR_20261003 */'
+          if marker not in s:
+              patch = '<style id="skRemoveCategoryBar">'+marker+' #cats,.cats{display:none!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important}</style>'
+              s = s.replace('</head>', patch+'\n</head>', 1)
+              p.write_text(s, encoding='utf-8')
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/assets/index.html
+          git diff --cached --quiet || git commit -m 'Remove category bar'
+          git push
