@@ -3,6 +3,19 @@
   if(window.__SK_DUPLICATE_CLEANUP__) return;
   window.__SK_DUPLICATE_CLEANUP__=true;
   function norm(s){return String(s||'').replace(/\s+/g,' ').trim();}
+  var CATEGORY_IMAGES={
+    'All':'product-images/samosa.jpg',
+    'Fast Food':'product-images/pizza.jpg',
+    'Snacks':'product-images/samosa.jpg',
+    'Chaat & Special':'product-images/dahi-bhalla-1.jpg',
+    'Indian Thali':'product-images/manchurian.jpg',
+    'Desi Rasoi':'product-images/manchurian.jpg',
+    'Birthday Special':'product-images/gulab-jamun.jpg',
+    'Beverages':'product-images/burger.jpg',
+    'Sweets':'product-images/gulab-jamun.jpg',
+    'Restaurant / Hotel':'product-images/pizza.jpg'
+  };
+  var CATEGORY_KEYS=Object.keys(CATEGORY_IMAGES);
   function removeExactText(text){
     var nodes=[];
     document.querySelectorAll('body *').forEach(function(el){
@@ -52,12 +65,39 @@
     });
     anchor.parentElement.insertBefore(wrap,anchor);
   }
+  function categoryLabel(raw){
+    for(var i=0;i<CATEGORY_KEYS.length;i++) if(raw.indexOf(CATEGORY_KEYS[i])>=0) return CATEGORY_KEYS[i];
+    return '';
+  }
+  function ensureCategoryPhoto(el,label){
+    if(el.querySelector('.skCategoryFixed')) return;
+    var src=CATEGORY_IMAGES[label];
+    if(!src) return;
+    el.innerHTML='';
+    el.classList.add('skCategoryFixed');
+    el.style.cssText+=';position:relative!important;overflow:hidden!important;min-height:102px!important;height:auto!important;padding:0!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;text-align:center!important;background:#fff!important;';
+    var photo=document.createElement('span');
+    photo.className='skCategoryFixedPhoto';
+    photo.style.cssText='display:block!important;width:100%!important;height:70px!important;min-height:70px!important;overflow:hidden!important;border-radius:11px 11px 0 0!important;background:#f4e4c5!important;flex:0 0 70px!important;';
+    var img=document.createElement('img');
+    img.src=src;img.alt=label+' category';img.loading='eager';img.decoding='sync';
+    img.style.cssText='display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;object-fit:cover!important;visibility:visible!important;opacity:1!important;';
+    img.onerror=function(){this.style.display='none';photo.style.background='#f4e4c5';};
+    photo.appendChild(img);
+    var text=document.createElement('span');
+    text.className='skCategoryFixedLabel';
+    text.textContent=label;
+    text.style.cssText='display:block!important;padding:6px 3px 8px!important;text-align:center!important;line-height:1.15!important;font-weight:900!important;font-size:11px!important;color:inherit!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;';
+    el.appendChild(photo);el.appendChild(text);
+  }
   function clean(){
     var seen={};
     document.querySelectorAll('.cats .cat').forEach(function(el){
-      var raw=norm(el.textContent), known=['All','Fast Food','Snacks','Chaat & Special','Indian Thali','Desi Rasoi','Birthday Special','Beverages','Sweets','Restaurant / Hotel'], label='';
-      for(var i=0;i<known.length;i++){if(raw.indexOf(known[i])>=0){label=known[i];break;}}
-      if(label){if(seen[label]) el.remove(); else {seen[label]=1;el.textContent=label;}}
+      var raw=norm(el.textContent), label=categoryLabel(raw);
+      if(label){
+        if(seen[label]) el.remove();
+        else {seen[label]=1;ensureCategoryPhoto(el,label);}
+      }
     });
     document.querySelectorAll('.card').forEach(function(card){
       var t=card.querySelectorAll('.skProductTicker');
