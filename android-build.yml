@@ -38,10 +38,16 @@ jobs:
         shell: bash
         run: |
           python3 tools/patch_captain_live.py
-          grep -q 'CAPTAIN_LIVE_NATIVE_V1' app/src/main/java/com/samosaking/nawalgarh/MainActivity.java
+          grep -q 'CAPTAIN_LIVE_NATIVE_V2' app/src/main/java/com/samosaking/nawalgarh/MainActivity.java
           grep -q 'captain-live.js' app/src/main/assets/index.html
           echo "CAPTAIN LIVE PATCH APPLIED"
-      - name: Build Final APK (category photo fix)
+      - name: Apply FINAL category bar fix
+        shell: bash
+        run: |
+          python3 tools/fix_category_bar_final.py
+          ! grep -q 'FINAL_REMOVE_CATEGORY_BAR' app/src/main/assets/index.html
+          echo "FINAL CATEGORY BAR FIX APPLIED"
+      - name: Build Final APK
         shell: bash
         run: |
           gradle clean assembleDebug --no-daemon --stacktrace
