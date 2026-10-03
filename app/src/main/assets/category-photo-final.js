@@ -1,42 +1,73 @@
-/* FINAL CATEGORY PHOTO FIX - one image per category, persistent after taps */
+/* CATEGORY PHOTO FINAL - guaranteed local Android assets, no remote URLs */
 (function(){
-  if(window.__SK_CATEGORY_PHOTO_FINAL_JS__) return;
-  window.__SK_CATEGORY_PHOTO_FINAL_JS__=true;
+  if(window.__SK_CATEGORY_PHOTO_FINAL_LOCAL__) return;
+  window.__SK_CATEGORY_PHOTO_FINAL_LOCAL__=true;
+
   var MAP={
-    'all':'samosa','fast food':'pizza','snacks':'samosa','chaat special':'dahi-bhalla-1',
-    'indian thali':'paneer-tikka','desi rasoi':'manchurian','birthday special':'milk-cake',
-    'beverages':'burger','sweets':'gulab-jamun','restaurant hotel':'pizza'
+    'all':'product-images/samosa.jpg',
+    'fast':'product-images/pizza.jpg',
+    'snacks':'product-images/mirchi-bada.jpg',
+    'chaat':'product-images/dahi-bhalla-1.jpg',
+    'thali':'product-images/manchurian.jpg',
+    'desirsoi':'product-images/pasta.jpg',
+    'birthday':'product-images/gulab-jamun.jpg',
+    'beverages':'product-images/burger.jpg',
+    'sweets':'product-images/kaju-katli.jpg',
+    'restaurant':'product-images/wraps.jpg'
   };
-  function norm(v){return String(v||'').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ')}
-  function label(cat){
-    var saved=cat.getAttribute('data-sk-category-label'); if(saved)return saved;
-    var c=cat.cloneNode(true);
-    c.querySelectorAll('img,picture,svg,.skFinalCatPhoto,.skCatPhoto,.skCatPhotoV4').forEach(function(x){x.remove()});
-    return (c.textContent||'').replace(/\s+/g,' ').trim();
+
+  function keyFor(cat){
+    var k=cat.getAttribute('data-sk-category');
+    if(k) return String(k).toLowerCase().trim();
+    var t=(cat.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+    if(t==='all') return 'all';
+    if(t.indexOf('fast food')>=0) return 'fast';
+    if(t==='snacks') return 'snacks';
+    if(t.indexOf('chaat')>=0) return 'chaat';
+    if(t.indexOf('indian thali')>=0) return 'thali';
+    if(t.indexOf('desi rasoi')>=0) return 'desirsoi';
+    if(t.indexOf('birthday')>=0) return 'birthday';
+    if(t.indexOf('beverages')>=0) return 'beverages';
+    if(t.indexOf('sweets')>=0) return 'sweets';
+    if(t.indexOf('restaurant')>=0 || t.indexOf('hotel')>=0) return 'restaurant';
+    return '';
   }
-  function srcFor(name){
-    var key=MAP[norm(name)],data=window.SK_IMAGES&&key?window.SK_IMAGES[key]:'';
-    if(!data)return '';
-    return data.indexOf('data:')===0?data:'data:image/jpeg;base64,'+data;
-  }
-  function fix(){
-    var root=document.getElementById('cats'); if(!root)return;
+
+  function apply(){
+    var root=document.getElementById('cats');
+    if(!root) return;
     root.querySelectorAll('.cat').forEach(function(cat){
-      var name=label(cat); if(!name)return;
-      cat.setAttribute('data-sk-category-label',name);
-      var src=srcFor(name); if(!src)return;
-      while(cat.firstChild)cat.removeChild(cat.firstChild);
-      var box=document.createElement('span'); box.className='skFinalCatPhoto';
-      box.style.cssText='display:block!important;width:100%;height:68px;overflow:hidden;border-radius:11px 11px 0 0;background:#f4e4c5';
-      var img=document.createElement('img'); img.src=src; img.alt=name; img.loading='eager'; img.decoding='sync';
-      img.style.cssText='display:block!important;width:100%;height:100%;object-fit:cover;visibility:visible;opacity:1';
-      var text=document.createElement('span'); text.className='skFinalCatLabel'; text.textContent=name;
-      text.style.cssText='display:block!important;padding:5px 4px 7px;text-align:center;font-weight:800;font-size:11px;line-height:1.15';
-      box.appendChild(img); cat.appendChild(box); cat.appendChild(text);
+      var key=keyFor(cat), src=MAP[key];
+      if(!src) return;
+      var holder=cat.querySelector('.catImg');
+      if(!holder){
+        holder=document.createElement('span');
+        holder.className='catImg';
+        cat.insertBefore(holder,cat.firstChild);
+      }
+      var img=holder.querySelector('img');
+      if(!img){
+        img=document.createElement('img');
+        holder.appendChild(img);
+      }
+      img.src=src;
+      img.alt=(cat.querySelector('.catName')||cat).textContent.trim()+' category';
+      img.loading='eager';
+      img.decoding='sync';
+      img.style.setProperty('display','block','important');
+      img.style.setProperty('visibility','visible','important');
+      img.style.setProperty('opacity','1','important');
+      holder.classList.remove('fallback');
     });
   }
-  function run(){fix();[100,300,700,1500,3000,6000].forEach(function(t){setTimeout(fix,t)})}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#cats .cat'))setTimeout(fix,50)},true);
-  new MutationObserver(function(){setTimeout(fix,50)}).observe(document.documentElement,{childList:true,subtree:true});
+
+  function run(){
+    apply();
+    [100,300,700,1500,3000].forEach(function(t){setTimeout(apply,t);});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+  document.addEventListener('click',function(e){
+    if(e.target.closest && e.target.closest('#cats .cat')) setTimeout(apply,30);
+  },true);
+  new MutationObserver(function(){setTimeout(apply,30);}).observe(document.documentElement,{childList:true,subtree:true});
 })();
